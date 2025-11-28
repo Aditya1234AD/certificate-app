@@ -8,9 +8,17 @@ from datetime import datetime
 
 # Store uploads & database on Render disk
 UPLOAD_FOLDER = "/var/data/uploads"
+DB_FOLDER = "/var/data"
 DB_PATH = "/var/data/data.db"
 
-# Create uploads folder safely
+# Create /var/data first
+if not os.path.exists(DB_FOLDER):
+    try:
+        os.makedirs(DB_FOLDER)
+    except:
+        pass
+
+# Create uploads folder
 if not os.path.exists(UPLOAD_FOLDER):
     try:
         os.makedirs(UPLOAD_FOLDER)
