@@ -11,7 +11,6 @@ import base64
 from functools import wraps
 
 # config
-app = Flask(__name__)
 APP_DIR = Path(__file__).parent
 UPLOAD_FOLDER = os.environ.get("UPLOAD_FOLDER", str(APP_DIR / "uploads"))
 USE_S3 = os.environ.get("USE_S3", "0") == "1"
