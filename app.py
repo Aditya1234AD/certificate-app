@@ -58,9 +58,27 @@ init_db()
 # ---------------------------------------------------
 # ROUTES
 # ---------------------------------------------------
+# --------------------------------------------
+# ROUTES TO RENDER HTML PAGES
+# --------------------------------------------
+
+# Home → Client form
 @app.route("/")
-def home():
-    return "<h1>Flask App Running Successfully</h1>"
+def index():
+    return render_template("index.html")
+
+
+# Admin dashboard
+@app.route("/admin")
+def admin_page():
+    # later you will fetch uploaded data from DB
+    return render_template("admin.html")
+
+
+# Thank you page after form submit
+@app.route("/thanks")
+def thank_you():
+    return render_template("thanks.html")
 
 
 @app.route("/submit", methods=["POST"])
