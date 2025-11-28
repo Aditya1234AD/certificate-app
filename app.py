@@ -1,128 +1,126 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect
 import sqlite3
 import os
 
 app = Flask(__name__)
 
 # ---------------------------------------------------
-# SAFE FOLDER CREATION (Render requires this)
+# SAFE DIRECTORIES FOR RENDER
 # ---------------------------------------------------
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+UPLOAD_FOLDER = "/tmp/uploads"
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_DIR = os.path.join(BASE_DIR, "data")
 os.makedirs(DB_DIR, exist_ok=True)
 
-UPLOAD_FOLDER = "/tmp/uploads"
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
-DB_PATH = os.path.join(DB_DIR, "database.db")
-app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+DB_PATH = os.path.join(DB_DIR, "applications.db")
 
 
 # ---------------------------------------------------
 # DATABASE INITIALIZATION
 # ---------------------------------------------------
 def init_db():
-    try:
-        conn = sqlite3.connect(DB_PATH)
-        c = conn.cursor()
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS applications (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT,
+            village TEXT,
+            post TEXT,
+            gp TEXT,
+            pin TEXT,
+            district TEXT,
+            state TEXT,
+            aadhar_file TEXT,
+            ror_file TEXT,
+            father_aadhar_file TEXT,
+            applicant_photo TEXT
+        )
+    """)
+    conn.commit()
+    conn.close()
 
-        c.execute("""
-            CREATE TABLE IF NOT EXISTS applications (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT,
-                village TEXT,
-                post TEXT,
-                gp TEXT,
-                pincode TEXT,
-                district TEXT,
-                state TEXT,
-                caste_file TEXT,
-                income_file TEXT,
-                residence_file TEXT
-            )
-        """)
-
-        conn.commit()
-        conn.close()
-        print("Database initialized successfully.")
-
-    except Exception as e:
-        print("DB ERROR:", e)
-
-
-# Initialize DB once
 init_db()
 
 
 # ---------------------------------------------------
 # ROUTES
 # ---------------------------------------------------
-# --------------------------------------------
-# ROUTES TO RENDER HTML PAGES
-# --------------------------------------------
 
-# Home → Client form
+# Client page
 @app.route("/")
 def index():
     return render_template("index.html")
 
 
-# Admin dashboard
-@app.route("/admin")
-def admin_page():
-    # later you will fetch uploaded data from DB
-    return render_template("admin.html")
-
-
-# Thank you page after form submit
-@app.route("/thanks")
-def thank_you():
-    return render_template("thanks.html")
-
-
+# Handle form submission
 @app.route("/submit", methods=["POST"])
-def submit():
+def submit_form():
+
+    # 1. Receive input fields
     name = request.form.get("name")
     village = request.form.get("village")
     post = request.form.get("post")
     gp = request.form.get("gp")
-    pincode = request.form.get("pincode")
+    pin = request.form.get("pin")
     district = request.form.get("district")
     state = request.form.get("state")
 
-    caste = request.files.get("caste")
-    income = request.files.get("income")
-    residence = request.files.get("residence")
+    # 2. Receive files
+    aadhar = request.files.get("aadhar")
+    ror = request.files.get("ror")
+    father_aadhar = request.files.get("father_aadhar")
+    applicant_photo = request.files.get("applicant_photo")
 
-    def save(file):
-        if file and file.filename:
-            save_path = os.path.join(UPLOAD_FOLDER, file.filename)
-            file.save(save_path)
-            return file.filename
-        return None
+    # 3. Save files to /tmp/uploads
+    aadhar_path = os.path.join(app.config["UPLOAD_FOLDER"], aadhar.filename)
+    ror_path = os.path.join(app.config["UPLOAD_FOLDER"], ror.filename)
+    father_path = os.path.join(app.config["UPLOAD_FOLDER"], father_aadhar.filename)
+    photo_path = os.path.join(app.config["UPLOAD_FOLDER"], applicant_photo.filename)
 
-    caste_file = save(caste)
-    income_file = save(income)
-    residence_file = save(residence)
+    aadhar.save(aadhar_path)
+    ror.save(ror_path)
+    father_aadhar.save(father_path)
+    applicant_photo.save(photo_path)
 
+    # 4. Save data in SQLite
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
-
     c.execute("""
-        INSERT INTO applications 
-        (name, village, post, gp, pincode, district, state, caste_file, income_file, residence_file)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (name, village, post, gp, pincode, district, state, caste_file, income_file, residence_file))
-
+        INSERT INTO applications
+        (name, village, post, gp, pin, district, state,
+         aadhar_file, ror_file, father_aadhar_file, applicant_photo)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (name, village, post, gp, pin, district, state,
+          aadhar.filename, ror.filename, father_aadhar.filename, applicant_photo.filename))
     conn.commit()
     conn.close()
 
-    return "<h2>Submitted Successfully!</h2>"
+    return redirect("/thanks")
+
+
+# Thank you page
+@app.route("/thanks")
+def thanks():
+    return render_template("thanks.html")
+
+
+# Admin Page → show all uploads + details
+@app.route("/admin")
+def admin_page():
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("SELECT * FROM applications")
+    data = c.fetchall()
+    conn.close()
+    return render_template("admin.html", applications=data, upload_path=UPLOAD_FOLDER)
 
 
 # ---------------------------------------------------
-# RUN APP
+# Run the app
 # ---------------------------------------------------
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run()
