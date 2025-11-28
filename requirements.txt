@@ -1,0 +1,4 @@
+Flask>=2.2
+gunicorn
+boto3
+werkzeug
