@@ -3,25 +3,30 @@ from flask import Flask, request, render_template, redirect, url_for, flash, sen
 from werkzeug.utils import secure_filename
 import sqlite3
 from datetime import datetime
-from pathlib import Path
 
-# -------------------- CONFIG --------------------
-APP_DIR = Path(__file__).parent
-UPLOAD_FOLDER = os.path.join(APP_DIR, "uploads")
-DB_PATH = os.path.join(APP_DIR, "data.db")
+# ------------------- CONFIG (RENDER SAFE) -------------------
 
-# Make uploads folder safely
-if not os.path.isdir(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+# Store uploads & database on Render disk
+UPLOAD_FOLDER = "/var/data/uploads"
+DB_PATH = "/var/data/data.db"
 
-ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "admin123")  # Set in Render
+# Create uploads folder safely
+if not os.path.exists(UPLOAD_FOLDER):
+    try:
+        os.makedirs(UPLOAD_FOLDER)
+    except:
+        pass
 
-# -------------------- FLASK APP --------------------
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "admin123")  # set this in Render
+
+
+# ------------------- FLASK APP -------------------
 app = Flask(__name__)
-app.secret_key = "secret123"
+app.secret_key = "mysecretkey"
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
-# -------------------- DATABASE --------------------
+
+# ------------------- DATABASE -------------------
 def init_db():
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
@@ -45,16 +50,17 @@ def init_db():
 
 init_db()
 
-# -------------------- ROUTES --------------------
+
+# ------------------- ROUTES -------------------
 
 @app.route("/")
-def home():
+def form_page():
     return render_template("form.html")
 
 
 @app.route("/submit", methods=["POST"])
 def submit():
-    # Get form values
+    # Read text inputs
     name = request.form.get("name")
     village = request.form.get("village")
     post = request.form.get("post")
@@ -63,25 +69,26 @@ def submit():
     district = request.form.get("district")
     state = request.form.get("state")
 
-    # Get files
-    caste = request.files["caste"]
-    income = request.files["income"]
+    # Read uploaded files
+    caste_file = request.files["caste"]
+    income_file = request.files["income"]
 
-    caste_name = secure_filename(caste.filename)
-    income_name = secure_filename(income.filename)
+    caste_name = secure_filename(caste_file.filename)
+    income_name = secure_filename(income_file.filename)
 
     caste_path = os.path.join(UPLOAD_FOLDER, caste_name)
     income_path = os.path.join(UPLOAD_FOLDER, income_name)
 
-    caste.save(caste_path)
-    income.save(income_path)
+    caste_file.save(caste_path)
+    income_file.save(income_path)
 
-    # Insert into DB
+    # Save data into database
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute("""
-        INSERT INTO applications 
-        (name, village, post, gp, pin, district, state, caste_file, income_file, created_at)
+        INSERT INTO applications
+        (name, village, post, gp, pin, district, state,
+         caste_file, income_file, created_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         name, village, post, gp, pin, district, state,
@@ -91,11 +98,11 @@ def submit():
     conn.commit()
     conn.close()
 
-    flash("Application submitted successfully!")
-    return redirect(url_for("home"))
+    flash("Application Submitted Successfully!")
+    return redirect(url_for("form_page"))
 
 
-# -------------------- ADMIN --------------------
+# ------------------- ADMIN -------------------
 
 @app.route("/admin")
 def admin_login():
@@ -107,11 +114,11 @@ def admin_check():
     password = request.form.get("password")
     if password != ADMIN_PASSWORD:
         return "Wrong Password!"
-    return redirect(url_for("dashboard"))
+    return redirect(url_for("admin_dashboard"))
 
 
 @app.route("/admin/dashboard")
-def dashboard():
+def admin_dashboard():
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute("SELECT * FROM applications ORDER BY id DESC")
@@ -121,13 +128,13 @@ def dashboard():
     return render_template("dashboard.html", data=data)
 
 
-# Download files
+# ------------------- DOWNLOAD FILE -------------------
 @app.route("/uploads/<filename>")
 def uploaded_file(filename):
     return send_from_directory(UPLOAD_FOLDER, filename)
 
 
-# -------------------- REQUIRED FOR RENDER --------------------
-# Render looks for `app` variable inside app.py
+# ------------------- REQUIRED FOR RENDER -------------------
+# Start command will be `python app:app`
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
