@@ -6,11 +6,13 @@
     <title>Apply Certificate</title>
 
     <style>
+        /* ---------------- BODY ---------------- */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 20px;
             background: #000000;   /* Black background */
+            transition: background 0.5s ease;
         }
 
         .container {
@@ -18,25 +20,35 @@
             margin: auto;
         }
 
+        /* ---------------- BOX CONTAINERS ---------------- */
         .box {
             background: #ffffffcc;
             backdrop-filter: blur(5px);
             padding: 20px;
             border-radius: 14px;
             margin-bottom: 25px;
-            box-shadow: 0px 0px 12px rgba(255,255,255,0.2); /* Soft white shadow */
+            box-shadow: 0px 0px 12px rgba(255,255,255,0.2);
+            transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+        }
+
+        .box:hover {
+            background: #ffffffdd;
+            box-shadow: 0px 0px 20px rgba(255,255,255,0.3);
+            transform: translateY(-3px);
         }
 
         h2 {
             text-align: center;
             margin-bottom: 15px;
             color: #4b7bec;  /* Blue for main title */
+            transition: color 0.3s ease;
         }
 
         h3 {
             text-align: center;
             margin-bottom: 15px;
             color: white;   /* White for subtitles */
+            transition: color 0.3s ease;
         }
 
         label {
@@ -44,8 +56,10 @@
             display: block;
             margin-top: 12px;
             color: white;  /* White labels for black background */
+            transition: color 0.3s ease;
         }
 
+        /* ---------------- INPUTS ---------------- */
         input[type="text"], input[type="file"], select {
             width: 100%;
             padding: 10px;
@@ -53,8 +67,18 @@
             border: 1px solid #444;
             border-radius: 6px;
             background: #fff;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
         }
 
+        input[type="text"]:focus,
+        input[type="file"]:focus,
+        select:focus {
+            border-color: #4b7bec;
+            box-shadow: 0 0 5px rgba(75,123,236,0.5);
+            outline: none;
+        }
+
+        /* ---------------- BUTTON ---------------- */
         button {
             background: #4b7bec;
             color: white;
@@ -65,14 +89,36 @@
             font-size: 17px;
             border-radius: 8px;
             cursor: pointer;
+            transition: background 0.3s ease, transform 0.2s ease;
         }
 
         button:hover {
             background: #3867d6;
+            transform: scale(1.03);
         }
 
+        /* ---------------- LINK ---------------- */
         a {
-            color: #74b9ff; /* Light blue link on black bg */
+            color: #74b9ff;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        a:hover {
+            color: #4b7bec;
+            text-decoration: underline;
+        }
+
+        /* ---------------- FLASH MESSAGES ---------------- */
+        .flash {
+            text-align: center;
+            font-size: 16px;
+            color: green;
+            margin-bottom: 15px;
+            background: #e6ffe6;
+            padding: 10px;
+            border-radius: 6px;
+            transition: background 0.5s ease, color 0.5s ease;
         }
     </style>
 </head>
@@ -81,6 +127,14 @@
     <div class="container">
         <h2>Certificate Application Form</h2>
 
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="flash">
+                {{ messages[0] }}
+            </div>
+          {% endif %}
+        {% endwith %}
+
         <form action="/submit" method="POST" enctype="multipart/form-data">
 
             <!-- Certificate Type Box -->
@@ -88,7 +142,7 @@
                 <h3>Select Certificate Type</h3>
 
                 <label for="cert_type">Certificate Type:</label>
-                <select name="cert_type" id="cert_type">
+                <select name="cert_type" id="cert_type" required>
                     <option value="Caste Certificate">Caste Certificate</option>
                     <option value="Income Certificate">Income Certificate</option>
                     <option value="Resident Certificate">Resident Certificate</option>
@@ -144,7 +198,7 @@
             <button type="submit">Submit Application</button>
 
             <div style="text-align:center; margin-top: 20px;">
-                <a href="/status" style="font-size: 18px; font-weight: bold; text-decoration: none;">
+                <a href="/status" style="font-size: 18px; font-weight: bold;">
                     Check Application Status
                 </a>
             </div>
