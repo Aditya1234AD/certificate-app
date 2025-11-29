@@ -7,6 +7,12 @@ app.secret_key = "something_super_secret"
 
 # ------------------- UPLOAD FOLDER -------------------
 UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), "uploads")
+
+# If 'uploads' exists as a file, delete it first
+if os.path.exists(UPLOAD_FOLDER) and not os.path.isdir(UPLOAD_FOLDER):
+    os.remove(UPLOAD_FOLDER)
+
+# Create uploads folder safely
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
@@ -113,7 +119,7 @@ def admin():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cur = conn.cursor()
-    cur.execute("SELECT * FROM applications ORDER BY id DESC")  # fetch all
+    cur.execute("SELECT * FROM applications ORDER BY id DESC")  # fetch all applications
     applications = cur.fetchall()
     conn.close()
     return render_template("admin.html", applications=applications)
