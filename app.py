@@ -1,18 +1,14 @@
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory, flash
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory, flash, session
 import sqlite3
 import os
 
 app = Flask(__name__)
-app.secret_key = "something_super_secret"
+app.secret_key = "something_super_secret"  # Required for session management
 
 # ------------------- UPLOAD FOLDER -------------------
 UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), "uploads")
-
-# If 'uploads' exists as a file, delete it first
 if os.path.exists(UPLOAD_FOLDER) and not os.path.isdir(UPLOAD_FOLDER):
     os.remove(UPLOAD_FOLDER)
-
-# Create uploads folder safely
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
@@ -49,6 +45,10 @@ def init_db():
 
 init_db()
 
+# ------------------- HARD-CODED ADMIN CREDENTIALS -------------------
+ADMIN_USERNAME = "admin"
+ADMIN_PASSWORD = "12345"  # Change this to your preferred password
+
 # ------------------- CLIENT PAGE -------------------
 @app.route("/")
 def index():
@@ -58,7 +58,6 @@ def index():
 @app.route("/submit", methods=["POST"])
 def submit_form():
     try:
-        # Text inputs
         cert_type = request.form.get("cert_type")
         name = request.form.get("name")
         mobile = request.form.get("mobile")
@@ -69,13 +68,11 @@ def submit_form():
         district = request.form.get("district")
         state = request.form.get("state")
 
-        # Files
         aadhar = request.files.get("aadhaar")
         father_aadhar = request.files.get("father_aadhaar")
         applicant_photo = request.files.get("photo")
         ror = request.files.get("ror")  # Optional
 
-        # Save files
         def save_file(file):
             if file and file.filename != "":
                 filename = file.filename
@@ -89,7 +86,6 @@ def submit_form():
         photo_file = save_file(applicant_photo)
         ror_file = save_file(ror)
 
-        # Insert into DB
         conn = sqlite3.connect(DB_PATH)
         cur = conn.cursor()
         cur.execute("""
@@ -113,16 +109,41 @@ def submit_form():
 def thanks():
     return render_template("thanks.html")
 
-# ------------------- ADMIN PAGE -------------------
+# ------------------- ADMIN LOGIN PAGE -------------------
+@app.route("/admin-login", methods=["GET", "POST"])
+def admin_login():
+    if request.method == "POST":
+        username = request.form.get("username")
+        password = request.form.get("password")
+
+        if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
+            session["admin_logged_in"] = True
+            return redirect(url_for("admin_dashboard"))
+        else:
+            flash("Invalid username or password!")
+            return redirect(url_for("admin_login"))
+
+    return render_template("admin_login.html")
+
+# ------------------- ADMIN DASHBOARD (PROTECTED) -------------------
 @app.route("/admin")
-def admin():
+def admin_dashboard():
+    if not session.get("admin_logged_in"):
+        return redirect(url_for("admin_login"))
+
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cur = conn.cursor()
-    cur.execute("SELECT * FROM applications ORDER BY id DESC")  # fetch all applications
+    cur.execute("SELECT * FROM applications ORDER BY id DESC")
     applications = cur.fetchall()
     conn.close()
     return render_template("admin.html", applications=applications)
+
+# ------------------- LOGOUT -------------------
+@app.route("/admin-logout")
+def admin_logout():
+    session.pop("admin_logged_in", None)
+    return redirect(url_for("index"))
 
 # ------------------- UPDATE STATUS -------------------
 @app.route("/update_status", methods=["POST"])
