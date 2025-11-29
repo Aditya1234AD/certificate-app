@@ -1,26 +1,22 @@
-from flask import Flask, render_template, request, redirect, send_from_directory, flash
+from flask import Flask, render_template, request, redirect, send_from_directory
 import sqlite3
 import os
 
 app = Flask(__name__)
-app.secret_key = "supersecretkey"  # Needed for flash messages
 
 # ---------------------------------------------------
 # SAFE DIRECTORIES
 # ---------------------------------------------------
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
-
-# If 'uploads' exists but is not a directory, remove it
-if os.path.exists(UPLOAD_FOLDER) and not os.path.isdir(UPLOAD_FOLDER):
-    os.remove(UPLOAD_FOLDER)
-
-# Now safely create the uploads directory
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), "uploads")
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_DIR = os.path.join(BASE_DIR, "data")
-os.makedirs(DB_DIR, exist_ok=True)
+if not os.path.exists(DB_DIR):
+    os.makedirs(DB_DIR)
+
 DB_PATH = os.path.join(DB_DIR, "applications.db")
 
 # ---------------------------------------------------
@@ -29,6 +25,7 @@ DB_PATH = os.path.join(DB_DIR, "applications.db")
 def init_db():
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
+    # Create table if not exists
     c.execute("""
         CREATE TABLE IF NOT EXISTS applications (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -45,9 +42,14 @@ def init_db():
             ror_file TEXT,
             father_aadhar_file TEXT,
             applicant_photo TEXT,
-            status TEXT
+            status TEXT DEFAULT 'Pending'
         )
     """)
+    # Ensure status column exists for older DBs
+    c.execute("PRAGMA table_info(applications)")
+    columns = [col[1] for col in c.fetchall()]
+    if "status" not in columns:
+        c.execute("ALTER TABLE applications ADD COLUMN status TEXT DEFAULT 'Pending'")
     conn.commit()
     conn.close()
 
@@ -84,22 +86,20 @@ def submit_form():
         ror = request.files.get("ror")  # Optional
 
         # Save files safely
-        aadhar_filename = os.path.join(app.config["UPLOAD_FOLDER"], aadhar.filename)
-        aadhar.save(aadhar_filename)
+        def save_file(file):
+            if file and file.filename != "":
+                filename = file.filename
+                file_path = os.path.join(UPLOAD_FOLDER, filename)
+                file.save(file_path)
+                return filename
+            return None
 
-        father_filename = os.path.join(app.config["UPLOAD_FOLDER"], father_aadhar.filename)
-        father_aadhar.save(father_filename)
+        aadhar_filename = save_file(aadhar)
+        father_filename = save_file(father_aadhar)
+        photo_filename = save_file(applicant_photo)
+        ror_filename = save_file(ror)
 
-        photo_filename = os.path.join(app.config["UPLOAD_FOLDER"], applicant_photo.filename)
-        applicant_photo.save(photo_filename)
-
-        if ror and ror.filename != "":
-            ror_filename = os.path.join(app.config["UPLOAD_FOLDER"], ror.filename)
-            ror.save(ror_filename)
-        else:
-            ror_filename = None
-
-        # Insert into database
+        # Insert into DB
         conn = sqlite3.connect(DB_PATH)
         c = conn.cursor()
         c.execute("""
@@ -108,21 +108,13 @@ def submit_form():
              aadhar_file, ror_file, father_aadhar_file, applicant_photo, status)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (cert_type, name, mobile, village, post, gp, pin, district, state,
-              os.path.basename(aadhar_filename),
-              os.path.basename(ror_filename) if ror_filename else None,
-              os.path.basename(father_filename),
-              os.path.basename(photo_filename),
-              'Pending'))
+              aadhar_filename, ror_filename, father_filename, photo_filename, 'Pending'))
         conn.commit()
         conn.close()
-
-        flash("Application submitted successfully!", "success")
         return redirect("/thanks")
-
     except Exception as e:
-        print("Error during form submission:", e)
-        flash("Error submitting application. Please try again.", "danger")
-        return redirect("/")
+        print("Error submitting application:", e)
+        return f"Error submitting application: {e}"
 
 # ---------------------------------------------------
 # THANK YOU PAGE
@@ -145,28 +137,25 @@ def admin_page():
         return render_template("admin.html", applications=data)
     except Exception as e:
         print("Error loading admin page:", e)
-        return "Error loading admin page. Check server logs."
+        return f"Error loading admin page: {e}"
 
 # ---------------------------------------------------
-# ADMIN — STATUS UPDATE
+# UPDATE STATUS FROM ADMIN
 # ---------------------------------------------------
-@app.route('/update_status', methods=['POST'])
+@app.route("/update_status", methods=["POST"])
 def update_status():
-    app_id = request.form.get('id')
-    new_status = request.form.get('status')
-
     try:
+        app_id = request.form.get("id")
+        new_status = request.form.get("status")
         conn = sqlite3.connect(DB_PATH)
         c = conn.cursor()
         c.execute("UPDATE applications SET status=? WHERE id=?", (new_status, app_id))
         conn.commit()
         conn.close()
-        flash("Status updated successfully!", "success")
+        return redirect("/admin")
     except Exception as e:
         print("Error updating status:", e)
-        flash("Failed to update status.", "danger")
-
-    return redirect('/admin')
+        return f"Error updating status: {e}"
 
 # ---------------------------------------------------
 # CLIENT — STATUS PAGE
@@ -180,26 +169,28 @@ def status_page():
 # ---------------------------------------------------
 @app.route("/check_status", methods=["POST"])
 def check_status():
-    mobile = request.form.get("mobile")
-
-    conn = sqlite3.connect(DB_PATH)
-    c = conn.cursor()
-    c.execute("SELECT name, cert_type, status FROM applications WHERE mobile=?", (mobile,))
-    result = c.fetchall()
-    conn.close()
-
-    return render_template("status.html", result=result, mobile=mobile)
+    try:
+        mobile = request.form.get("mobile")
+        conn = sqlite3.connect(DB_PATH)
+        c = conn.cursor()
+        c.execute("SELECT cert_type, status FROM applications WHERE mobile=?", (mobile,))
+        result = c.fetchall()
+        conn.close()
+        return render_template("status.html", result=result, mobile=mobile)
+    except Exception as e:
+        print("Error checking status:", e)
+        return f"Error checking status: {e}"
 
 # ---------------------------------------------------
 # SERVE UPLOADED FILES
 # ---------------------------------------------------
 @app.route("/uploads/<path:filename>")
 def uploaded_file(filename):
-    return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
+    return send_from_directory(UPLOAD_FOLDER, filename)
 
 # ---------------------------------------------------
-# RUN SERVER
+# RUN APP
 # ---------------------------------------------------
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=port, debug=True)
