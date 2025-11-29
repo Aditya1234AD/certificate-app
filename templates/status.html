@@ -40,28 +40,22 @@
 
         /* 🌈 RAINBOW CONTAINER */
         .rainbow-container {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 10px;
+            margin-top: 20px !important;
+            padding: 15px !important;
+            border-radius: 10px !important;
 
             background: linear-gradient(45deg,
                 red, orange, yellow, green, cyan, blue, violet
-            );
-            background-size: 600% 600%;
-            animation: rainbowMove 5s ease infinite;
+            ) !important;
 
-            color: white;
-            font-size: 18px;
+            background-size: 600% 600% !important;
+            animation: rainbowMove 5s ease infinite !important;
 
-            opacity: 0;
-            transform: translateY(20px);
-            transition: all 0.6s ease-out;
-        }
+            color: white !important;
+            font-size: 18px !important;
 
-        /* Show when content exists */
-        .rainbow-container.show {
-            opacity: 1;
-            transform: translateY(0);
+            opacity: 1 !important;
+            transform: translateY(0) !important;
         }
 
         @keyframes rainbowMove {
@@ -82,28 +76,22 @@
         <button type="submit">Check Status</button>
     </form>
 
-    <!-- 🌈 Rainbow Box Wrapper -->
+    <!-- 🌈 Rainbow Container -->
     <div id="rainbowBox" class="rainbow-container">
+
         {% if status %}
             <p><b>Your application status:</b> {{ status }}</p>
+
+        {% elif message %}
+            <p>{{ message }}</p>
+
+        {% else %}
+            <!-- Dummy text to make sure background shows -->
+            <p style="opacity:0;">.</p>
         {% endif %}
 
-        {% if message %}
-            <p>{{ message }}</p>
-        {% endif %}
     </div>
 </div>
-
-
-<script>
-    // Enable animation ONLY if status/message exists
-    window.onload = function() {
-        let box = document.getElementById("rainbowBox");
-        if (box.innerText.trim().length > 0) {
-            box.classList.add("show");
-        }
-    }
-</script>
 
 </body>
 </html>
