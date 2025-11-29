@@ -150,18 +150,17 @@ def admin_page():
 # ---------------------------------------------------
 @app.route("/update_status", methods=["POST"])
 def update_status():
-    try:
-        app_id = request.form.get("id")
-        new_status = request.form.get("status")
-        conn = sqlite3.connect(DB_PATH)
-        c = conn.cursor()
-        c.execute("UPDATE applications SET status=? WHERE id=?", (new_status, app_id))
-        conn.commit()
-        conn.close()
-        return redirect("/admin")
-    except Exception as e:
-        print("Error updating status:", e)
-        return f"Error updating status: {e}"
+    app_id = request.form["id"]
+    status = request.form["status"]
+
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("UPDATE applications SET status=? WHERE id=?", (status, app_id))
+    conn.commit()
+    conn.close()
+
+    flash("Status updated successfully!")
+    return redirect("/admin")
 
 # ---------------------------------------------------
 # CLIENT — STATUS PAGE
