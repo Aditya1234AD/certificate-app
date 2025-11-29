@@ -10,15 +10,7 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 20px;
-            background: linear-gradient(135deg, #dfe9f3, #ffffff, #c9d6ff);
-            background-size: 300% 300%;
-            animation: gradientBG 12s ease infinite;
-        }
-
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+            background: #000000;   /* 🔥 Black background */
         }
 
         .container {
@@ -32,25 +24,27 @@
             padding: 20px;
             border-radius: 14px;
             margin-bottom: 25px;
-            box-shadow: 0px 0px 12px rgba(0,0,0,0.15);
+            box-shadow: 0px 0px 12px rgba(255,255,255,0.2); /* White shadow for black bg */
         }
 
         h2, h3 {
             text-align: center;
             margin-bottom: 15px;
+            color: white; /* White title text looks better on black */
         }
 
         label {
             font-weight: bold;
             display: block;
             margin-top: 12px;
+            color: white;  /* White labels for black background */
         }
 
         input[type="text"], input[type="file"], select {
             width: 100%;
             padding: 10px;
             margin-top: 6px;
-            border: 1px solid #bbb;
+            border: 1px solid #444;
             border-radius: 6px;
             background: #fff;
         }
@@ -69,6 +63,10 @@
 
         button:hover {
             background: #3867d6;
+        }
+
+        a {
+            color: #74b9ff; /* Light blue link on black bg */
         }
     </style>
 </head>
@@ -138,14 +136,11 @@
             </div>
 
             <button type="submit">Submit Application</button>
+
             <div style="text-align:center; margin-top: 20px;">
-    <a href="/status" 
-       style="font-size: 18px; 
-              color: #0a3d62; 
-              font-weight: bold; 
-              text-decoration: none;">
-        Check Application Status
-    </a>
+                <a href="/status" style="font-size: 18px; font-weight: bold; text-decoration: none;">
+                    Check Application Status
+                </a>
             </div>
 
         </form>
