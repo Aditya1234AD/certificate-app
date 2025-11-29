@@ -102,12 +102,12 @@ def submit_form():
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute("""
-        INSERT INTO applications 
-        (cert_type, name, village, post, gp, pin, district, state,
-         aadhar_file, ror_file, father_aadhar_file, applicant_photo)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (cert_type, name, village, post, gp, pin, district, state,
-          aadhar_filename, ror_filename, father_filename, photo_filename))
+    INSERT INTO applications 
+    (cert_type, name, mobile, village, post, gp, pin, district, state,
+     aadhar_file, ror_file, father_aadhar_file, applicant_photo)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+""", (cert_type, name, mobile, village, post, gp, pin, district, state,
+      aadhar_filename, ror_filename, father_filename, photo_filename))
     conn.commit()
     conn.close()
 
