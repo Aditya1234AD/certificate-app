@@ -1,51 +1,63 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
     <title>Check Application Status</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(120deg, #a8edea, #fed6e3);
-            padding: 40px;
+            font-family: Arial;
+            background: #eef2f3;
+            padding: 20px;
         }
+
         .box {
-            width: 420px;
+            width: 350px;
             margin: auto;
             background: white;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 0 10px #00000020;
-        }
-        .status {
-            font-size: 20px;
-            padding: 10px;
-            margin-top: 20px;
+            padding: 20px;
             border-radius: 10px;
-            background: #f0f0f0;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
             text-align: center;
+        }
+
+        input {
+            width: 90%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border: 1px solid #aaa;
+        }
+
+        button {
+            padding: 12px;
+            width: 100%;
+            background: #007bff;
+            border: none;
+            color: white;
+            font-size: 16px;
+            border-radius: 6px;
         }
     </style>
 </head>
 <body>
 
 <div class="box">
-    <h2>Check Your Application Status</h2>
+    <h2>Check Application Status</h2>
 
     <form action="/check_status" method="POST">
-        <label>Enter Your Mobile Number:</label><br>
-        <input type="text" name="mobile" required
-               style="width:100%; padding:10px; margin:10px 0;font-size:16px;">
-        <button type="submit"
-                style="padding:10px 20px; font-size:18px; cursor:pointer;">
-            Check Status
-        </button>
+        <input type="text" name="mobile" placeholder="Enter your mobile number" required>
+        <button type="submit">Check Status</button>
     </form>
 
     {% if status %}
-        <div class="status">
-            <strong>Status: </strong> {{ status }}
-        </div>
+        <p style="margin-top:20px; font-size:18px;">
+            <b>Your application status:</b> {{ status }}
+        </p>
+    {% endif %}
+
+    {% if message %}
+        <p style="margin-top:20px; font-size:18px; color: grey;">
+            {{ message }}
+        </p>
     {% endif %}
 </div>
 
