@@ -9,61 +9,67 @@
         body {
             font-family: Arial, sans-serif;
             margin: 0;
-            padding: 20px;
-            background: #000000;   /* Black page background */
-            color: black !important; /* Default text black */
+            padding: 15px;
+            background: #000000;
+            color: black !important;
         }
 
-        /* Main container with white background */
+        /* Main responsive container */
         .container {
-            max-width: 650px;
+            max-width: 750px;
+            width: 100%;
             margin: auto;
-            background: #ffffff; /* White container */
+            background: #ffffff;
             padding: 20px;
             border-radius: 14px;
             box-shadow: 0px 0px 12px rgba(0,0,0,0.2);
         }
 
+        /* Boxes */
         .box {
             background: #ffffffcc;
             backdrop-filter: blur(5px);
-            padding: 20px;
+            padding: 18px;
             border-radius: 14px;
-            margin-bottom: 25px;
+            margin-bottom: 22px;
             box-shadow: 0px 0px 12px rgba(255,255,255,0.2);
-            color: black !important; /* Text inside boxes black */
         }
 
-        /* MAIN HEADING (Blue) */
+        /* Main title */
         h2 {
             text-align: center;
             margin-bottom: 15px;
-            color: #4b7bec !important;  /* Blue */
+            color: #4b7bec !important;
+            font-size: 26px;
         }
 
-        /* "Select Certificate Type" in Green */
         .cert-heading {
             text-align: center;
             margin-bottom: 15px;
-            color: #27ae60 !important;  /* Green */
+            color: #27ae60 !important;
             font-weight: bold;
+            font-size: 20px;
         }
 
-        /* Other subtitles black */
         h3 {
             text-align: center;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
             color: black !important;
+            font-size: 20px;
         }
 
         label {
             font-weight: bold;
             display: block;
-            margin-top: 12px;
+            margin-top: 10px;
             color: black !important;
+            font-size: 16px;
         }
 
-        input[type="text"], input[type="file"], select {
+        /* Responsive inputs */
+        input[type="text"], 
+        input[type="file"], 
+        select {
             width: 100%;
             padding: 10px;
             margin-top: 6px;
@@ -71,8 +77,10 @@
             border-radius: 6px;
             background: #fff;
             color: black !important;
+            font-size: 16px;
         }
 
+        /* Responsive button */
         button {
             background: #4b7bec;
             color: white;
@@ -80,7 +88,7 @@
             padding: 14px 20px;
             width: 100%;
             margin-top: 10px;
-            font-size: 17px;
+            font-size: 18px;
             border-radius: 8px;
             cursor: pointer;
         }
@@ -96,6 +104,46 @@
             text-align: center;
             margin-top: 20px;
         }
+
+        /* ------------ MOBILE RESPONSIVE STYLING -------------- */
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                padding: 15px;
+            }
+
+            h2 {
+                font-size: 22px;
+            }
+
+            h3, .cert-heading {
+                font-size: 18px;
+            }
+
+            label {
+                font-size: 15px;
+            }
+
+            input[type="text"], 
+            input[type="file"], 
+            select {
+                font-size: 15px;
+                padding: 9px;
+            }
+
+            button {
+                font-size: 17px;
+                padding: 12px;
+            }
+
+            a {
+                font-size: 16px;
+            }
+        }
+
     </style>
 </head>
 <body>
