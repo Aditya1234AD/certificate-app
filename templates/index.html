@@ -8,53 +8,67 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background: #f2f4f7;
             margin: 0;
             padding: 20px;
+            background: linear-gradient(135deg, #dfe9f3, #ffffff, #c9d6ff);
+            background-size: 300% 300%;
+            animation: gradientBG 12s ease infinite;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
         .container {
-            max-width: 600px;
-            background: #fff;
+            max-width: 650px;
             margin: auto;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
         }
 
-        h2 {
+        .box {
+            background: #ffffffcc;
+            backdrop-filter: blur(5px);
+            padding: 20px;
+            border-radius: 14px;
+            margin-bottom: 25px;
+            box-shadow: 0px 0px 12px rgba(0,0,0,0.15);
+        }
+
+        h2, h3 {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         label {
             font-weight: bold;
             display: block;
-            margin-top: 15px;
+            margin-top: 12px;
         }
 
         input[type="text"], input[type="file"], select {
             width: 100%;
             padding: 10px;
             margin-top: 6px;
-            border: 1px solid #ccc;
+            border: 1px solid #bbb;
             border-radius: 6px;
+            background: #fff;
         }
 
         button {
-            background: #007bff;
+            background: #4b7bec;
             color: white;
             border: none;
-            padding: 12px 20px;
+            padding: 14px 20px;
             width: 100%;
-            margin-top: 25px;
-            font-size: 16px;
-            border-radius: 6px;
+            margin-top: 10px;
+            font-size: 17px;
+            border-radius: 8px;
             cursor: pointer;
         }
 
         button:hover {
-            background: #0056b3;
+            background: #3867d6;
         }
     </style>
 </head>
@@ -65,50 +79,63 @@
 
         <form action="/submit" method="POST" enctype="multipart/form-data">
 
-            <!-- Certificate Type -->
-            <label for="cert_type">Select Certificate Type:</label>
-            <select name="cert_type" id="cert_type">
-                <option value="Caste Certificate">Caste Certificate</option>
-                <option value="Income Certificate">Income Certificate</option>
-                <option value="Resident Certificate">Resident Certificate</option>
-            </select>
+            <!-- Certificate Type Box -->
+            <div class="box">
+                <h3>Select Certificate Type</h3>
 
-            <!-- Text Inputs -->
-            <label>Enter Your Name:</label>
-            <input type="text" name="name" required>
+                <label for="cert_type">Certificate Type:</label>
+                <select name="cert_type" id="cert_type">
+                    <option value="Caste Certificate">Caste Certificate</option>
+                    <option value="Income Certificate">Income Certificate</option>
+                    <option value="Resident Certificate">Resident Certificate</option>
+                </select>
+            </div>
 
-            <label>Enter Village Name:</label>
-            <input type="text" name="village" required>
+            <!-- Personal Details Box -->
+            <div class="box">
+                <h3>Applicant Details</h3>
 
-            <label>Enter Post Office:</label>
-            <input type="text" name="post" required>
+                <label>Enter Your Name:</label>
+                <input type="text" name="name" required>
 
-            <label>Enter Gram Panchayat:</label>
-            <input type="text" name="gp" required>
+                <label>Village Name:</label>
+                <input type="text" name="village" required>
 
-            <label>Enter Pin Code:</label>
-            <input type="text" name="pin" required>
+                <label>Post Office:</label>
+                <input type="text" name="post" required>
 
-            <label>Enter District:</label>
-            <input type="text" name="district" required>
+                <label>Gram Panchayat:</label>
+                <input type="text" name="gp" required>
 
-            <label>Enter State:</label>
-            <input type="text" name="state" required>
+                <label>Pin Code:</label>
+                <input type="text" name="pin" required>
 
-            <!-- Upload Files -->
-            <label>Upload Applicant Photo:</label>
-            <input type="file" name="photo" accept="image/*" required>
+                <label>District:</label>
+                <input type="text" name="district" required>
 
-            <label>Upload Applicant Aadhaar Card:</label>
-            <input type="file" name="aadhaar" accept="image/*,application/pdf" required>
+                <label>State:</label>
+                <input type="text" name="state" required>
+            </div>
 
-            <label>Upload Father's Aadhaar Card:</label>
-            <input type="file" name="father_aadhaar" accept="image/*,application/pdf" required>
+            <!-- Uploads Box -->
+            <div class="box">
+                <h3>Upload Required Documents</h3>
 
-            <label>Upload ROR (if required):</label>
-            <input type="file" name="ror" accept="image/*,application/pdf">
+                <label>Applicant Photo:</label>
+                <input type="file" name="photo" accept="image/*" required>
+
+                <label>Applicant Aadhaar Card:</label>
+                <input type="file" name="aadhaar" accept="image/*,application/pdf" required>
+
+                <label>Father's Aadhaar Card:</label>
+                <input type="file" name="father_aadhaar" accept="image/*,application/pdf" required>
+
+                <label>ROR Document (optional):</label>
+                <input type="file" name="ror" accept="image/*,application/pdf">
+            </div>
 
             <button type="submit">Submit Application</button>
+
         </form>
     </div>
 
