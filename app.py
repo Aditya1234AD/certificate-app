@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect
 import sqlite3
 import os
+from flask import send_from_directory
 
 app = Flask(__name__)
 
@@ -119,6 +120,10 @@ def admin_page():
     return render_template("admin.html", applications=data, upload_path=UPLOAD_FOLDER)
 
 
+# Serve uploaded files (images, PDFs, etc.)
+@app.route("/uploads/<filename>")
+def uploaded_file(filename):
+    return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
 # ---------------------------------------------------
 # Run the app
 # ---------------------------------------------------
