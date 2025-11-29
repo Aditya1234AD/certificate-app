@@ -73,7 +73,7 @@
 </head>
 <body>
 
-    <h1>Admin Dashboard — Received Certificate Application</h1>
+    <h1>Admin Dashboard — Received Certificate Applications</h1>
 
     {% with messages = get_flashed_messages() %}
       {% if messages %}
@@ -86,6 +86,7 @@
     <table>
         <thead>
             <tr>
+                <th>ID</th>
                 <th>Certificate Type</th>
                 <th>Name</th>
                 <th>Mobile</th>
@@ -105,56 +106,60 @@
         </thead>
 
         <tbody>
+            {% for app in applications %}
             <tr>
-                <td>{{ data.cert_type }}</td>
-                <td>{{ data.name }}</td>
-                <td>{{ data.mobile }}</td>
-                <td>{{ data.village }}</td>
-                <td>{{ data.post }}</td>
-                <td>{{ data.gp }}</td>
-                <td>{{ data.pin }}</td>
-                <td>{{ data.district }}</td>
-                <td>{{ data.state }}</td>
+                <td>{{ app[0] }}</td>
+                <td>{{ app[1] }}</td>
+                <td>{{ app[2] }}</td>
+                <td>{{ app[3] }}</td>
+                <td>{{ app[4] }}</td>
+                <td>{{ app[5] }}</td>
+                <td>{{ app[6] }}</td>
+                <td>{{ app[7] }}</td>
+                <td>{{ app[8] }}</td>
+                <td>{{ app[9] }}</td>
 
                 <td>
-                    {% if data.aadhaar %}
-                        <a href="/uploads/{{ data.aadhaar }}" target="_blank">View</a>
+                    {% if app[10] %}
+                        <a href="/uploads/{{ app[10] }}" target="_blank">View</a>
                     {% else %}
-                        <span style="color: #999;">Not Uploaded</span>
+                        Not Uploaded
                     {% endif %}
                 </td>
 
                 <td>
-                    {% if data.ror %}
-                        <a href="/uploads/{{ data.ror }}" target="_blank">View</a>
+                    {% if app[11] %}
+                        <a href="/uploads/{{ app[11] }}" target="_blank">View</a>
                     {% else %}
-                        <span style="color: #999;">Not Uploaded</span>
+                        Not Uploaded
                     {% endif %}
                 </td>
 
                 <td>
-                    {% if data.father_aadhaar %}
-                        <a href="/uploads/{{ data.father_aadhaar }}" target="_blank">View</a>
+                    {% if app[12] %}
+                        <a href="/uploads/{{ app[12] }}" target="_blank">View</a>
                     {% else %}
-                        <span style="color: #999;">Not Uploaded</span>
+                        Not Uploaded
                     {% endif %}
                 </td>
 
                 <td>
-                    {% if data.photo %}
-                        <img src="/uploads/{{ data.photo }}">
+                    {% if app[13] %}
+                        <img src="/uploads/{{ app[13] }}">
                     {% else %}
-                        <span style="color: #999;">Not Uploaded</span>
+                        No Photo
                     {% endif %}
                 </td>
 
                 <td>
                     <form action="/update_status" method="POST">
+                        <input type="hidden" name="id" value="{{ app[0] }}">
+
                         <select name="status">
-                            <option value="Pending" {% if data.status=='Pending' %}selected{% endif %}>Pending</option>
-                            <option value="Processing" {% if data.status=='Processing' %}selected{% endif %}>Processing</option>
-                            <option value="Approved" {% if data.status=='Approved' %}selected{% endif %}>Approved</option>
-                            <option value="Rejected" {% if data.status=='Rejected' %}selected{% endif %}>Rejected</option>
+                            <option value="Pending" {% if app[14]=='Pending' %}selected{% endif %}>Pending</option>
+                            <option value="Processing" {% if app[14]=='Processing' %}selected{% endif %}>Processing</option>
+                            <option value="Approved" {% if app[14]=='Approved' %}selected{% endif %}>Approved</option>
+                            <option value="Rejected" {% if app[14]=='Rejected' %}selected{% endif %}>Rejected</option>
                         </select>
                 </td>
 
@@ -164,8 +169,9 @@
                 </td>
 
             </tr>
+            {% endfor %}
         </tbody>
     </table>
 
 </body>
- </html>
+</html>
