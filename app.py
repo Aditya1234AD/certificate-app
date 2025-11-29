@@ -133,6 +133,44 @@ def admin_page():
     data = c.fetchall()
     conn.close()
     return render_template("admin.html", applications=data)
+# STATUS UPDATE FROM ADMIN
+# ---------------------------------------------------
+@app.route("/update_status", methods=["POST"])
+def update_status():
+    app_id = request.form.get("id")
+    new_status = request.form.get("status")
+
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("UPDATE applications SET status=? WHERE id=?", (new_status, app_id))
+    conn.commit()
+    conn.close()
+
+    return redirect("/admin")
+
+
+# ---------------------------------------------------
+# CLIENT — STATUS PAGE
+# ---------------------------------------------------
+@app.route("/status")
+def status_page():
+    return render_template("status.html")
+
+
+# ---------------------------------------------------
+# CLIENT — CHECK STATUS BY MOBILE
+# ---------------------------------------------------
+@app.route("/check_status", methods=["POST"])
+def check_status():
+    mobile = request.form.get("mobile")
+
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("SELECT name, cert_type, status FROM applications WHERE mobile=?", (mobile,))
+    result = c.fetchall()
+    conn.close()
+
+    return render_template("status.html", result=result, mobile=mobile)
 
 
 # ---------------------------------------------------
