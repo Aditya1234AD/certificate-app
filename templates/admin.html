@@ -124,11 +124,29 @@
                 <td>
                     <img src="/uploads/{{ app[12] }}">
                 </td>
+                
+                <td>
+                     <form action="/update_status" method="POST">
+                    <input type="hidden" name="id" value="{{ app[0] }}">
 
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+                    <select name="status">
+                        <option value="Pending" {% if app[13]=='Pending' %}selected{% endif %}>Pending</option>
+                        <option value="Processing" {% if app[13]=='Processing' %}selected{% endif %}>Processing</option>
+                        <option value="Approved" {% if app[13]=='Approved' %}selected{% endif %}>Approved</option>
+                        <option value="Rejected" {% if app[13]=='Rejected' %}selected{% endif %}>Rejected</option>
+                    </select>
+            </td>
+
+            <!-- Update button -->
+            <td>
+                    <button type="submit">Update</button>
+                </form>
+            </td>
+
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 
 </body>
 </html>
