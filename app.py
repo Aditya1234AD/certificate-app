@@ -121,7 +121,8 @@ def admin_page():
 
 
 # Serve uploaded files (images, PDFs, etc.)
-@app.route("/uploads/<filename>")
+
+@app.route("/uploads/<path:filename>")
 def uploaded_file(filename):
     return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
 # ---------------------------------------------------
