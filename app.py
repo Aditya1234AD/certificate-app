@@ -107,17 +107,19 @@ def submit_form():
         ror_filename = save_file(ror)
 
         # Insert into DB
-        conn = sqlite3.connect(DB_PATH)
-        c = conn.cursor()
-        c.execute("""
-            INSERT INTO applications 
-            (cert_type, name, mobile, village, post, gp, pin, district, state,
-             aadhar_file, ror_file, father_aadhar_file, applicant_photo, status)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (cert_type, name, mobile, village, post, gp, pin, district, state,
-              aadhar_filename, ror_filename, father_filename, photo_filename, 'Pending'))
-        conn.commit()
-        conn.close()
+        conn = sqlite3.connect("database.db")
+cur = conn.cursor()
+
+cur.execute("""
+INSERT INTO applications 
+(cert_type, name, mobile, village, post, gp, pin, district, state,
+aadhaar, ror, father_aadhaar, photo)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+""", (cert_type, name, mobile, village, post, gp, pin, district, state,
+      aadhaar_filename, ror_filename, father_aadhaar_filename, photo_filename))
+
+conn.commit()
+conn.close()
         return redirect("/thanks")
     except Exception as e:
         print("Error submitting application:", e)
@@ -134,17 +136,16 @@ def thanks():
 # ADMIN PAGE
 # ---------------------------------------------------
 @app.route("/admin")
-def admin_page():
-    try:
-        conn = sqlite3.connect(DB_PATH)
-        c = conn.cursor()
-        c.execute("SELECT * FROM applications")
-        data = c.fetchall()
-        conn.close()
-        return render_template("admin.html", applications=data)
-    except Exception as e:
-        print("Error loading admin page:", e)
-        return f"Error loading admin page: {e}"
+def admin():
+    conn = sqlite3.connect("database.db")
+    conn.row_factory = sqlite3.Row
+    cur = conn.cursor()
+
+    cur.execute("SELECT * FROM applications ORDER BY id DESC LIMIT 1")
+    data = cur.fetchone()
+    conn.close()
+
+    return render_template("admin.html", data=data)
 
 # ---------------------------------------------------
 # UPDATE STATUS FROM ADMIN
