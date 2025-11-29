@@ -168,25 +168,32 @@ def update_status():
 # ---------------------------------------------------
 @app.route("/status")
 def status_page():
-    return render_template("status.html")
+    return render_template("status.html")  # loads empty form
 
-# ---------------------------------------------------
-# CLIENT — CHECK STATUS BY MOBILE
-# ---------------------------------------------------
+
 @app.route("/check_status", methods=["POST"])
 def check_status():
-    try:
-        mobile = request.form.get("mobile")
-        conn = sqlite3.connect(DB_PATH)
-        c = conn.cursor()
-        c.execute("SELECT cert_type, status FROM applications WHERE mobile=?", (mobile,))
-        result = c.fetchall()
-        conn.close()
-        return render_template("status.html", result=result, mobile=mobile)
-    except Exception as e:
-        print("Error checking status:", e)
-        return f"Error checking status: {e}"
+    mobile = request.form["mobile"]
 
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("SELECT status FROM applications WHERE mobile=?", (mobile,))
+    result = c.fetchone()
+    conn.close()
+
+    if result:
+        status = result[0]
+
+        # if admin has not updated status yet
+        if status is None or status == "":
+            return render_template("status.html",
+                                   message="Application status will be available here.")
+
+        return render_template("status.html", status=status)
+
+    else:
+        return render_template("status.html",
+                               message="No application found for this mobile number.")
 # ---------------------------------------------------
 # SERVE UPLOADED FILES
 # ---------------------------------------------------
