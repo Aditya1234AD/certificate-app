@@ -8,8 +8,14 @@ app = Flask(__name__)
 # SAFE DIRECTORIES
 # ---------------------------------------------------
 UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), "uploads")
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
+
+# FIX: if "uploads" exists as a file, delete it
+if os.path.exists(UPLOAD_FOLDER) and not os.path.isdir(UPLOAD_FOLDER):
+    os.remove(UPLOAD_FOLDER)
+
+# Now safely create the directory
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
