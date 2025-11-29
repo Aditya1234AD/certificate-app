@@ -104,10 +104,10 @@ def submit_form():
     c.execute("""
     INSERT INTO applications 
     (cert_type, name, mobile, village, post, gp, pin, district, state,
-     aadhar_file, ror_file, father_aadhar_file, applicant_photo)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+     aadhar_file, ror_file, father_aadhar_file, applicant_photo, status)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 """, (cert_type, name, mobile, village, post, gp, pin, district, state,
-      aadhar_filename, ror_filename, father_filename, photo_filename))
+      aadhar_filename, ror_filename, father_filename, photo_filename, 'Pending'))
     conn.commit()
     conn.close()
 
@@ -135,18 +135,23 @@ def admin_page():
     return render_template("admin.html", applications=data)
 # STATUS UPDATE FROM ADMIN
 # ---------------------------------------------------
-@app.route("/update_status", methods=["POST"])
+@app.route('/update_status', methods=['POST'])
 def update_status():
-    app_id = request.form.get("id")
-    new_status = request.form.get("status")
+    app_id = request.form.get('id')
+    new_status = request.form.get('status')
 
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
-    c.execute("UPDATE applications SET status=? WHERE id=?", (new_status, app_id))
-    conn.commit()
-    conn.close()
+    try:
+        c.execute("UPDATE applications SET status=? WHERE id=?", (new_status, app_id))
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        print("Error updating status:", e)  # Will show the exact error in console
+    finally:
+        conn.close()
 
-    return redirect("/admin")
+    return redirect('/admin')
 
 
 # ---------------------------------------------------
