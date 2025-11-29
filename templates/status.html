@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Check Application Status</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(120deg, #a8edea, #fed6e3);
+            padding: 40px;
+        }
+        .box {
+            width: 420px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 0 10px #00000020;
+        }
+        .status {
+            font-size: 20px;
+            padding: 10px;
+            margin-top: 20px;
+            border-radius: 10px;
+            background: #f0f0f0;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="box">
+    <h2>Check Your Application Status</h2>
+
+    <form action="/check_status" method="POST">
+        <label>Enter Your Mobile Number:</label><br>
+        <input type="text" name="mobile" required
+               style="width:100%; padding:10px; margin:10px 0;font-size:16px;">
+        <button type="submit"
+                style="padding:10px 20px; font-size:18px; cursor:pointer;">
+            Check Status
+        </button>
+    </form>
+
+    {% if status %}
+        <div class="status">
+            <strong>Status: </strong> {{ status }}
+        </div>
+    {% endif %}
+</div>
+
+</body>
+</html>
