@@ -37,17 +37,36 @@
             border-radius: 6px;
         }
 
-        /* Transition container */
-        .transition-box {
-            opacity: 0;
-            transform: translateY(10px);
-            transition: all 0.6s ease;
-        }
+        /* Rainbow Transition Container */
+.transition-box {
+    padding: 15px;
+    border-radius: 10px;
 
-        .transition-box.show {
-            opacity: 1;
-            transform: translateY(0);
-        }
+    /* Rainbow gradient background */
+    background: linear-gradient(45deg,
+        red, orange, yellow, green, cyan, blue, violet
+    );
+
+    background-size: 400% 400%;
+    animation: rainbowMove 6s ease infinite;
+
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.6s ease;
+}
+
+/* When visible */
+.transition-box.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Rainbow animation movement */
+@keyframes rainbowMove {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
     </style>
 </head>
 <body>
