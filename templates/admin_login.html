@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f2f2f2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .login-box {
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            width: 320px;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #4b7bec;
+        }
+
+        label {
+            font-weight: bold;
+            margin-top: 10px;
+            display: block;
+        }
+
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #4b7bec;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background: #3a64c7;
+        }
+
+        .flash-message {
+            color: red;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        a {
+            display: block;
+            text-align: center;
+            margin-top: 12px;
+            color: #0984e3;
+            text-decoration: none;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-box">
+        <h2>Admin Login</h2>
+
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="flash-message">
+              {% for message in messages %}
+                {{ message }}
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        <form method="POST">
+            <label>Username:</label>
+            <input type="text" name="username" placeholder="Enter username" required>
+
+            <label>Password:</label>
+            <input type="password" name="password" placeholder="Enter password" required>
+
+            <button type="submit">Login</button>
+        </form>
+
+        <a href="/">Back to Application Form</a>
+    </div>
+
+</body>
+</html>
