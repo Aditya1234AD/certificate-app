@@ -10,13 +10,18 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 20px;
-            background: #000000;   /* Black background */
+            background: #000000;   /* Black page background */
             color: black !important; /* Default text black */
         }
 
+        /* Main container with white background */
         .container {
             max-width: 650px;
             margin: auto;
+            background: #ffffff; /* White container */
+            padding: 20px;
+            border-radius: 14px;
+            box-shadow: 0px 0px 12px rgba(0,0,0,0.2);
         }
 
         .box {
@@ -26,17 +31,17 @@
             border-radius: 14px;
             margin-bottom: 25px;
             box-shadow: 0px 0px 12px rgba(255,255,255,0.2);
-            color: black !important; /* All text inside box black */
+            color: black !important; /* Text inside boxes black */
         }
 
-        /* MAIN HEADING (Keep Blue) */
+        /* MAIN HEADING (Blue) */
         h2 {
             text-align: center;
             margin-bottom: 15px;
             color: #4b7bec !important;  /* Blue */
         }
 
-        /* "Select Certificate Type" in GREEN */
+        /* "Select Certificate Type" in Green */
         .cert-heading {
             text-align: center;
             margin-bottom: 15px;
@@ -85,6 +90,11 @@
             font-size: 18px;
             font-weight: bold;
             text-decoration: none;
+        }
+
+        .link-container {
+            text-align: center;
+            margin-top: 20px;
         }
     </style>
 </head>
@@ -155,8 +165,10 @@
 
             <button type="submit">Submit Application</button>
 
-            <div style="text-align:center; margin-top: 20px;">
-                <a href="/status">Check Application Status</a>
+            <!-- Links -->
+            <div class="link-container">
+                <a href="/status">Check Application Status</a> | 
+                <a href="/admin-login">Admin Login</a>
             </div>
 
         </form>
