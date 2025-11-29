@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Check Application Status</title>
+
     <style>
         body {
             font-family: Arial;
@@ -37,37 +38,39 @@
             border-radius: 6px;
         }
 
-        /* Rainbow Transition Container */
-.transition-box {
-    padding: 15px;
-    border-radius: 10px;
+        /* 🌈 RAINBOW CONTAINER */
+        .rainbow-container {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
 
-    /* Rainbow gradient background */
-    background: linear-gradient(45deg,
-        red, orange, yellow, green, cyan, blue, violet
-    );
+            background: linear-gradient(45deg,
+                red, orange, yellow, green, cyan, blue, violet
+            );
+            background-size: 600% 600%;
+            animation: rainbowMove 5s ease infinite;
 
-    background-size: 400% 400%;
-    animation: rainbowMove 6s ease infinite;
+            color: white;
+            font-size: 18px;
 
-    opacity: 0;
-    transform: translateY(10px);
-    transition: all 0.6s ease;
-}
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.6s ease-out;
+        }
 
-/* When visible */
-.transition-box.show {
-    opacity: 1;
-    transform: translateY(0);
-}
+        /* Show when content exists */
+        .rainbow-container.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
 
-/* Rainbow animation movement */
-@keyframes rainbowMove {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
+        @keyframes rainbowMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
     </style>
+
 </head>
 <body>
 
@@ -79,25 +82,23 @@
         <button type="submit">Check Status</button>
     </form>
 
-    <div id="resultBox" class="transition-box">
+    <!-- 🌈 Rainbow Box Wrapper -->
+    <div id="rainbowBox" class="rainbow-container">
         {% if status %}
-            <p style="margin-top:20px; font-size:18px;">
-                <b>Your application status:</b> {{ status }}
-            </p>
+            <p><b>Your application status:</b> {{ status }}</p>
         {% endif %}
 
         {% if message %}
-            <p style="margin-top:20px; font-size:18px; color: grey;">
-                {{ message }}
-            </p>
+            <p>{{ message }}</p>
         {% endif %}
     </div>
 </div>
 
+
 <script>
-    // Show animation after content loads
+    // Enable animation ONLY if status/message exists
     window.onload = function() {
-        const box = document.getElementById("resultBox");
+        let box = document.getElementById("rainbowBox");
         if (box.innerText.trim().length > 0) {
             box.classList.add("show");
         }
