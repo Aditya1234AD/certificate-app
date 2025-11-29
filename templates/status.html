@@ -36,6 +36,18 @@
             font-size: 16px;
             border-radius: 6px;
         }
+
+        /* Transition container */
+        .transition-box {
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.6s ease;
+        }
+
+        .transition-box.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
     </style>
 </head>
 <body>
@@ -48,18 +60,30 @@
         <button type="submit">Check Status</button>
     </form>
 
-    {% if status %}
-        <p style="margin-top:20px; font-size:18px;">
-            <b>Your application status:</b> {{ status }}
-        </p>
-    {% endif %}
+    <div id="resultBox" class="transition-box">
+        {% if status %}
+            <p style="margin-top:20px; font-size:18px;">
+                <b>Your application status:</b> {{ status }}
+            </p>
+        {% endif %}
 
-    {% if message %}
-        <p style="margin-top:20px; font-size:18px; color: grey;">
-            {{ message }}
-        </p>
-    {% endif %}
+        {% if message %}
+            <p style="margin-top:20px; font-size:18px; color: grey;">
+                {{ message }}
+            </p>
+        {% endif %}
+    </div>
 </div>
+
+<script>
+    // Show animation after content loads
+    window.onload = function() {
+        const box = document.getElementById("resultBox");
+        if (box.innerText.trim().length > 0) {
+            box.classList.add("show");
+        }
+    }
+</script>
 
 </body>
 </html>
