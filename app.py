@@ -1,100 +1,151 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, send_from_directory, flash, url_for
 import os
 import json
 
 app = Flask(__name__)
-app.secret_key = "mysecretkey"
+app.secret_key = "supersecretkey"
 
-UPLOAD_FOLDER = "uploads"
-DATA_FILE = "data.json"
+# ---------------------------------------------------
+# DIRECTORIES
+# ---------------------------------------------------
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
 
-# ------------------------ Save Data ------------------------
-def save_data(data):
-    with open(DATA_FILE, "w") as f:
-        json.dump(data, f, indent=4)
+DB_PATH = os.path.join(BASE_DIR, "applications.json")
+if not os.path.exists(DB_PATH):
+    with open(DB_PATH, "w") as f:
+        json.dump([], f)
 
-# ------------------------ Load Data ------------------------
+# ---------------------------------------------------
+# HELPER FUNCTIONS
+# ---------------------------------------------------
 def load_data():
-    if not os.path.exists(DATA_FILE):
-        return {
-            "cert_type": "",
-            "name": "",
-            "mobile": "",
-            "village": "",
-            "post": "",
-            "gp": "",
-            "pin": "",
-            "district": "",
-            "state": "",
-            "photo": "",
-            "aadhaar": "",
-            "father_aadhaar": "",
-            "ror": "",
-            "status": "Not Updated"
-        }
-    with open(DATA_FILE, "r") as f:
+    with open(DB_PATH, "r") as f:
         return json.load(f)
 
-# ------------------------ Index Page ------------------------
+def save_data(data):
+    with open(DB_PATH, "w") as f:
+        json.dump(data, f, indent=4)
+
+# ---------------------------------------------------
+# ROUTES
+# ---------------------------------------------------
+
 @app.route("/")
 def index():
     return render_template("index.html")
 
-# ------------------------ Submit Application ------------------------
 @app.route("/submit", methods=["POST"])
-def submit():
+def submit_form():
+    cert_type = request.form.get("cert_type")
+    name = request.form.get("name")
+    mobile = request.form.get("mobile")
+    village = request.form.get("village")
+    post = request.form.get("post")
+    gp = request.form.get("gp")
+    pin = request.form.get("pin")
+    district = request.form.get("district")
+    state = request.form.get("state")
+
+    # Files
+    aadhar = request.files.get("aadhaar")
+    father_aadhar = request.files.get("father_aadhaar")
+    applicant_photo = request.files.get("photo")
+    ror = request.files.get("ror")
+
+    # Save files
+    aadhar_filename = aadhar.filename
+    aadhar.save(os.path.join(UPLOAD_FOLDER, aadhar_filename))
+
+    father_filename = father_aadhar.filename
+    father_aadhar.save(os.path.join(UPLOAD_FOLDER, father_filename))
+
+    photo_filename = applicant_photo.filename
+    applicant_photo.save(os.path.join(UPLOAD_FOLDER, photo_filename))
+
+    ror_filename = None
+    if ror and ror.filename != "":
+        ror_filename = ror.filename
+        ror.save(os.path.join(UPLOAD_FOLDER, ror_filename))
+
+    # Load previous data
     data = load_data()
+    new_id = len(data) + 1
 
-    # Get text fields
-    data["cert_type"] = request.form.get("cert_type")
-    data["name"] = request.form.get("name")
-    data["mobile"] = request.form.get("mobile")
-    data["village"] = request.form.get("village")
-    data["post"] = request.form.get("post")
-    data["gp"] = request.form.get("gp")
-    data["pin"] = request.form.get("pin")
-    data["district"] = request.form.get("district")
-    data["state"] = request.form.get("state")
-
-    # List of file fields
-    file_fields = ["photo", "aadhaar", "father_aadhaar", "ror"]
-
-    for field in file_fields:
-        file = request.files.get(field)
-        if file and file.filename != "":
-            filepath = os.path.join(UPLOAD_FOLDER, file.filename)
-            file.save(filepath)
-            data[field] = file.filename
-
+    # Append new application
+    application = {
+        "id": new_id,
+        "cert_type": cert_type,
+        "name": name,
+        "mobile": mobile,
+        "village": village,
+        "post": post,
+        "gp": gp,
+        "pin": pin,
+        "district": district,
+        "state": state,
+        "aadhar_file": aadhar_filename,
+        "ror_file": ror_filename,
+        "father_aadhar_file": father_filename,
+        "applicant_photo": photo_filename,
+        "status": "Pending"
+    }
+    data.append(application)
     save_data(data)
+
+    return redirect("/thanks")
+
+# ---------------------------------------------------
+@app.route("/thanks")
+def thanks():
     return render_template("thanks.html")
 
-# ------------------------ Admin Page ------------------------
+# ---------------------------------------------------
 @app.route("/admin")
-def admin():
+def admin_page():
     data = load_data()
-    return render_template("admin.html", data=data)
+    return render_template("admin.html", applications=data)
 
-# ------------------------ Update Status ------------------------
 @app.route("/update_status", methods=["POST"])
 def update_status():
-    data = load_data()
-    status_text = request.form.get("status")
-    data["status"] = status_text
+    app_id = int(request.form.get("id"))
+    new_status = request.form.get("status")
 
+    data = load_data()
+    for app_data in data:
+        if app_data["id"] == app_id:
+            app_data["status"] = new_status
+            break
     save_data(data)
 
-    flash("Status Updated Successfully!")
-    return redirect(url_for("admin"))
+    flash(f"Application ID {app_id} updated to '{new_status}' successfully!")
+    return redirect("/admin")
 
-# ------------------------ Client Status Page ------------------------
+# ---------------------------------------------------
 @app.route("/status")
-def status():
-    data = load_data()
-    return render_template("status.html", data=data)
+def status_page():
+    return render_template("status.html")
 
-# ------------------------ Render Deployment ------------------------
+@app.route("/check_status", methods=["POST"])
+def check_status():
+    mobile = request.form.get("mobile")
+    data_list = load_data()
+    result = None
+    for app_data in data_list:
+        if app_data["mobile"] == mobile:
+            result = app_data
+            break
+    return render_template("status.html", data=result, mobile=mobile)
+
+# ---------------------------------------------------
+@app.route("/uploads/<path:filename>")
+def uploaded_file(filename):
+    return send_from_directory(UPLOAD_FOLDER, filename)
+
+# ---------------------------------------------------
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
