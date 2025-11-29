@@ -1,197 +1,100 @@
-from flask import Flask, render_template, request, redirect, send_from_directory
-import sqlite3
+from flask import Flask, render_template, request, redirect, url_for, flash
 import os
+import json
 
 app = Flask(__name__)
+app.secret_key = "mysecretkey"
 
-# ---------------------------------------------------
-# SAFE DIRECTORIES FOR RENDER
-# ---------------------------------------------------
-UPLOAD_FOLDER = "/tmp/uploads"
+UPLOAD_FOLDER = "uploads"
+DATA_FILE = "data.json"
+
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_DIR = os.path.join(BASE_DIR, "data")
-os.makedirs(DB_DIR, exist_ok=True)
+# ------------------------ Save Data ------------------------
+def save_data(data):
+    with open(DATA_FILE, "w") as f:
+        json.dump(data, f, indent=4)
 
-DB_PATH = os.path.join(DB_DIR, "applications.db")
+# ------------------------ Load Data ------------------------
+def load_data():
+    if not os.path.exists(DATA_FILE):
+        return {
+            "cert_type": "",
+            "name": "",
+            "mobile": "",
+            "village": "",
+            "post": "",
+            "gp": "",
+            "pin": "",
+            "district": "",
+            "state": "",
+            "photo": "",
+            "aadhaar": "",
+            "father_aadhaar": "",
+            "ror": "",
+            "status": "Not Updated"
+        }
+    with open(DATA_FILE, "r") as f:
+        return json.load(f)
 
-
-# ---------------------------------------------------
-# DATABASE INITIALIZATION
-# ---------------------------------------------------
-def init_db():
-    conn = sqlite3.connect(DB_PATH)
-    c = conn.cursor()
-    
-    # FIXED: status column was missing earlier
-    c.execute("""
-        CREATE TABLE IF NOT EXISTS applications (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            cert_type TEXT,
-            name TEXT,
-            mobile TEXT,
-            village TEXT,
-            post TEXT,
-            gp TEXT,
-            pin TEXT,
-            district TEXT,
-            state TEXT,
-            aadhar_file TEXT,
-            ror_file TEXT,
-            father_aadhar_file TEXT,
-            applicant_photo TEXT,
-            status TEXT DEFAULT 'Pending'
-        )
-    """)
-    
-    conn.commit()
-    conn.close()
-
-init_db()
-
-
-# ---------------------------------------------------
-# CLIENT PAGE
-# ---------------------------------------------------
+# ------------------------ Index Page ------------------------
 @app.route("/")
 def index():
     return render_template("index.html")
 
-
-# ---------------------------------------------------
-# FORM SUBMISSION
-# ---------------------------------------------------
+# ------------------------ Submit Application ------------------------
 @app.route("/submit", methods=["POST"])
-def submit_form():
+def submit():
+    data = load_data()
 
-    cert_type = request.form.get("cert_type")
-    name = request.form.get("name")
-    mobile = request.form.get("mobile")
-    village = request.form.get("village")
-    post = request.form.get("post")
-    gp = request.form.get("gp")
-    pin = request.form.get("pin")
-    district = request.form.get("district")
-    state = request.form.get("state")
+    # Get text fields
+    data["cert_type"] = request.form.get("cert_type")
+    data["name"] = request.form.get("name")
+    data["mobile"] = request.form.get("mobile")
+    data["village"] = request.form.get("village")
+    data["post"] = request.form.get("post")
+    data["gp"] = request.form.get("gp")
+    data["pin"] = request.form.get("pin")
+    data["district"] = request.form.get("district")
+    data["state"] = request.form.get("state")
 
-    # Uploaded Files
-    aadhar = request.files.get("aadhaar")
-    father_aadhar = request.files.get("father_aadhaar")
-    applicant_photo = request.files.get("photo")
-    ror = request.files.get("ror")
+    # List of file fields
+    file_fields = ["photo", "aadhaar", "father_aadhaar", "ror"]
 
-    # Save files
-    aadhar_filename = aadhar.filename
-    aadhar.save(os.path.join(UPLOAD_FOLDER, aadhar_filename))
+    for field in file_fields:
+        file = request.files.get(field)
+        if file and file.filename != "":
+            filepath = os.path.join(UPLOAD_FOLDER, file.filename)
+            file.save(filepath)
+            data[field] = file.filename
 
-    father_filename = father_aadhar.filename
-    father_aadhar.save(os.path.join(UPLOAD_FOLDER, father_filename))
-
-    photo_filename = applicant_photo.filename
-    applicant_photo.save(os.path.join(UPLOAD_FOLDER, photo_filename))
-
-    if ror and ror.filename != "":
-        ror_filename = ror.filename
-        ror.save(os.path.join(UPLOAD_FOLDER, ror_filename))
-    else:
-        ror_filename = None
-
-    # Store values in database
-    conn = sqlite3.connect(DB_PATH)
-    c = conn.cursor()
-
-    c.execute("""
-        INSERT INTO applications
-        (cert_type, name, mobile, village, post, gp, pin, district, state,
-         aadhar_file, ror_file, father_aadhar_file, applicant_photo, status)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (
-        cert_type, name, mobile, village, post, gp, pin, district, state,
-        aadhar_filename, ror_filename, father_filename, photo_filename, "Pending"
-    ))
-
-    conn.commit()
-    conn.close()
-
-    return redirect("/thanks")
-
-
-# ---------------------------------------------------
-# THANK YOU PAGE
-# ---------------------------------------------------
-@app.route("/thanks")
-def thanks():
+    save_data(data)
     return render_template("thanks.html")
 
-
-# ---------------------------------------------------
-# ADMIN PAGE
-# ---------------------------------------------------
+# ------------------------ Admin Page ------------------------
 @app.route("/admin")
-def admin_page():
-    conn = sqlite3.connect(DB_PATH)
-    c = conn.cursor()
-    c.execute("SELECT * FROM applications")
-    data = c.fetchall()
-    conn.close()
-    return render_template("admin.html", applications=data)
+def admin():
+    data = load_data()
+    return render_template("admin.html", data=data)
 
-
-# ---------------------------------------------------
-# STATUS UPDATE FROM ADMIN
-# ---------------------------------------------------
-@app.route('/update_status', methods=['POST'])
+# ------------------------ Update Status ------------------------
+@app.route("/update_status", methods=["POST"])
 def update_status():
-    app_id = request.form.get('id')
-    new_status = request.form.get('status')
+    data = load_data()
+    status_text = request.form.get("status")
+    data["status"] = status_text
 
-    conn = sqlite3.connect(DB_PATH)
-    c = conn.cursor()
-    
-    c.execute("UPDATE applications SET status=? WHERE id=?", (new_status, app_id))
-    conn.commit()
-    conn.close()
+    save_data(data)
 
-    return redirect('/admin')
+    flash("Status Updated Successfully!")
+    return redirect(url_for("admin"))
 
-
-# ---------------------------------------------------
-# CLIENT — STATUS PAGE
-# ---------------------------------------------------
+# ------------------------ Client Status Page ------------------------
 @app.route("/status")
-def status_page():
-    return render_template("status.html")
+def status():
+    data = load_data()
+    return render_template("status.html", data=data)
 
-
-# ---------------------------------------------------
-# CLIENT — CHECK STATUS BY MOBILE
-# ---------------------------------------------------
-@app.route("/check_status", methods=["POST"])
-def check_status():
-    mobile = request.form.get("mobile")
-
-    conn = sqlite3.connect(DB_PATH)
-    c = conn.cursor()
-    c.execute("SELECT name, cert_type, status FROM applications WHERE mobile=?", (mobile,))
-    result = c.fetchall()
-    conn.close()
-
-    return render_template("status.html", result=result, mobile=mobile)
-
-
-# ---------------------------------------------------
-# SERVE UPLOADED FILES
-# ---------------------------------------------------
-@app.route("/uploads/<path:filename>")
-def uploaded_file(filename):
-    return send_from_directory(UPLOAD_FOLDER, filename)
-
-
-# ---------------------------------------------------
-# RUN APP
-# ---------------------------------------------------
+# ------------------------ Render Deployment ------------------------
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=10000)
