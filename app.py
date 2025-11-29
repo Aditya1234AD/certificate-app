@@ -150,6 +150,7 @@ def admin():
 # ---------------------------------------------------
 # UPDATE STATUS FROM ADMIN
 # ---------------------------------------------------
+
 @app.route("/update_status", methods=["POST"])
 def update_status():
     app_id = request.form["id"]
@@ -162,6 +163,30 @@ def update_status():
     conn.close()
 
     flash("Status updated successfully!")
+    return redirect("/admin")
+    # DELETE APPLICATION
+# ---------------------------------------------------
+@app.route("/delete_application", methods=["POST"])
+def delete_application():
+    app_id = request.form["id"]
+
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("SELECT aadhar_file, ror_file, father_aadhar_file, applicant_photo FROM applications WHERE id=?", (app_id,))
+    files = c.fetchone()
+
+    if files:
+        for file in files:
+            if file:
+                file_path = os.path.join(UPLOAD_FOLDER, file)
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+
+    c.execute("DELETE FROM applications WHERE id=?", (app_id,))
+    conn.commit()
+    conn.close()
+
+    flash("Application and uploaded files deleted successfully!")
     return redirect("/admin")
 
 # ---------------------------------------------------
