@@ -3,7 +3,7 @@ import sqlite3
 import os
 
 app = Flask(__name__)
-app.secret_key = "your_secret_key_123"
+app.secret_key = "something_super_secret"
 
 # ---------------------------------------------------
 # SAFE DIRECTORIES
