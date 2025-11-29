@@ -24,6 +24,8 @@ DB_PATH = os.path.join(DB_DIR, "applications.db")
 def init_db():
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
+    
+    # FIXED: status column was missing earlier
     c.execute("""
         CREATE TABLE IF NOT EXISTS applications (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -39,9 +41,11 @@ def init_db():
             aadhar_file TEXT,
             ror_file TEXT,
             father_aadhar_file TEXT,
-            applicant_photo TEXT
+            applicant_photo TEXT,
+            status TEXT DEFAULT 'Pending'
         )
     """)
+    
     conn.commit()
     conn.close()
 
@@ -62,7 +66,6 @@ def index():
 @app.route("/submit", methods=["POST"])
 def submit_form():
 
-    # Text Inputs
     cert_type = request.form.get("cert_type")
     name = request.form.get("name")
     mobile = request.form.get("mobile")
@@ -73,41 +76,42 @@ def submit_form():
     district = request.form.get("district")
     state = request.form.get("state")
 
-    # Files
+    # Uploaded Files
     aadhar = request.files.get("aadhaar")
     father_aadhar = request.files.get("father_aadhaar")
-    applicant_photo = request.files.get("photo")   # FIXED NAME
-    ror = request.files.get("ror")                 # OPTIONAL
+    applicant_photo = request.files.get("photo")
+    ror = request.files.get("ror")
 
-    # Save Aadhaar
+    # Save files
     aadhar_filename = aadhar.filename
     aadhar.save(os.path.join(UPLOAD_FOLDER, aadhar_filename))
 
-    # Save Father's Aadhaar
     father_filename = father_aadhar.filename
     father_aadhar.save(os.path.join(UPLOAD_FOLDER, father_filename))
 
-    # Save Applicant Photo
     photo_filename = applicant_photo.filename
     applicant_photo.save(os.path.join(UPLOAD_FOLDER, photo_filename))
 
-    # Save ROR only if uploaded
     if ror and ror.filename != "":
         ror_filename = ror.filename
         ror.save(os.path.join(UPLOAD_FOLDER, ror_filename))
     else:
         ror_filename = None
 
-    # Store in database
+    # Store values in database
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
+
     c.execute("""
-    INSERT INTO applications 
-    (cert_type, name, mobile, village, post, gp, pin, district, state,
-     aadhar_file, ror_file, father_aadhar_file, applicant_photo, status)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-""", (cert_type, name, mobile, village, post, gp, pin, district, state,
-      aadhar_filename, ror_filename, father_filename, photo_filename, 'Pending'))
+        INSERT INTO applications
+        (cert_type, name, mobile, village, post, gp, pin, district, state,
+         aadhar_file, ror_file, father_aadhar_file, applicant_photo, status)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        cert_type, name, mobile, village, post, gp, pin, district, state,
+        aadhar_filename, ror_filename, father_filename, photo_filename, "Pending"
+    ))
+
     conn.commit()
     conn.close()
 
@@ -133,6 +137,9 @@ def admin_page():
     data = c.fetchall()
     conn.close()
     return render_template("admin.html", applications=data)
+
+
+# ---------------------------------------------------
 # STATUS UPDATE FROM ADMIN
 # ---------------------------------------------------
 @app.route('/update_status', methods=['POST'])
@@ -142,14 +149,10 @@ def update_status():
 
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
-    try:
-        c.execute("UPDATE applications SET status=? WHERE id=?", (new_status, app_id))
-        conn.commit()
-    except Exception as e:
-        conn.rollback()
-        print("Error updating status:", e)  # Will show the exact error in console
-    finally:
-        conn.close()
+    
+    c.execute("UPDATE applications SET status=? WHERE id=?", (new_status, app_id))
+    conn.commit()
+    conn.close()
 
     return redirect('/admin')
 
@@ -187,7 +190,7 @@ def uploaded_file(filename):
 
 
 # ---------------------------------------------------
-# RUN
+# RUN APP
 # ---------------------------------------------------
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
