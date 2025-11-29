@@ -1,7 +1,6 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, send_from_directory
 import sqlite3
 import os
-from flask import send_from_directory
 
 app = Flask(__name__)
 
@@ -28,6 +27,7 @@ def init_db():
     c.execute("""
         CREATE TABLE IF NOT EXISTS applications (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            cert_type TEXT,
             name TEXT,
             village TEXT,
             post TEXT,
@@ -48,20 +48,21 @@ init_db()
 
 
 # ---------------------------------------------------
-# ROUTES
+# CLIENT PAGE
 # ---------------------------------------------------
-
-# Client page
 @app.route("/")
 def index():
     return render_template("index.html")
 
 
-# Handle form submission
+# ---------------------------------------------------
+# FORM SUBMISSION
+# ---------------------------------------------------
 @app.route("/submit", methods=["POST"])
 def submit_form():
 
-    # 1. Receive input fields
+    # Text Inputs
+    cert_type = request.form.get("cert_type")
     name = request.form.get("name")
     village = request.form.get("village")
     post = request.form.get("post")
@@ -70,46 +71,58 @@ def submit_form():
     district = request.form.get("district")
     state = request.form.get("state")
 
-    # 2. Receive files
-    aadhar = request.files.get("aadhar")
-    ror = request.files.get("ror")
-    father_aadhar = request.files.get("father_aadhar")
-    applicant_photo = request.files.get("applicant_photo")
+    # Files
+    aadhar = request.files.get("aadhaar")
+    father_aadhar = request.files.get("father_aadhaar")
+    applicant_photo = request.files.get("photo")   # FIXED NAME
+    ror = request.files.get("ror")                 # OPTIONAL
 
-    # 3. Save files to /tmp/uploads
-    aadhar_path = os.path.join(app.config["UPLOAD_FOLDER"], aadhar.filename)
-    ror_path = os.path.join(app.config["UPLOAD_FOLDER"], ror.filename)
-    father_path = os.path.join(app.config["UPLOAD_FOLDER"], father_aadhar.filename)
-    photo_path = os.path.join(app.config["UPLOAD_FOLDER"], applicant_photo.filename)
+    # Save Aadhaar
+    aadhar_filename = aadhar.filename
+    aadhar.save(os.path.join(UPLOAD_FOLDER, aadhar_filename))
 
-    aadhar.save(aadhar_path)
-    ror.save(ror_path)
-    father_aadhar.save(father_path)
-    applicant_photo.save(photo_path)
+    # Save Father's Aadhaar
+    father_filename = father_aadhar.filename
+    father_aadhar.save(os.path.join(UPLOAD_FOLDER, father_filename))
 
-    # 4. Save data in SQLite
+    # Save Applicant Photo
+    photo_filename = applicant_photo.filename
+    applicant_photo.save(os.path.join(UPLOAD_FOLDER, photo_filename))
+
+    # Save ROR only if uploaded
+    if ror and ror.filename != "":
+        ror_filename = ror.filename
+        ror.save(os.path.join(UPLOAD_FOLDER, ror_filename))
+    else:
+        ror_filename = None
+
+    # Store in database
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute("""
-        INSERT INTO applications
-        (name, village, post, gp, pin, district, state,
+        INSERT INTO applications 
+        (cert_type, name, village, post, gp, pin, district, state,
          aadhar_file, ror_file, father_aadhar_file, applicant_photo)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (name, village, post, gp, pin, district, state,
-          aadhar.filename, ror.filename, father_aadhar.filename, applicant_photo.filename))
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (cert_type, name, village, post, gp, pin, district, state,
+          aadhar_filename, ror_filename, father_filename, photo_filename))
     conn.commit()
     conn.close()
 
     return redirect("/thanks")
 
 
-# Thank you page
+# ---------------------------------------------------
+# THANK YOU PAGE
+# ---------------------------------------------------
 @app.route("/thanks")
 def thanks():
     return render_template("thanks.html")
 
 
-# Admin Page → show all uploads + details
+# ---------------------------------------------------
+# ADMIN PAGE
+# ---------------------------------------------------
 @app.route("/admin")
 def admin_page():
     conn = sqlite3.connect(DB_PATH)
@@ -117,16 +130,19 @@ def admin_page():
     c.execute("SELECT * FROM applications")
     data = c.fetchall()
     conn.close()
-    return render_template("admin.html", applications=data, upload_path=UPLOAD_FOLDER)
+    return render_template("admin.html", applications=data)
 
 
-# Serve uploaded files (images, PDFs, etc.)
-
+# ---------------------------------------------------
+# SERVE UPLOADED FILES
+# ---------------------------------------------------
 @app.route("/uploads/<path:filename>")
 def uploaded_file(filename):
-    return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
+    return send_from_directory(UPLOAD_FOLDER, filename)
+
+
 # ---------------------------------------------------
-# Run the app
+# RUN
 # ---------------------------------------------------
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
