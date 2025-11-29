@@ -29,6 +29,7 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             cert_type TEXT,
             name TEXT,
+            mobile TEXT,
             village TEXT,
             post TEXT,
             gp TEXT,
@@ -64,6 +65,7 @@ def submit_form():
     # Text Inputs
     cert_type = request.form.get("cert_type")
     name = request.form.get("name")
+    mobile = request.form.get("mobile")
     village = request.form.get("village")
     post = request.form.get("post")
     gp = request.form.get("gp")
