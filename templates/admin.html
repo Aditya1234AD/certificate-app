@@ -62,16 +62,30 @@
             text-decoration: underline;
         }
 
+        .flash {
+            text-align: center;
+            font-size: 18px;
+            color: green;
+            margin-bottom: 15px;
+        }
+
     </style>
 </head>
 <body>
 
-    <h1>Admin Dashboard — Received Certificate Applications</h1>
+    <h1>Admin Dashboard — Received Certificate Application</h1>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="flash">
+            {{ messages[0] }}
+        </div>
+      {% endif %}
+    {% endwith %}
 
     <table>
         <thead>
             <tr>
-                <th>ID</th>
                 <th>Certificate Type</th>
                 <th>Name</th>
                 <th>Mobile</th>
@@ -85,69 +99,73 @@
                 <th>ROR</th>
                 <th>Father Aadhaar</th>
                 <th>Applicant Photo</th>
+                <th>Status</th>
+                <th>Update</th>
             </tr>
         </thead>
 
         <tbody>
-            {% for app in applications %}
             <tr>
-                <td>{{ app[0] }}</td>
-                <td>{{ app[1] }}</td>
-                <td>{{ app[2] }}</td>
-                <td>{{ app[3] }}</td>
-                <td>{{ app[4] }}</td>
-                <td>{{ app[5] }}</td>
-                <td>{{ app[6] }}</td>
-                <td>{{ app[7] }}</td>
-                <td>{{ app[8] }}</td>
-                <td>{{ app[9] }}</td>
+                <td>{{ data.cert_type }}</td>
+                <td>{{ data.name }}</td>
+                <td>{{ data.mobile }}</td>
+                <td>{{ data.village }}</td>
+                <td>{{ data.post }}</td>
+                <td>{{ data.gp }}</td>
+                <td>{{ data.pin }}</td>
+                <td>{{ data.district }}</td>
+                <td>{{ data.state }}</td>
 
-                <!-- Aadhaar view link -->
                 <td>
-                    <a href="/uploads/{{ app[9] }}" target="_blank">View</a>
-                </td>
-
-                <!-- Optional ROR -->
-                <td>
-                    {% if app[10] %}
-                        <a href="/uploads/{{ app[10] }}" target="_blank">View</a>
+                    {% if data.aadhaar %}
+                        <a href="/uploads/{{ data.aadhaar }}" target="_blank">View</a>
                     {% else %}
                         <span style="color: #999;">Not Uploaded</span>
                     {% endif %}
                 </td>
 
-                <!-- Father Aadhaar -->
                 <td>
-                    <a href="/uploads/{{ app[11] }}" target="_blank">View</a>
+                    {% if data.ror %}
+                        <a href="/uploads/{{ data.ror }}" target="_blank">View</a>
+                    {% else %}
+                        <span style="color: #999;">Not Uploaded</span>
+                    {% endif %}
                 </td>
 
-                <!-- Applicant Photo -->
                 <td>
-                    <img src="/uploads/{{ app[12] }}">
+                    {% if data.father_aadhaar %}
+                        <a href="/uploads/{{ data.father_aadhaar }}" target="_blank">View</a>
+                    {% else %}
+                        <span style="color: #999;">Not Uploaded</span>
+                    {% endif %}
                 </td>
-                
+
                 <td>
-                     <form action="/update_status" method="POST">
-                    <input type="hidden" name="id" value="{{ app[0] }}">
+                    {% if data.photo %}
+                        <img src="/uploads/{{ data.photo }}">
+                    {% else %}
+                        <span style="color: #999;">Not Uploaded</span>
+                    {% endif %}
+                </td>
 
-                    <select name="status">
-                        <option value="Pending" {% if app[13]=='Pending' %}selected{% endif %}>Pending</option>
-                        <option value="Processing" {% if app[13]=='Processing' %}selected{% endif %}>Processing</option>
-                        <option value="Approved" {% if app[13]=='Approved' %}selected{% endif %}>Approved</option>
-                        <option value="Rejected" {% if app[13]=='Rejected' %}selected{% endif %}>Rejected</option>
-                    </select>
-            </td>
+                <td>
+                    <form action="/update_status" method="POST">
+                        <select name="status">
+                            <option value="Pending" {% if data.status=='Pending' %}selected{% endif %}>Pending</option>
+                            <option value="Processing" {% if data.status=='Processing' %}selected{% endif %}>Processing</option>
+                            <option value="Approved" {% if data.status=='Approved' %}selected{% endif %}>Approved</option>
+                            <option value="Rejected" {% if data.status=='Rejected' %}selected{% endif %}>Rejected</option>
+                        </select>
+                </td>
 
-            <!-- Update button -->
-            <td>
-                    <button type="submit">Update</button>
-                </form>
-            </td>
+                <td>
+                        <button type="submit">Update</button>
+                    </form>
+                </td>
 
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+            </tr>
+        </tbody>
+    </table>
 
 </body>
-</html>
+ </html>
