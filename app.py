@@ -3,13 +3,19 @@ import sqlite3
 import os
 
 app = Flask(__name__)
-app.secret_key = "supersecretkey"  # Needed for flashing messages
+app.secret_key = "supersecretkey"  # Needed for flash messages
 
 # ---------------------------------------------------
 # SAFE DIRECTORIES
 # ---------------------------------------------------
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
+
+# If 'uploads' exists but is not a directory, remove it
+if os.path.exists(UPLOAD_FOLDER) and not os.path.isdir(UPLOAD_FOLDER):
+    os.remove(UPLOAD_FOLDER)
+
+# Now safely create the uploads directory
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
@@ -60,7 +66,7 @@ def index():
 @app.route("/submit", methods=["POST"])
 def submit_form():
     try:
-        # Text inputs
+        # Text Inputs
         cert_type = request.form.get("cert_type")
         name = request.form.get("name")
         mobile = request.form.get("mobile")
@@ -75,23 +81,25 @@ def submit_form():
         aadhar = request.files.get("aadhaar")
         father_aadhar = request.files.get("father_aadhaar")
         applicant_photo = request.files.get("photo")
-        ror = request.files.get("ror")  # optional
+        ror = request.files.get("ror")  # Optional
 
         # Save files safely
-        def save_file(file):
-            if file and file.filename:
-                filename = os.path.basename(file.filename)
-                path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
-                file.save(path)
-                return filename
-            return None
+        aadhar_filename = os.path.join(app.config["UPLOAD_FOLDER"], aadhar.filename)
+        aadhar.save(aadhar_filename)
 
-        aadhar_filename = save_file(aadhar)
-        father_filename = save_file(father_aadhar)
-        photo_filename = save_file(applicant_photo)
-        ror_filename = save_file(ror)
+        father_filename = os.path.join(app.config["UPLOAD_FOLDER"], father_aadhar.filename)
+        father_aadhar.save(father_filename)
 
-        # Store in DB
+        photo_filename = os.path.join(app.config["UPLOAD_FOLDER"], applicant_photo.filename)
+        applicant_photo.save(photo_filename)
+
+        if ror and ror.filename != "":
+            ror_filename = os.path.join(app.config["UPLOAD_FOLDER"], ror.filename)
+            ror.save(ror_filename)
+        else:
+            ror_filename = None
+
+        # Insert into database
         conn = sqlite3.connect(DB_PATH)
         c = conn.cursor()
         c.execute("""
@@ -100,15 +108,20 @@ def submit_form():
              aadhar_file, ror_file, father_aadhar_file, applicant_photo, status)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (cert_type, name, mobile, village, post, gp, pin, district, state,
-              aadhar_filename, ror_filename, father_filename, photo_filename, "Pending"))
+              os.path.basename(aadhar_filename),
+              os.path.basename(ror_filename) if ror_filename else None,
+              os.path.basename(father_filename),
+              os.path.basename(photo_filename),
+              'Pending'))
         conn.commit()
         conn.close()
 
         flash("Application submitted successfully!", "success")
         return redirect("/thanks")
+
     except Exception as e:
-        print("Error in form submission:", e)
-        flash("Failed to submit application. Please try again.", "error")
+        print("Error during form submission:", e)
+        flash("Error submitting application. Please try again.", "danger")
         return redirect("/")
 
 # ---------------------------------------------------
@@ -131,28 +144,29 @@ def admin_page():
         conn.close()
         return render_template("admin.html", applications=data)
     except Exception as e:
-        print("Admin page error:", e)
+        print("Error loading admin page:", e)
         return "Error loading admin page. Check server logs."
 
 # ---------------------------------------------------
-# UPDATE STATUS (ADMIN)
+# ADMIN — STATUS UPDATE
 # ---------------------------------------------------
-@app.route("/update_status", methods=["POST"])
+@app.route('/update_status', methods=['POST'])
 def update_status():
+    app_id = request.form.get('id')
+    new_status = request.form.get('status')
+
     try:
-        app_id = request.form.get("id")
-        new_status = request.form.get("status")
         conn = sqlite3.connect(DB_PATH)
         c = conn.cursor()
         c.execute("UPDATE applications SET status=? WHERE id=?", (new_status, app_id))
         conn.commit()
         conn.close()
         flash("Status updated successfully!", "success")
-        return redirect("/admin")
     except Exception as e:
         print("Error updating status:", e)
-        flash("Failed to update status.", "error")
-        return redirect("/admin")
+        flash("Failed to update status.", "danger")
+
+    return redirect('/admin')
 
 # ---------------------------------------------------
 # CLIENT — STATUS PAGE
@@ -161,20 +175,20 @@ def update_status():
 def status_page():
     return render_template("status.html")
 
+# ---------------------------------------------------
+# CLIENT — CHECK STATUS BY MOBILE
+# ---------------------------------------------------
 @app.route("/check_status", methods=["POST"])
 def check_status():
-    try:
-        mobile = request.form.get("mobile")
-        conn = sqlite3.connect(DB_PATH)
-        c = conn.cursor()
-        c.execute("SELECT cert_type, status FROM applications WHERE mobile=?", (mobile,))
-        result = c.fetchall()
-        conn.close()
-        return render_template("status.html", result=result, mobile=mobile)
-    except Exception as e:
-        print("Error checking status:", e)
-        flash("Could not fetch status. Try again.", "error")
-        return redirect("/status")
+    mobile = request.form.get("mobile")
+
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("SELECT name, cert_type, status FROM applications WHERE mobile=?", (mobile,))
+    result = c.fetchall()
+    conn.close()
+
+    return render_template("status.html", result=result, mobile=mobile)
 
 # ---------------------------------------------------
 # SERVE UPLOADED FILES
@@ -184,7 +198,7 @@ def uploaded_file(filename):
     return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
 
 # ---------------------------------------------------
-# RUN
+# RUN SERVER
 # ---------------------------------------------------
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
