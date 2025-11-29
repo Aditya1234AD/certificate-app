@@ -12,7 +12,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
 if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+    os.makedirs(UPLOAD_FOLDER)
 
 DB_PATH = os.path.join(BASE_DIR, "applications.json")
 if not os.path.exists(DB_PATH):
@@ -67,21 +67,18 @@ def submit_form():
         if not applicant_photo or applicant_photo.filename == "":
             return "Applicant photo is required.", 400
 
-        # File names
-        aadhar_filename = aadhar.filename
-        father_filename = father_aadhar.filename
-        photo_filename = applicant_photo.filename
-        ror_filename = ror.filename if ror and ror.filename != "" else None
+        # File names — use basename to avoid path issues
+        aadhar_filename = os.path.basename(aadhar.filename)
+        father_filename = os.path.basename(father_aadhar.filename)
+        photo_filename = os.path.basename(applicant_photo.filename)
+        ror_filename = os.path.basename(ror.filename) if ror and ror.filename != "" else None
 
         # Save files
-        try:
-            aadhar.save(os.path.join(UPLOAD_FOLDER, aadhar_filename))
-            father_aadhar.save(os.path.join(UPLOAD_FOLDER, father_filename))
-            applicant_photo.save(os.path.join(UPLOAD_FOLDER, photo_filename))
-            if ror_filename:
-                ror.save(os.path.join(UPLOAD_FOLDER, ror_filename))
-        except Exception as e:
-            return f"File upload failed: {str(e)}", 500
+        aadhar.save(os.path.join(UPLOAD_FOLDER, aadhar_filename))
+        father_aadhar.save(os.path.join(UPLOAD_FOLDER, father_filename))
+        applicant_photo.save(os.path.join(UPLOAD_FOLDER, photo_filename))
+        if ror_filename:
+            ror.save(os.path.join(UPLOAD_FOLDER, ror_filename))
 
         # Load existing applications
         data = load_data()
