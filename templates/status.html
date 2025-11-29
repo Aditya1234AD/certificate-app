@@ -6,18 +6,33 @@
     <style>
         body {
             font-family: Arial;
-            background: #eef2f3;
+            background: #000;   /* Match dark theme */
             padding: 20px;
+            color: white;
+            transition: background 0.5s ease;
         }
 
         .box {
-            width: 350px;
+            width: 380px;
             margin: auto;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(6px);
+            padding: 25px;
+            border-radius: 14px;
+            box-shadow: 0 0 15px rgba(255,255,255,0.15);
             text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .box:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 0 25px rgba(255,255,255,0.25);
+        }
+
+        h2 {
+            color: #4b7bec;
+            margin-bottom: 15px;
+            transition: color 0.3s ease;
         }
 
         input {
@@ -26,36 +41,57 @@
             margin: 10px 0;
             border-radius: 6px;
             border: 1px solid #aaa;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        input:focus {
+            border-color: #4b7bec;
+            box-shadow: 0 0 5px rgba(75,123,236,0.5);
+            outline: none;
         }
 
         button {
             padding: 12px;
             width: 100%;
-            background: #007bff;
+            background: #4b7bec;
             border: none;
             color: white;
             font-size: 16px;
             border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+
+        button:hover {
+            background: #3867d6;
+            transform: scale(1.03);
         }
 
         /* 🌈 RAINBOW CONTAINER */
         .rainbow-container {
             margin-top: 20px !important;
             padding: 15px !important;
-            border-radius: 10px !important;
+            border-radius: 14px !important;
 
             background: linear-gradient(45deg,
                 red, orange, yellow, green, cyan, blue, violet
             ) !important;
 
             background-size: 600% 600% !important;
-            animation: rainbowMove 5s ease infinite !important;
+            animation: rainbowMove 4s ease infinite !important;
 
             color: white !important;
             font-size: 18px !important;
+            font-weight: bold;
 
             opacity: 1 !important;
             transform: translateY(0) !important;
+            transition: box-shadow 0.3s ease, transform 0.3s ease;
+        }
+
+        .rainbow-container:hover {
+            box-shadow: 0px 0px 25px rgba(255,255,255,0.4);
+            transform: translateY(-3px);
         }
 
         @keyframes rainbowMove {
@@ -86,7 +122,7 @@
             <p>{{ message }}</p>
 
         {% else %}
-            <!-- Dummy text to make sure background shows -->
+            <!-- Empty placeholder to maintain size -->
             <p style="opacity:0;">.</p>
         {% endif %}
 
