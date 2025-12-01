@@ -3,32 +3,60 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin Dashboard</title>
+<title>Admin Dashboard - Certificate Applications</title>
 <style>
-/* styles similar to before; updated links to /static/uploads */
-body{font-family:Arial;margin:20px;background:#eef2f3;}
-h1{text-align:center;color:#2c3e50;}
-table{width:100%;border-collapse:collapse;background:white;box-shadow:0 4px 15px rgba(0,0,0,0.1);}
-th,td{padding:12px;text-align:left;border-bottom:1px solid #ddd;}
-th{background:#007bff;color:white;}
+body{font-family:Arial,sans-serif;background:#eef2f3;margin:0;padding:20px;}
+h1{text-align:center;margin-bottom:15px;color:#2c3e50;}
+.logout-btn{display:block;width:120px;margin:0 auto 20px auto;padding:10px;text-align:center;background:#e74c3c;color:white;text-decoration:none;border-radius:6px;}
+.logout-btn:hover{background:#c0392b;}
+table{width:100%;border-collapse:collapse;background:white;border-radius:10px;overflow:hidden;box-shadow:0 4px 15px rgba(0,0,0,0.1);}
+th,td{border-bottom:1px solid #ddd;padding:12px;text-align:left;}
+th{background:#007bff;color:white;text-transform:uppercase;font-size:13px;}
 tr:hover{background:#f1f1f1;}
+img{border-radius:6px;width:90px;height:110px;object-fit:cover;}
 a{color:#007bff;font-weight:bold;text-decoration:none;}
 a:hover{text-decoration:underline;}
 button{padding:6px 12px;border:none;border-radius:6px;cursor:pointer;}
 button[type="submit"]{background:#4b7bec;color:white;}
 button.delete-btn{background:#e74c3c;color:white;}
+.flash{text-align:center;font-size:18px;color:green;margin-bottom:15px;}
+input[type="file"]{width:90%;}
 </style>
 </head>
 <body>
 
-<h1>Admin Dashboard — Received Applications</h1>
-<a href="/admin-logout">Logout</a>
+<h1>Admin Dashboard — Certificate Applications</h1>
+<a class="logout-btn" href="/admin-logout">Logout</a>
+
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <div class="flash">
+        {{ messages[0] }}
+    </div>
+  {% endif %}
+{% endwith %}
 
 <table>
 <thead>
 <tr>
-<th>ID</th><th>Certificate</th><th>Name</th><th>Mobile</th><th>Status</th>
-<th>Aadhaar</th><th>ROR</th><th>Father Aadhaar</th><th>Photo</th><th>Update</th><th>Delete</th>
+<th>ID</th>
+<th>Certificate Type</th>
+<th>Name</th>
+<th>Mobile</th>
+<th>Village</th>
+<th>Post</th>
+<th>GP</th>
+<th>PIN</th>
+<th>District</th>
+<th>State</th>
+<th>Aadhaar</th>
+<th>ROR</th>
+<th>Father Aadhaar</th>
+<th>Photo</th>
+<th>Status</th>
+<th>Upload Certificate</th>
+<th>Update</th>
+<th>Delete</th>
 </tr>
 </thead>
 <tbody>
@@ -38,12 +66,36 @@ button.delete-btn{background:#e74c3c;color:white;}
 <td>{{ app['cert_type'] }}</td>
 <td>{{ app['name'] }}</td>
 <td>{{ app['mobile'] }}</td>
-<td>{{ app['status'] }}</td>
+<td>{{ app['village'] }}</td>
+<td>{{ app['post'] }}</td>
+<td>{{ app['gp'] }}</td>
+<td>{{ app['pin'] }}</td>
+<td>{{ app['district'] }}</td>
+<td>{{ app['state'] }}</td>
 
-<td>{% if app['aadhar_file'] %}<a href="/static/uploads/{{ app['aadhar_file'] }}" target="_blank">View</a>{% else %}N/A{% endif %}</td>
-<td>{% if app['ror_file'] %}<a href="/static/uploads/{{ app['ror_file'] }}" target="_blank">View</a>{% else %}N/A{% endif %}</td>
-<td>{% if app['father_aadhar_file'] %}<a href="/static/uploads/{{ app['father_aadhar_file'] }}" target="_blank">View</a>{% else %}N/A{% endif %}</td>
-<td>{% if app['applicant_photo'] %}<img src="/static/uploads/{{ app['applicant_photo'] }}" width="90">{% else %}No Photo{% endif %}</td>
+<td>
+{% if app['aadhar_file'] %}
+<a href="/uploads/{{ app['aadhar_file'] }}" target="_blank">View</a>
+{% else %}Not Uploaded{% endif %}
+</td>
+
+<td>
+{% if app['ror_file'] %}
+<a href="/uploads/{{ app['ror_file'] }}" target="_blank">View</a>
+{% else %}Not Uploaded{% endif %}
+</td>
+
+<td>
+{% if app['father_aadhar_file'] %}
+<a href="/uploads/{{ app['father_aadhar_file'] }}" target="_blank">View</a>
+{% else %}Not Uploaded{% endif %}
+</td>
+
+<td>
+{% if app['applicant_photo'] %}
+<img src="/uploads/{{ app['applicant_photo'] }}">
+{% else %}No Photo{% endif %}
+</td>
 
 <td>
 <form action="/update_status" method="POST">
@@ -59,11 +111,31 @@ button.delete-btn{background:#e74c3c;color:white;}
 </td>
 
 <td>
-<form action="/delete_application" method="POST" onsubmit="return confirm('Are you sure?');">
+<form action="/admin" method="POST" enctype="multipart/form-data">
+<input type="hidden" name="id" value="{{ app['id'] }}">
+<input type="file" name="certificate" accept="application/pdf" required>
+<button type="submit">Upload</button>
+</form>
+
+{% if app['certificate_file'] %}
+<p><a href="/receipts/{{ app['certificate_file'] }}" target="_blank">Download</a></p>
+{% endif %}
+</td>
+
+<td>
+<form action="/update_status" method="POST">
+<input type="hidden" name="id" value="{{ app['id'] }}">
+<button type="submit" class="delete-btn">Update</button>
+</form>
+</td>
+
+<td>
+<form action="/delete_application" method="POST" onsubmit="return confirm('Are you sure you want to delete this application?');">
 <input type="hidden" name="id" value="{{ app['id'] }}">
 <button type="submit" class="delete-btn">Delete</button>
 </form>
 </td>
+
 </tr>
 {% endfor %}
 </tbody>
