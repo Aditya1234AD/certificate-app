@@ -13,7 +13,7 @@ STATIC_DIR = os.path.join(BASE_DIR, "static")
 UPLOAD_FOLDER = os.path.join(STATIC_DIR, "uploads")
 RECEIPT_FOLDER = os.path.join(STATIC_DIR, "receipts")
 PAYMENT_FOLDER = os.path.join(STATIC_DIR, "payments")
-QR_FILE = "your_qr.png"  # QR code for payment in static folder
+QR_FILE = "static/Screenshot_20251201_163839.JPG"  # QR code for payment in static folder
 
 # Safe folder creation
 for folder in [UPLOAD_FOLDER, RECEIPT_FOLDER, PAYMENT_FOLDER]:
