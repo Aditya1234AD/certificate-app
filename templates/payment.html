@@ -1,68 +1,74 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Payment</title>
-
+    <title>Payment Page</title>
     <style>
         body {
-            font-family: Arial;
+            font-family: Arial, sans-serif;
             background: #000;
             color: white;
             text-align: center;
             padding: 20px;
         }
+
         .box {
-            background: rgba(255,255,255,0.1);
-            padding: 25px;
-            border-radius: 12px;
-            width: 350px;
+            width: 380px;
             margin: auto;
-            backdrop-filter: blur(4px);
-        }
-        img {
-            width: 220px;
-            height: 220px;
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
             border-radius: 12px;
-            margin-bottom: 15px;
-            box-shadow: 0 0 12px rgba(255,255,255,0.4);
+            box-shadow: 0 0 15px rgba(255,255,255,0.15);
         }
-        input, button {
-            margin-top: 10px;
+
+        img {
+            width: 260px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        input[type="file"] {
+            margin-top: 14px;
+            padding: 10px;
+            width: 90%;
+            border-radius: 6px;
+        }
+
+        button {
             width: 100%;
             padding: 12px;
-            border-radius: 6px;
-            border: none;
-        }
-        button {
             background: #4b7bec;
+            border: none;
             color: white;
+            font-size: 16px;
+            border-radius: 6px;
+            margin-top: 12px;
             cursor: pointer;
+        }
+
+        button:hover {
+            background: #3867d6;
         }
     </style>
 </head>
-
 <body>
 
 <div class="box">
     <h2>Pay ₹60 to Download Receipt</h2>
 
-    <p><b>Scan this QR code:</b></p>
+    <p>Scan the QR below and pay ₹60</p>
 
-    <!-- 🔥 SHOW YOUR QR CODE HERE -->
-    <img src="/static/qr.png" alt="QR Code">
-
-    <p>Or pay to UPI ID:</p>
-    <p style="font-size:18px; font-weight:bold;">yourupi@bank</p>
+    <!-- Your QR Code -->
+    <img src="/static/your_qr.png" alt="QR Code">
 
     <form action="/upload_payment" method="POST" enctype="multipart/form-data">
-        <input type="hidden" name="id" value="{{ id }}">
+        <input type="hidden" name="app_id" value="{{ app_id }}">
 
-        <p style="margin-top:10px;">Upload Payment Screenshot:</p>
-        <input type="file" name="pay_image" required>
+        <label>Upload Payment Screenshot:</label><br>
+        <input type="file" name="payment_ss" required>
 
         <button type="submit">Submit Payment</button>
     </form>
 </div>
 
 </body>
-      </html>
+</html>
