@@ -9,23 +9,24 @@ app.secret_key = "something_super_secret"  # Required for session management
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 UPLOAD_FOLDER = os.path.join(BASE_DIR, "static/uploads")
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
 RECEIPT_FOLDER = os.path.join(BASE_DIR, "static/receipts")
-os.makedirs(RECEIPT_FOLDER, exist_ok=True)
-
 PAYMENT_FOLDER = os.path.join(BASE_DIR, "static/payments")
-os.makedirs(PAYMENT_FOLDER, exist_ok=True)
-
+DB_DIR = os.path.join(BASE_DIR, "data")
 QR_FILE = os.path.join(BASE_DIR, "static/your_qr.png")  # Your payment QR
+
+# Safely create folders (fixed for deployment)
+for folder in [UPLOAD_FOLDER, RECEIPT_FOLDER, PAYMENT_FOLDER, DB_DIR]:
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+    elif not os.path.isdir(folder):
+        os.remove(folder)
+        os.makedirs(folder)
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 app.config["RECEIPT_FOLDER"] = RECEIPT_FOLDER
 app.config["PAYMENT_FOLDER"] = PAYMENT_FOLDER
 
 # ------------------- DATABASE -------------------
-DB_DIR = os.path.join(BASE_DIR, "data")
-os.makedirs(DB_DIR, exist_ok=True)
 DB_PATH = os.path.join(DB_DIR, "applications.db")
 
 def init_db():
@@ -170,7 +171,7 @@ def receipt_page(app_id):
                            app_id=app_id,
                            payment_status=payment_status,
                            receipt_file=receipt_file,
-                           qr_file="static/Screenshot_20251201_163839.JPG")
+                           qr_file="your_qr.png")
 
 # ------------------- SERVE FILES -------------------
 @app.route("/uploads/<path:filename>")
