@@ -1,85 +1,133 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Check Application Status</title>
-<style>
-body {
-    font-family: Arial, sans-serif;
-    background: #000;
-    color: white;
-    padding: 20px;
-    display: flex;
-    justify-content: center;
-}
-.container {
-    max-width: 500px;
-    width: 100%;
-    background: #111;
-    padding: 25px;
-    border-radius: 12px;
-    box-shadow: 0 0 15px rgba(255,255,255,0.2);
-    text-align: center;
-}
-h2 {color:#4b7bec;}
-input[type="text"]{
-    width: 90%;
-    padding: 12px;
-    margin: 10px 0;
-    border-radius: 6px;
-    border: 1px solid #aaa;
-}
-button{
-    width: 95%;
-    padding: 12px;
-    margin-top: 10px;
-    background:#4b7bec;
-    color:white;
-    border:none;
-    border-radius:6px;
-    cursor:pointer;
-}
-button:hover{background:#3867d6;}
-a{color:#00ffdd;font-weight:bold;text-decoration:none;}
-a:hover{text-decoration:underline;}
-img{max-width:200px;margin:10px 0;}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check Application Status</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: #000;
+            padding: 20px;
+            color: white;
+        }
+
+        .box {
+            width: 380px;
+            margin: auto;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(6px);
+            padding: 25px;
+            border-radius: 14px;
+            text-align: center;
+        }
+
+        h2 {
+            color: #4b7bec;
+        }
+
+        input {
+            width: 90%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border: 1px solid #aaa;
+        }
+
+        button {
+            padding: 12px;
+            width: 100%;
+            background: #4b7bec;
+            border: none;
+            color: white;
+            font-size: 16px;
+            border-radius: 6px;
+        }
+
+        .qr-box {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+
+        .download-btn {
+            display: block;
+            margin-top: 15px;
+            background: #27ae60;
+            padding: 12px;
+            border-radius: 8px;
+            color: white;
+            text-decoration: none;
+            font-size: 18px;
+        }
+
+        .pending-text {
+            background: yellow;
+            color: black;
+            padding: 10px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        .paid-text {
+            background: #2ecc71;
+            padding: 10px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
 </head>
+
 <body>
 
-<div class="container">
-<h2>Check Your Certificate Status</h2>
+<div class="box">
+    <h2>Check Application Status</h2>
 
-<form action="/check_status" method="POST">
-    <input type="text" name="mobile" placeholder="Enter your mobile number" required>
-    <button type="submit">Check Status</button>
-</form>
+    <form action="/check_status" method="POST">
+        <input type="text" name="mobile" placeholder="Enter your mobile number" required>
+        <button type="submit">Check Status</button>
+    </form>
 
-{% if message %}
-<p>{{ message }}</p>
-{% endif %}
+    {% if data %}
+        <h3>Status: {{ data['status'] }}</h3>
 
-{% if application %}
-<hr>
-<p><b>Certificate Status:</b> {{ application['status'] }}</p>
+        <!-- IF PAYMENT PENDING -->
+        {% if data['payment_status'] == "Pending" %}
+            <div class="pending-text">Payment Pending (₹60)</div>
 
-{% if application['payment_status'] == 'Pending' and application['certificate_file'] %}
-<p>Please pay Rs. 60 to download your certificate:</p>
-<img src="static/Screenshot_20251201_163839.JPG" alt="Scan QR to Pay"><br>
-<form action="/upload_payment/{{ application['id'] }}" method="POST" enctype="multipart/form-data">
-<label>Upload Payment Screenshot:</label>
-<input type="file" name="payment_ss" accept="image/*,application/pdf" required>
-<button type="submit">Submit Payment</button>
-</form>
-{% elif application['payment_status'] == 'Completed' and application['certificate_file'] %}
-<p>Your payment is completed. Download your certificate here:</p>
-<a href="/receipts/{{ application['certificate_file'] }}" target="_blank">Download Certificate</a>
-{% elif not application['certificate_file'] %}
-<p>Your certificate is not yet uploaded by admin. Please wait.</p>
-{% endif %}
+            <div class="qr-box">
+                <p style="color:black;"><b>Scan & Pay</b></p>
+                <img src="/static/your_qr.png" width="250">
+                <p style="color:black;">After payment, the admin will verify and enable download.</p>
+            </div>
+        {% endif %}
 
-{% endif %}
+        <!-- IF PAYMENT DONE -->
+        {% if data['payment_status'] == "Paid" %}
+            <div class="paid-text">Payment Completed</div>
+
+            {% if data['receipt_file'] %}
+                <a href="{{ url_for('download_file', filename=data['receipt_file']) }}" class="download-btn">
+                    Download Receipt
+                </a>
+            {% endif %}
+
+            {% if data['certificate_file'] %}
+                <a href="{{ url_for('download_file', filename=data['certificate_file']) }}" class="download-btn">
+                    Download Certificate
+                </a>
+            {% endif %}
+        {% endif %}
+
+    {% elif message %}
+        <p>{{ message }}</p>
+    {% endif %}
+
 </div>
+
 </body>
 </html>
