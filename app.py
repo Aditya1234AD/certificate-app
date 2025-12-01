@@ -13,11 +13,16 @@ STATIC_DIR = os.path.join(BASE_DIR, "static")
 UPLOAD_FOLDER = os.path.join(STATIC_DIR, "uploads")
 RECEIPT_FOLDER = os.path.join(STATIC_DIR, "receipts")
 PAYMENT_FOLDER = os.path.join(STATIC_DIR, "payments")
-QR_FILE = os.path.join(STATIC_DIR, "static/Screenshot_20251201_163839.JPG")  # Put your QR code image here
+QR_FILE = os.path.join(STATIC_DIR, "your_qr.png")  # Put your QR code image here
 
 # ------------------- CREATE FOLDERS SAFELY -------------------
 for folder in [UPLOAD_FOLDER, RECEIPT_FOLDER, PAYMENT_FOLDER]:
-    os.makedirs(folder, exist_ok=True)
+    if os.path.exists(folder):
+        if not os.path.isdir(folder):
+            os.remove(folder)
+            os.makedirs(folder)
+    else:
+        os.makedirs(folder)
 
 # ------------------- DATABASE -------------------
 DB_DIR = os.path.join(BASE_DIR, "data")
@@ -75,38 +80,34 @@ def index():
 # ------------------- SUBMIT APPLICATION -------------------
 @app.route("/submit", methods=["POST"])
 def submit():
-    try:
-        cert_type = request.form.get("cert_type")
-        name = request.form.get("name")
-        mobile = request.form.get("mobile")
-        village = request.form.get("village")
-        post = request.form.get("post")
-        gp = request.form.get("gp")
-        pin = request.form.get("pin")
-        district = request.form.get("district")
-        state = request.form.get("state")
+    cert_type = request.form.get("cert_type")
+    name = request.form.get("name")
+    mobile = request.form.get("mobile")
+    village = request.form.get("village")
+    post = request.form.get("post")
+    gp = request.form.get("gp")
+    pin = request.form.get("pin")
+    district = request.form.get("district")
+    state = request.form.get("state")
 
-        aadhar_file = save_file(request.files.get("aadhaar"), UPLOAD_FOLDER)
-        father_file = save_file(request.files.get("father_aadhaar"), UPLOAD_FOLDER)
-        photo_file = save_file(request.files.get("photo"), UPLOAD_FOLDER)
-        ror_file = save_file(request.files.get("ror"), UPLOAD_FOLDER)
+    aadhar_file = save_file(request.files.get("aadhaar"), UPLOAD_FOLDER)
+    father_file = save_file(request.files.get("father_aadhaar"), UPLOAD_FOLDER)
+    photo_file = save_file(request.files.get("photo"), UPLOAD_FOLDER)
+    ror_file = save_file(request.files.get("ror"), UPLOAD_FOLDER)
 
-        conn = sqlite3.connect(DB_PATH)
-        cur = conn.cursor()
-        cur.execute("""
-            INSERT INTO applications
-            (cert_type,name,mobile,village,post,gp,pin,district,state,
-            aadhar_file,ror_file,father_aadhar_file,applicant_photo)
-            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
-        """, (cert_type,name,mobile,village,post,gp,pin,district,state,
-              aadhar_file,ror_file,father_file,photo_file))
-        conn.commit()
-        conn.close()
-        flash("Application submitted successfully!")
-        return redirect("/thanks")
-    except Exception as e:
-        flash(f"Error: {e}")
-        return redirect("/")
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    cur.execute("""
+        INSERT INTO applications
+        (cert_type,name,mobile,village,post,gp,pin,district,state,
+        aadhar_file,ror_file,father_aadhar_file,applicant_photo)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
+    """, (cert_type,name,mobile,village,post,gp,pin,district,state,
+          aadhar_file,ror_file,father_file,photo_file))
+    conn.commit()
+    conn.close()
+    flash("Application submitted successfully!")
+    return redirect("/thanks")
 
 @app.route("/thanks")
 def thanks():
