@@ -1,70 +1,30 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Download Receipt</title>
-    <style>
-        body {
-            font-family: Arial;
-            background: #000;
-            padding: 20px;
-            color: white;
-            text-align: center;
-        }
-
-        .box {
-            width: 380px;
-            margin: auto;
-            background: rgba(255,255,255,0.12);
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 0 15px rgba(255,255,255,0.18);
-        }
-
-        button {
-            width: 100%;
-            padding: 12px;
-            background: #4b7bec;
-            border: none;
-            color: white;
-            font-size: 17px;
-            border-radius: 6px;
-            margin-top: 12px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background: #3867d6;
-        }
-
-        p {
-            font-size: 18px;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Payment & Receipt</title>
+<style>
+body{font-family:Arial;background:#000;color:white;padding:20px;text-align:center;}
+img{max-width:250px;margin-top:15px;}
+button{padding:12px;background:#4b7bec;color:white;border:none;border-radius:6px;cursor:pointer;margin-top:10px;}
+</style>
 </head>
 <body>
+<h2>Application: {{ application['name'] }}</h2>
+<p>Status: {{ application['status'] }}</p>
+<p>Payment Status: {{ application['payment_status'] }}</p>
 
-<div class="box">
-
-    <h2>Receipt Download</h2>
-
-    {% if paid %}
-        <p style="color:#4bff4b;">Payment Verified ✅</p>
-        <p>You can download your receipt now.</p>
-
-        <a href="/download_receipt/{{ app_id }}">
-            <button>Download Receipt</button>
-        </a>
-
-    {% else %}
-        <p style="color:red;">Payment Not Done ❌</p>
-        <p>Please pay ₹60 first to download your receipt.</p>
-
-        <a href="/payment/{{ app_id }}">
-            <button>Go to Payment Page</button>
-        </a>
-    {% endif %}
-
-</div>
-
+{% if application['payment_status'] == 'Pending' %}
+<p>Scan QR to pay Rs. 60:</p>
+<img src="/static/{{ qr_file }}" alt="QR Code"><br><br>
+<form action="" method="POST" enctype="multipart/form-data">
+<label>Upload Payment Screenshot:</label><br>
+<input type="file" name="payment_ss" required><br><br>
+<button type="submit">Submit Payment</button>
+</form>
+{% elif application['receipt_file'] %}
+<p>Receipt is ready: <a href="/receipts/{{ application['receipt_file'] }}" target="_blank">Download Receipt</a></p>
+{% endif %}
 </body>
 </html>
