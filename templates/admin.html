@@ -43,16 +43,6 @@ input[type="file"]{width:90%;}
 <th>Certificate Type</th>
 <th>Name</th>
 <th>Mobile</th>
-<th>Village</th>
-<th>Post</th>
-<th>GP</th>
-<th>PIN</th>
-<th>District</th>
-<th>State</th>
-<th>Aadhaar</th>
-<th>ROR</th>
-<th>Father Aadhaar</th>
-<th>Photo</th>
 <th>Status</th>
 <th>Upload Receipt</th>
 <th>Upload Certificate</th>
@@ -68,38 +58,6 @@ input[type="file"]{width:90%;}
 <td>{{ app['cert_type'] }}</td>
 <td>{{ app['name'] }}</td>
 <td>{{ app['mobile'] }}</td>
-<td>{{ app['village'] }}</td>
-<td>{{ app['post'] }}</td>
-<td>{{ app['gp'] }}</td>
-<td>{{ app['pin'] }}</td>
-<td>{{ app['district'] }}</td>
-<td>{{ app['state'] }}</td>
-
-<td>
-{% if app['aadhar_file'] %}
-<a href="/uploads/{{ app['aadhar_file'] }}" target="_blank">View</a>
-{% else %}Not Uploaded{% endif %}
-</td>
-
-<td>
-{% if app['ror_file'] %}
-<a href="/uploads/{{ app['ror_file'] }}" target="_blank">View</a>
-{% else %}Not Uploaded{% endif %}
-</td>
-
-<td>
-{% if app['father_aadhar_file'] %}
-<a href="/uploads/{{ app['father_aadhar_file'] }}" target="_blank">View</a>
-{% else %}Not Uploaded{% endif %}
-</td>
-
-<td>
-{% if app['applicant_photo'] %}
-<img src="/uploads/{{ app['applicant_photo'] }}">
-{% else %}No Photo{% endif %}
-</td>
-
-<!-- STATUS UPDATE -->
 <td>
 <form action="/update_status" method="POST">
 <input type="hidden" name="id" value="{{ app['id'] }}">
@@ -115,12 +73,11 @@ input[type="file"]{width:90%;}
 
 <!-- UPLOAD RECEIPT -->
 <td>
-<form action="/upload_receipt" method="POST" enctype="multipart/form-data">
+<form action="/admin" method="POST" enctype="multipart/form-data">
 <input type="hidden" name="id" value="{{ app['id'] }}">
-<input type="file" name="receipt" accept="application/pdf" required>
+<input type="file" name="receipt" accept="application/pdf">
 <button type="submit">Upload</button>
 </form>
-
 {% if app['receipt_file'] %}
 <p><a href="/receipts/{{ app['receipt_file'] }}" target="_blank">View Receipt</a></p>
 {% endif %}
@@ -128,12 +85,11 @@ input[type="file"]{width:90%;}
 
 <!-- UPLOAD CERTIFICATE -->
 <td>
-<form action="/upload_certificate" method="POST" enctype="multipart/form-data">
+<form action="/admin" method="POST" enctype="multipart/form-data">
 <input type="hidden" name="id" value="{{ app['id'] }}">
-<input type="file" name="certificate" accept="application/pdf" required>
+<input type="file" name="certificate" accept="application/pdf">
 <button type="submit">Upload</button>
 </form>
-
 {% if app['certificate_file'] %}
 <p><a href="/receipts/{{ app['certificate_file'] }}" target="_blank">View Certificate</a></p>
 {% endif %}
@@ -141,11 +97,11 @@ input[type="file"]{width:90%;}
 
 <!-- PAYMENT CONFIRM -->
 <td>
-{% if app['payment_status'] == 'Completed' %}
+{% if app['payment_status'] == 'Paid' %}
 <b style="color:green;">Paid ✔</b>
 {% else %}
-<form action="/confirm_payment" method="POST">
-<input type="hidden" name="id" value="{{ app['id'] }}">
+<form action="/upload_payment/{{ app['id'] }}" method="POST" enctype="multipart/form-data">
+<input type="file" name="payment_ss" required>
 <button type="submit" style="background:#27ae60;color:white;">Confirm</button>
 </form>
 {% endif %}
@@ -165,4 +121,4 @@ input[type="file"]{width:90%;}
 </tbody>
 </table>
 </body>
-</html>
+  </html>
