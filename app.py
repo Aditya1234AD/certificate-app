@@ -3,7 +3,7 @@ import sqlite3
 import os
 
 app = Flask(__name__)
-app.secret_key = "something_super_secret"  # Required for session management
+app.secret_key = "something_super_secret"
 
 # ------------------- FOLDERS -------------------
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -12,9 +12,9 @@ UPLOAD_FOLDER = os.path.join(BASE_DIR, "static/uploads")
 RECEIPT_FOLDER = os.path.join(BASE_DIR, "static/receipts")
 PAYMENT_FOLDER = os.path.join(BASE_DIR, "static/payments")
 DB_DIR = os.path.join(BASE_DIR, "data")
-QR_FILE = os.path.join(BASE_DIR, "static/your_qr.png")  # Your payment QR
+QR_FILE = "your_qr.png"  # Inside static folder
 
-# Safely create folders (fixed for deployment)
+# Safely create folders
 for folder in [UPLOAD_FOLDER, RECEIPT_FOLDER, PAYMENT_FOLDER, DB_DIR]:
     if not os.path.exists(folder):
         os.makedirs(folder)
@@ -59,11 +59,12 @@ def init_db():
 
 init_db()
 
-# ------------------- ADMIN CREDENTIALS -------------------
+# ------------------- ADMIN -------------------
 ADMIN_USERNAME = "admin"
-ADMIN_PASSWORD = "12345"  # Change this
+ADMIN_PASSWORD = "12345"
 
-# ------------------- CLIENT PAGES -------------------
+# ------------------- ROUTES -------------------
+
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -83,7 +84,7 @@ def submit_form():
 
         aadhar = request.files.get("aadhaar")
         father_aadhar = request.files.get("father_aadhaar")
-        applicant_photo = request.files.get("photo")
+        photo = request.files.get("photo")
         ror = request.files.get("ror")
 
         def save_file(file, folder):
@@ -95,7 +96,7 @@ def submit_form():
 
         aadhar_file = save_file(aadhar, UPLOAD_FOLDER)
         father_aadhar_file = save_file(father_aadhar, UPLOAD_FOLDER)
-        photo_file = save_file(applicant_photo, UPLOAD_FOLDER)
+        photo_file = save_file(photo, UPLOAD_FOLDER)
         ror_file = save_file(ror, UPLOAD_FOLDER)
 
         conn = sqlite3.connect(DB_PATH)
@@ -113,14 +114,13 @@ def submit_form():
         return redirect("/thanks")
 
     except Exception as e:
-        print("Error submitting application:", e)
-        return f"Error submitting application: {e}"
+        return f"Error: {e}"
 
 @app.route("/thanks")
 def thanks():
     return render_template("thanks.html")
 
-# ------------------- CLIENT STATUS -------------------
+# ------------------- STATUS -------------------
 @app.route("/status")
 def status_page():
     return render_template("status.html")
@@ -129,51 +129,46 @@ def status_page():
 def check_status():
     mobile = request.form["mobile"]
     conn = sqlite3.connect(DB_PATH)
-    c = conn.cursor()
-    c.execute("SELECT id, status, payment_status FROM applications WHERE mobile=?", (mobile,))
-    result = c.fetchone()
+    conn.row_factory = sqlite3.Row
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM applications WHERE mobile=?", (mobile,))
+    result = cur.fetchone()
     conn.close()
     if result:
-        app_id, status, payment_status = result
-        return render_template("status.html", status=status, payment_status=payment_status, app_id=app_id)
+        return render_template("status.html", application=result, qr_file=QR_FILE)
     else:
         return render_template("status.html", message="No application found for this mobile number.")
 
-# ------------------- PAYMENT PAGE -------------------
+# ------------------- PAYMENT / RECEIPT -------------------
 @app.route("/receipt/<int:app_id>", methods=["GET", "POST"])
 def receipt_page(app_id):
     conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
     c = conn.cursor()
-    c.execute("SELECT payment_status, receipt_file FROM applications WHERE id=?", (app_id,))
-    result = c.fetchone()
+    c.execute("SELECT * FROM applications WHERE id=?", (app_id,))
+    application = c.fetchone()
     conn.close()
 
-    if not result:
+    if not application:
         return "Application not found."
-
-    payment_status, receipt_file = result
 
     if request.method == "POST":
         payment_file = request.files.get("payment_ss")
         if payment_file and payment_file.filename != "":
-            filename = payment_file.filename
-            path = os.path.join(PAYMENT_FOLDER, filename)
+            path = os.path.join(PAYMENT_FOLDER, payment_file.filename)
             payment_file.save(path)
             conn = sqlite3.connect(DB_PATH)
             c = conn.cursor()
-            c.execute("UPDATE applications SET payment_ss=?, payment_status='Paid' WHERE id=?", (filename, app_id))
+            c.execute("UPDATE applications SET payment_ss=?, payment_status='Paid' WHERE id=?", 
+                      (payment_file.filename, app_id))
             conn.commit()
             conn.close()
             flash("Payment screenshot uploaded successfully!")
             return redirect(url_for("receipt_page", app_id=app_id))
 
-    return render_template("receipt_download.html",
-                           app_id=app_id,
-                           payment_status=payment_status,
-                           receipt_file=receipt_file,
-                           qr_file="your_qr.png")
+    return render_template("receipt_download.html", application=application, qr_file=QR_FILE)
 
-# ------------------- SERVE FILES -------------------
+# ------------------- FILE SERVE -------------------
 @app.route("/uploads/<path:filename>")
 def uploaded_file(filename):
     return send_from_directory(UPLOAD_FOLDER, filename)
@@ -186,7 +181,7 @@ def payment_file(filename):
 def receipt_file(filename):
     return send_from_directory(RECEIPT_FOLDER, filename)
 
-# ------------------- ADMIN -------------------
+# ------------------- ADMIN LOGIN -------------------
 @app.route("/admin-login", methods=["GET", "POST"])
 def admin_login():
     if request.method == "POST":
@@ -196,7 +191,7 @@ def admin_login():
             session["admin_logged_in"] = True
             return redirect(url_for("admin_dashboard"))
         else:
-            flash("Invalid username or password!")
+            flash("Invalid credentials!")
             return redirect(url_for("admin_login"))
     return render_template("admin_login.html")
 
@@ -219,8 +214,8 @@ def admin_logout():
 
 @app.route("/update_status", methods=["POST"])
 def update_status():
-    app_id = request.form["id"]
-    status = request.form["status"]
+    app_id = request.form.get("id")
+    status = request.form.get("status")
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute("UPDATE applications SET status=? WHERE id=?", (status, app_id))
@@ -231,22 +226,22 @@ def update_status():
 
 @app.route("/delete_application", methods=["POST"])
 def delete_application():
-    app_id = request.form["id"]
+    app_id = request.form.get("id")
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
-    c.execute("SELECT aadhar_file, ror_file, father_aadhar_file, applicant_photo, receipt_file, payment_ss FROM applications WHERE id=?", (app_id,))
+    c.execute("SELECT aadhar_file, ror_file, father_aadhar_file, applicant_photo, payment_ss, receipt_file FROM applications WHERE id=?", (app_id,))
     files = c.fetchone()
     if files:
         for file in files:
             if file:
-                for folder in [UPLOAD_FOLDER, RECEIPT_FOLDER, PAYMENT_FOLDER]:
+                for folder in [UPLOAD_FOLDER, PAYMENT_FOLDER, RECEIPT_FOLDER]:
                     path = os.path.join(folder, file)
                     if os.path.exists(path):
                         os.remove(path)
     c.execute("DELETE FROM applications WHERE id=?", (app_id,))
     conn.commit()
     conn.close()
-    flash("Application and uploaded files deleted successfully!")
+    flash("Application deleted successfully!")
     return redirect("/admin")
 
 # ------------------- RUN -------------------
