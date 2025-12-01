@@ -13,7 +13,7 @@ STATIC_DIR = os.path.join(BASE_DIR, "static")
 UPLOAD_FOLDER = os.path.join(STATIC_DIR, "uploads")
 RECEIPT_FOLDER = os.path.join(STATIC_DIR, "receipts")
 PAYMENT_FOLDER = os.path.join(STATIC_DIR, "payments")
-QR_FILE = os.path.join(STATIC_DIR, "static/Screenshot_20251201_163839.JPG")  # Put your QR code image here
+QR_FILE = os.path.join(STATIC_DIR, "static/Screenshot_20251201_163839.JPG")  # Your QR code image
 
 # ------------------- CREATE FOLDERS SAFELY -------------------
 for folder in [UPLOAD_FOLDER, RECEIPT_FOLDER, PAYMENT_FOLDER]:
@@ -137,15 +137,21 @@ def admin_dashboard():
     conn.row_factory = sqlite3.Row
     cur = conn.cursor()
 
-    # Upload certificate (only by admin)
+    # Upload certificate
     if request.method=="POST":
         app_id = request.form.get("id")
         cert_file = request.files.get("certificate")
+        receipt_file = request.files.get("receipt")
         if cert_file:
             filename = save_file(cert_file, RECEIPT_FOLDER)
             cur.execute("UPDATE applications SET certificate_file=? WHERE id=?", (filename, app_id))
             conn.commit()
             flash("Certificate uploaded successfully!")
+        if receipt_file:
+            filename = save_file(receipt_file, RECEIPT_FOLDER)
+            cur.execute("UPDATE applications SET receipt_file=? WHERE id=?", (filename, app_id))
+            conn.commit()
+            flash("Receipt uploaded successfully!")
 
     cur.execute("SELECT * FROM applications ORDER BY id DESC")
     applications = cur.fetchall()
@@ -199,16 +205,19 @@ def status_page():
 @app.route("/check_status", methods=["POST"])
 def check_status():
     mobile = request.form.get("mobile")
+    cert_type = request.form.get("cert_type")
+    
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cur = conn.cursor()
-    cur.execute("SELECT * FROM applications WHERE mobile=?", (mobile,))
+    cur.execute("SELECT * FROM applications WHERE mobile=? AND cert_type=?", (mobile, cert_type))
     app_data = cur.fetchone()
     conn.close()
+    
     if app_data:
         return render_template("status.html", data=app_data)
     else:
-        return render_template("status.html", message="No application found for this mobile number.")
+        return render_template("status.html", message="No application found for this mobile number and certificate type.")
 
 # ------------------- UPLOAD PAYMENT SCREENSHOT -------------------
 @app.route("/upload_payment/<int:app_id>", methods=["POST"])
