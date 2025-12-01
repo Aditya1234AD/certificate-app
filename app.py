@@ -170,7 +170,7 @@ def receipt_page(app_id):
                            app_id=app_id,
                            payment_status=payment_status,
                            receipt_file=receipt_file,
-                           qr_file="your_qr.png")
+                           qr_file="static/Screenshot_20251201_163839.JPG")
 
 # ------------------- SERVE FILES -------------------
 @app.route("/uploads/<path:filename>")
