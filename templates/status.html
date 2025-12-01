@@ -3,44 +3,82 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Application Status</title>
+<title>Check Application Status</title>
 <style>
-body{font-family:Arial;background:#000;color:white;padding:20px;}
-.box{width:380px;margin:auto;background:rgba(255,255,255,0.15);backdrop-filter:blur(6px);padding:25px;border-radius:14px;text-align:center;}
-.box h2{color:#4b7bec;margin-bottom:15px;}
-input{width:90%;padding:12px;margin:10px 0;border-radius:6px;border:1px solid #aaa;}
-button{padding:12px;width:100%;background:#4b7bec;border:none;color:white;font-size:16px;border-radius:6px;cursor:pointer;}
-a{color:#4b7bec;font-weight:bold;text-decoration:none;}
-img{max-width:250px;margin-top:15px;}
+body {
+    font-family: Arial, sans-serif;
+    background: #000;
+    color: white;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+}
+.container {
+    max-width: 500px;
+    width: 100%;
+    background: #111;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 0 15px rgba(255,255,255,0.2);
+    text-align: center;
+}
+h2 {color:#4b7bec;}
+input[type="text"]{
+    width: 90%;
+    padding: 12px;
+    margin: 10px 0;
+    border-radius: 6px;
+    border: 1px solid #aaa;
+}
+button{
+    width: 95%;
+    padding: 12px;
+    margin-top: 10px;
+    background:#4b7bec;
+    color:white;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+}
+button:hover{background:#3867d6;}
+a{color:#00ffdd;font-weight:bold;text-decoration:none;}
+a:hover{text-decoration:underline;}
+img{max-width:200px;margin:10px 0;}
 </style>
 </head>
 <body>
-<div class="box">
-<h2>Check Application Status</h2>
+
+<div class="container">
+<h2>Check Your Certificate Status</h2>
+
 <form action="/check_status" method="POST">
-<input type="text" name="mobile" placeholder="Enter your mobile number" required>
-<button type="submit">Check Status</button>
+    <input type="text" name="mobile" placeholder="Enter your mobile number" required>
+    <button type="submit">Check Status</button>
 </form>
+
+{% if message %}
+<p>{{ message }}</p>
+{% endif %}
 
 {% if application %}
 <hr>
-<p><b>Status:</b> {{ application['status'] }}</p>
-<p><b>Payment:</b> {{ application['payment_status'] }}</p>
+<p><b>Certificate Status:</b> {{ application['status'] }}</p>
 
-{% if application['payment_status'] == 'Pending' %}
-<p>Scan QR below and pay Rs. 60:</p>
-<img src="/static/{{ qr_file }}" alt="QR Code"><br><br>
-<form action="/receipt/{{ application['id'] }}" method="POST" enctype="multipart/form-data">
+{% if application['payment_status'] == 'Pending' and application['certificate_file'] %}
+<p>Please pay Rs. 60 to download your certificate:</p>
+<img src="/static/{{ qr_file }}" alt="Scan QR to Pay"><br>
+<form action="/upload_payment/{{ application['id'] }}" method="POST" enctype="multipart/form-data">
 <label>Upload Payment Screenshot:</label>
 <input type="file" name="payment_ss" accept="image/*,application/pdf" required>
 <button type="submit">Submit Payment</button>
 </form>
-{% elif application['receipt_file'] %}
-<p>Your receipt is ready: <a href="/receipts/{{ application['receipt_file'] }}" target="_blank">Download Receipt</a></p>
+{% elif application['payment_status'] == 'Completed' and application['certificate_file'] %}
+<p>Your payment is completed. Download your certificate here:</p>
+<a href="/receipts/{{ application['certificate_file'] }}" target="_blank">Download Certificate</a>
+{% elif not application['certificate_file'] %}
+<p>Your certificate is not yet uploaded by admin. Please wait.</p>
 {% endif %}
 
-{% elif message %}
-<p>{{ message }}</p>
 {% endif %}
 </div>
 </body>
