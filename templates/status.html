@@ -66,7 +66,7 @@ img{max-width:200px;margin:10px 0;}
 
 {% if application['payment_status'] == 'Pending' and application['certificate_file'] %}
 <p>Please pay Rs. 60 to download your certificate:</p>
-<img src="/static/{{ qr_file }}" alt="Scan QR to Pay"><br>
+<img src="static/Screenshot_20251201_163839.JPG" alt="Scan QR to Pay"><br>
 <form action="/upload_payment/{{ application['id'] }}" method="POST" enctype="multipart/form-data">
 <label>Upload Payment Screenshot:</label>
 <input type="file" name="payment_ss" accept="image/*,application/pdf" required>
