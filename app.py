@@ -10,19 +10,16 @@ app.secret_key = "something_super_secret"
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 STATIC_DIR = os.path.join(BASE_DIR, "static")
 
-UPLOAD_FOLDER = os.path.join(STATIC_DIR, "uploads")
-RECEIPT_FOLDER = os.path.join(STATIC_DIR, "receipts")
-PAYMENT_FOLDER = os.path.join(STATIC_DIR, "payments")
-QR_FILE = "static/Screenshot_20251201_163839.JPG"  # QR code for payment in static folder
+UPLOAD_FOLDER = os.path.join(STATIC_DIR, "uploads")        # Client documents
+RECEIPT_FOLDER = os.path.join(STATIC_DIR, "receipts")      # Admin uploaded receipt
+CERT_FOLDER = os.path.join(STATIC_DIR, "certificates")     # Admin uploaded certificate
+PAYMENT_FOLDER = os.path.join(STATIC_DIR, "payments")      # Client uploaded payment screenshot
+
+QR_FILE = "/static/qr.png"   # Put qr.png in static/ folder
 
 # Safe folder creation
-for folder in [UPLOAD_FOLDER, RECEIPT_FOLDER, PAYMENT_FOLDER]:
-    if os.path.exists(folder):
-        if not os.path.isdir(folder):
-            os.remove(folder)
-            os.makedirs(folder)
-    else:
-        os.makedirs(folder)
+for folder in [UPLOAD_FOLDER, RECEIPT_FOLDER, CERT_FOLDER, PAYMENT_FOLDER]:
+    os.makedirs(folder, exist_ok=True)
 
 # ------------------- DATABASE -------------------
 DB_DIR = os.path.join(BASE_DIR, "data")
@@ -44,11 +41,15 @@ def init_db():
             pin TEXT,
             district TEXT,
             state TEXT,
+
             aadhar_file TEXT,
             ror_file TEXT,
             father_aadhar_file TEXT,
             applicant_photo TEXT,
-            certificate_file TEXT,
+
+            receipt_file TEXT,         -- admin uploaded receipt
+            certificate_file TEXT,     -- admin uploaded certificate
+
             status TEXT DEFAULT 'Pending',
             payment_status TEXT DEFAULT 'Pending'
         )
@@ -115,9 +116,7 @@ def thanks():
 @app.route("/admin-login", methods=["GET","POST"])
 def admin_login():
     if request.method=="POST":
-        username = request.form.get("username")
-        password = request.form.get("password")
-        if username==ADMIN_USERNAME and password==ADMIN_PASSWORD:
+        if request.form.get("username")==ADMIN_USERNAME and request.form.get("password")==ADMIN_PASSWORD:
             session["admin_logged_in"] = True
             return redirect("/admin")
         else:
@@ -130,60 +129,65 @@ def admin_login():
 def admin_dashboard():
     if not session.get("admin_logged_in"):
         return redirect("/admin-login")
+
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cur = conn.cursor()
 
-    # Handle certificate upload from admin
-    if request.method=="POST":
+    # Admin uploading receipt + certificate
+    if request.method == "POST":
         app_id = request.form.get("id")
-        cert_file = request.files.get("certificate")
-        filename = save_file(cert_file, RECEIPT_FOLDER)
-        if filename:
-            cur.execute("UPDATE applications SET certificate_file=?, payment_status='Pending' WHERE id=?",
-                        (filename, app_id))
-            conn.commit()
-            flash("Certificate uploaded successfully!")
+
+        receipt = request.files.get("receipt")
+        certificate = request.files.get("certificate")
+
+        if receipt:
+            rname = save_file(receipt, RECEIPT_FOLDER)
+            cur.execute("UPDATE applications SET receipt_file=? WHERE id=?", (rname, app_id))
+
+        if certificate:
+            cname = save_file(certificate, CERT_FOLDER)
+            cur.execute("UPDATE applications SET certificate_file=? WHERE id=?", (cname, app_id))
+
+        conn.commit()
+        flash("Files uploaded successfully!")
 
     cur.execute("SELECT * FROM applications ORDER BY id DESC")
     applications = cur.fetchall()
     conn.close()
     return render_template("admin.html", applications=applications)
 
-# ------------------- LOGOUT -------------------
-@app.route("/admin-logout")
-def admin_logout():
-    session.pop("admin_logged_in", None)
-    return redirect("/")
-
 # ------------------- UPDATE STATUS -------------------
 @app.route("/update_status", methods=["POST"])
 def update_status():
-    app_id = request.form.get("id")
-    status = request.form.get("status")
     conn = sqlite3.connect(DB_PATH)
-    c = conn.cursor()
-    c.execute("UPDATE applications SET status=? WHERE id=?", (status, app_id))
+    cur = conn.cursor()
+    cur.execute("UPDATE applications SET status=? WHERE id=?", 
+                (request.form.get("status"), request.form.get("id")))
     conn.commit()
     conn.close()
-    flash("Status updated successfully!")
+    flash("Status updated!")
     return redirect("/admin")
 
 # ------------------- DELETE APPLICATION -------------------
 @app.route("/delete_application", methods=["POST"])
 def delete_application():
     app_id = request.form.get("id")
+
     conn = sqlite3.connect(DB_PATH)
-    c = conn.cursor()
-    c.execute("SELECT aadhar_file, ror_file, father_aadhar_file, applicant_photo, certificate_file FROM applications WHERE id=?", (app_id,))
-    files = c.fetchone()
-    for f in files:
+    cur = conn.cursor()
+    cur.execute("SELECT aadhar_file, ror_file, father_aadhar_file, applicant_photo, receipt_file, certificate_file FROM applications WHERE id=?", (app_id,))
+    files = cur.fetchone()
+
+    # Delete files safely
+    folders = [UPLOAD_FOLDER, UPLOAD_FOLDER, UPLOAD_FOLDER, UPLOAD_FOLDER, RECEIPT_FOLDER, CERT_FOLDER]
+    for f, folder in zip(files, folders):
         if f:
-            f_path = os.path.join(STATIC_DIR, "uploads") if f != files[4] else os.path.join(RECEIPT_FOLDER, f)
-            f_path = os.path.join(f_path, f)
-            if os.path.exists(f_path):
-                os.remove(f_path)
-    c.execute("DELETE FROM applications WHERE id=?", (app_id,))
+            fpath = os.path.join(folder, f)
+            if os.path.exists(fpath):
+                os.remove(fpath)
+
+    cur.execute("DELETE FROM applications WHERE id=?", (app_id,))
     conn.commit()
     conn.close()
     flash("Application deleted!")
@@ -197,43 +201,39 @@ def status_page():
 @app.route("/check_status", methods=["POST"])
 def check_status():
     mobile = request.form.get("mobile")
+
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cur = conn.cursor()
     cur.execute("SELECT * FROM applications WHERE mobile=?", (mobile,))
     app_data = cur.fetchone()
     conn.close()
-    if app_data:
-        return render_template("status.html", application=app_data, qr_file=QR_FILE)
-    else:
-        return render_template("status.html", message="No application found for this mobile number.")
 
-# ------------------- UPLOAD PAYMENT SCREENSHOT -------------------
+    return render_template("status.html", app=app_data, qr=QR_FILE)
+
+# ------------------- PAYMENT UPLOAD -------------------
 @app.route("/upload_payment/<int:app_id>", methods=["POST"])
 def upload_payment(app_id):
     file = request.files.get("payment_ss")
     filename = save_file(file, PAYMENT_FOLDER)
+
     if filename:
         conn = sqlite3.connect(DB_PATH)
         cur = conn.cursor()
         cur.execute("UPDATE applications SET payment_status='Completed' WHERE id=?", (app_id,))
         conn.commit()
         conn.close()
-        flash("Payment confirmed! You can now download the certificate.")
+        flash("Payment verified! You can now download files.")
     return redirect("/status")
 
-# ------------------- SERVE UPLOADED FILES -------------------
-@app.route("/uploads/<path:filename>")
-def uploaded_file(filename):
-    return send_from_directory(UPLOAD_FOLDER, filename)
-
-@app.route("/receipts/<path:filename>")
+# ------------------- FILE DOWNLOADS -------------------
+@app.route("/certificate/<filename>")
 def certificate_file(filename):
-    return send_from_directory(RECEIPT_FOLDER, filename)
+    return send_from_directory(CERT_FOLDER, filename)
 
-@app.route("/payments/<path:filename>")
-def payment_file(filename):
-    return send_from_directory(PAYMENT_FOLDER, filename)
+@app.route("/receipt/<filename>")
+def receipt_file(filename):
+    return send_from_directory(RECEIPT_FOLDER, filename)
 
 # ------------------- RUN -------------------
 if __name__=="__main__":
