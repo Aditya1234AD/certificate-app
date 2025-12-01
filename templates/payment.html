@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Payment</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: #000;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        .box {
+            background: rgba(255,255,255,0.1);
+            padding: 25px;
+            border-radius: 12px;
+            width: 350px;
+            margin: auto;
+            backdrop-filter: blur(4px);
+        }
+        img {
+            width: 220px;
+            height: 220px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            box-shadow: 0 0 12px rgba(255,255,255,0.4);
+        }
+        input, button {
+            margin-top: 10px;
+            width: 100%;
+            padding: 12px;
+            border-radius: 6px;
+            border: none;
+        }
+        button {
+            background: #4b7bec;
+            color: white;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="box">
+    <h2>Pay ₹60 to Download Receipt</h2>
+
+    <p><b>Scan this QR code:</b></p>
+
+    <!-- 🔥 SHOW YOUR QR CODE HERE -->
+    <img src="/static/qr.png" alt="QR Code">
+
+    <p>Or pay to UPI ID:</p>
+    <p style="font-size:18px; font-weight:bold;">yourupi@bank</p>
+
+    <form action="/upload_payment" method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="id" value="{{ id }}">
+
+        <p style="margin-top:10px;">Upload Payment Screenshot:</p>
+        <input type="file" name="pay_image" required>
+
+        <button type="submit">Submit Payment</button>
+    </form>
+</div>
+
+</body>
+      </html>
