@@ -13,9 +13,9 @@ STATIC_DIR = os.path.join(BASE_DIR, "static")
 UPLOAD_FOLDER = os.path.join(STATIC_DIR, "uploads")
 RECEIPT_FOLDER = os.path.join(STATIC_DIR, "receipts")
 PAYMENT_FOLDER = os.path.join(STATIC_DIR, "payments")
-QR_FILE = "static/your_qr.png"  # QR code image
+QR_FILE = os.path.join(STATIC_DIR, "your_qr.png")  # Put your QR code image here
 
-# Safe folder creation
+# ------------------- CREATE FOLDERS SAFELY -------------------
 for folder in [UPLOAD_FOLDER, RECEIPT_FOLDER, PAYMENT_FOLDER]:
     os.makedirs(folder, exist_ok=True)
 
@@ -32,7 +32,7 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             cert_type TEXT,
             name TEXT,
-            mobile TEXT UNIQUE,
+            mobile TEXT,
             village TEXT,
             post TEXT,
             gp TEXT,
@@ -72,36 +72,41 @@ def save_file(file, folder):
 def index():
     return render_template("index.html")
 
+# ------------------- SUBMIT APPLICATION -------------------
 @app.route("/submit", methods=["POST"])
 def submit():
-    cert_type = request.form.get("cert_type")
-    name = request.form.get("name")
-    mobile = request.form.get("mobile")
-    village = request.form.get("village")
-    post = request.form.get("post")
-    gp = request.form.get("gp")
-    pin = request.form.get("pin")
-    district = request.form.get("district")
-    state = request.form.get("state")
+    try:
+        cert_type = request.form.get("cert_type")
+        name = request.form.get("name")
+        mobile = request.form.get("mobile")
+        village = request.form.get("village")
+        post = request.form.get("post")
+        gp = request.form.get("gp")
+        pin = request.form.get("pin")
+        district = request.form.get("district")
+        state = request.form.get("state")
 
-    photo_file = save_file(request.files.get("photo"), UPLOAD_FOLDER)
-    aadhaar_file = save_file(request.files.get("aadhaar"), UPLOAD_FOLDER)
-    father_file = save_file(request.files.get("father_aadhaar"), UPLOAD_FOLDER)
-    ror_file = save_file(request.files.get("ror"), UPLOAD_FOLDER)
+        aadhar_file = save_file(request.files.get("aadhaar"), UPLOAD_FOLDER)
+        father_file = save_file(request.files.get("father_aadhaar"), UPLOAD_FOLDER)
+        photo_file = save_file(request.files.get("photo"), UPLOAD_FOLDER)
+        ror_file = save_file(request.files.get("ror"), UPLOAD_FOLDER)
 
-    conn = sqlite3.connect(DB_PATH)
-    cur = conn.cursor()
-    cur.execute("""
-        INSERT INTO applications
-        (cert_type, name, mobile, village, post, gp, pin, district, state,
-         aadhar_file, ror_file, father_aadhar_file, applicant_photo)
-        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
-    """, (cert_type, name, mobile, village, post, gp, pin, district, state,
-          aadhaar_file, ror_file, father_file, photo_file))
-    conn.commit()
-    conn.close()
-    flash("Application submitted successfully!")
-    return redirect("/thanks")
+        conn = sqlite3.connect(DB_PATH)
+        cur = conn.cursor()
+        cur.execute("""
+            INSERT INTO applications
+            (cert_type,name,mobile,village,post,gp,pin,district,state,
+            aadhar_file,ror_file,father_aadhar_file,applicant_photo)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
+        """, (cert_type,name,mobile,village,post,gp,pin,district,state,
+              aadhar_file,ror_file,father_file,photo_file))
+        conn.commit()
+        conn.close()
+        flash("Application submitted successfully!")
+        return redirect("/thanks")
+    except Exception as e:
+        flash(f"Error: {e}")
+        return redirect("/")
 
 @app.route("/thanks")
 def thanks():
@@ -126,24 +131,20 @@ def admin_login():
 def admin_dashboard():
     if not session.get("admin_logged_in"):
         return redirect("/admin-login")
+    
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cur = conn.cursor()
 
+    # Upload certificate (only by admin)
     if request.method=="POST":
         app_id = request.form.get("id")
         cert_file = request.files.get("certificate")
-        receipt_file = request.files.get("receipt")
-
         if cert_file:
             filename = save_file(cert_file, RECEIPT_FOLDER)
             cur.execute("UPDATE applications SET certificate_file=? WHERE id=?", (filename, app_id))
-        if receipt_file:
-            filename = save_file(receipt_file, PAYMENT_FOLDER)
-            cur.execute("UPDATE applications SET receipt_file=?, payment_status='Paid' WHERE id=?", (filename, app_id))
-
-        conn.commit()
-        flash("Files uploaded successfully!")
+            conn.commit()
+            flash("Certificate uploaded successfully!")
 
     cur.execute("SELECT * FROM applications ORDER BY id DESC")
     applications = cur.fetchall()
@@ -175,12 +176,12 @@ def delete_application():
     app_id = request.form.get("id")
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
-    c.execute("SELECT aadhar_file, ror_file, father_aadhar_file, applicant_photo, receipt_file, certificate_file FROM applications WHERE id=?", (app_id,))
+    c.execute("SELECT aadhar_file, ror_file, father_aadhar_file, applicant_photo, certificate_file, receipt_file FROM applications WHERE id=?", (app_id,))
     files = c.fetchone()
-    paths = [UPLOAD_FOLDER, UPLOAD_FOLDER, UPLOAD_FOLDER, UPLOAD_FOLDER, PAYMENT_FOLDER, RECEIPT_FOLDER]
-    for i, f in enumerate(files):
+    for idx, f in enumerate(files):
         if f:
-            f_path = os.path.join(paths[i], f)
+            folder = UPLOAD_FOLDER if idx<4 else RECEIPT_FOLDER
+            f_path = os.path.join(folder, f)
             if os.path.exists(f_path):
                 os.remove(f_path)
     c.execute("DELETE FROM applications WHERE id=?", (app_id,))
@@ -204,22 +205,36 @@ def check_status():
     app_data = cur.fetchone()
     conn.close()
     if app_data:
-        return render_template("status.html", data=app_data, qr_file=QR_FILE)
+        return render_template("status.html", data=app_data)
     else:
         return render_template("status.html", message="No application found for this mobile number.")
 
-# ------------------- DOWNLOAD FILES -------------------
-@app.route("/uploads/<filename>")
-def uploaded_file(filename):
-    return send_from_directory(UPLOAD_FOLDER, filename, as_attachment=True)
+# ------------------- UPLOAD PAYMENT SCREENSHOT -------------------
+@app.route("/upload_payment/<int:app_id>", methods=["POST"])
+def upload_payment(app_id):
+    file = request.files.get("payment_ss")
+    if file:
+        filename = save_file(file, PAYMENT_FOLDER)
+        conn = sqlite3.connect(DB_PATH)
+        cur = conn.cursor()
+        cur.execute("UPDATE applications SET payment_status='Paid', receipt_file=? WHERE id=?", (filename, app_id))
+        conn.commit()
+        conn.close()
+        flash("Payment confirmed! You can now download the certificate.")
+    return redirect("/status")
 
-@app.route("/receipts/<filename>")
-def receipt_file(filename):
+# ------------------- DOWNLOAD FILES -------------------
+@app.route("/uploads/<path:filename>")
+def uploaded_file(filename):
+    return send_from_directory(UPLOAD_FOLDER, filename)
+
+@app.route("/receipts/<path:filename>")
+def download_receipt(filename):
     return send_from_directory(RECEIPT_FOLDER, filename, as_attachment=True)
 
-@app.route("/payments/<filename>")
-def payment_file(filename):
-    return send_from_directory(PAYMENT_FOLDER, filename, as_attachment=True)
+@app.route("/certificate/<path:filename>")
+def download_certificate(filename):
+    return send_from_directory(RECEIPT_FOLDER, filename, as_attachment=True)
 
 # ------------------- RUN -------------------
 if __name__=="__main__":
