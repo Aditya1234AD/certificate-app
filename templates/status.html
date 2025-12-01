@@ -1,15 +1,16 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Check Application Status</title>
-
     <style>
         body {
-            font-family: Arial;
-            background: #000;   /* Match dark theme */
-            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #000; /* Dark theme */
             color: white;
-            transition: background 0.5s ease;
+            padding: 20px;
+            text-align: center;
         }
 
         .box {
@@ -20,7 +21,6 @@
             padding: 25px;
             border-radius: 14px;
             box-shadow: 0 0 15px rgba(255,255,255,0.15);
-            text-align: center;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
@@ -32,7 +32,6 @@
         h2 {
             color: #4b7bec;
             margin-bottom: 15px;
-            transition: color 0.3s ease;
         }
 
         input {
@@ -41,25 +40,24 @@
             margin: 10px 0;
             border-radius: 6px;
             border: 1px solid #aaa;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
         }
 
         input:focus {
             border-color: #4b7bec;
-            box-shadow: 0 0 5px rgba(75,123,236,0.5);
             outline: none;
+            box-shadow: 0 0 5px rgba(75,123,236,0.5);
         }
 
         button {
-            padding: 12px;
             width: 100%;
+            padding: 12px;
+            margin-top: 10px;
             background: #4b7bec;
             border: none;
             color: white;
             font-size: 16px;
             border-radius: 6px;
             cursor: pointer;
-            transition: background 0.3s ease, transform 0.2s ease;
         }
 
         button:hover {
@@ -67,31 +65,15 @@
             transform: scale(1.03);
         }
 
-        /* 🌈 RAINBOW CONTAINER */
-        .rainbow-container {
-            margin-top: 20px !important;
-            padding: 15px !important;
-            border-radius: 14px !important;
-
-            background: linear-gradient(45deg,
-                red, orange, yellow, green, cyan, blue, violet
-            ) !important;
-
-            background-size: 600% 600% !important;
-            animation: rainbowMove 4s ease infinite !important;
-
-            color: black !important;              /* 🔥 Changed to BLACK */
-            font-size: 18px !important;
+        .status-box {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 12px;
+            background: linear-gradient(45deg, red, orange, yellow, green, cyan, blue, violet);
+            background-size: 600% 600%;
+            animation: rainbowMove 4s ease infinite;
+            color: black;
             font-weight: bold;
-
-            opacity: 1 !important;
-            transform: translateY(0) !important;
-            transition: box-shadow 0.3s ease, transform 0.3s ease;
-        }
-
-        .rainbow-container:hover {
-            box-shadow: 0px 0px 25px rgba(255,255,255,0.4);
-            transform: translateY(-3px);
         }
 
         @keyframes rainbowMove {
@@ -99,8 +81,22 @@
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
         }
-    </style>
 
+        a {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 10px 15px;
+            background: #4b7bec;
+            color: white;
+            border-radius: 6px;
+            text-decoration: none;
+        }
+
+        a:hover {
+            background: #3867d6;
+        }
+
+    </style>
 </head>
 <body>
 
@@ -112,20 +108,21 @@
         <button type="submit">Check Status</button>
     </form>
 
-    <!-- 🌈 Rainbow Container -->
-    <div id="rainbowBox" class="rainbow-container">
-
+    <div class="status-box">
         {% if status %}
             <p><b>Your application status:</b> {{ status }}</p>
+
+            {% if status == "Approved" %}
+                <p>Your certificate is approved!</p>
+                <a href="/receipt/{{ app_id }}">Go to Payment / Download Receipt</a>
+            {% endif %}
 
         {% elif message %}
             <p>{{ message }}</p>
 
         {% else %}
-            <!-- Empty placeholder so design stays same -->
             <p style="opacity:0;">.</p>
         {% endif %}
-
     </div>
 </div>
 
