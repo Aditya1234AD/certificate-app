@@ -202,6 +202,23 @@ def upload_payment(app_id):
         conn.close()
         flash("Payment completed successfully!")
     return redirect("/status")
+    
+    # ------------------- UPLOAD CERTIFICATE -------------------
+@app.route("/upload_certificate", methods=["POST"])
+def upload_certificate():
+    app_id = request.form.get("id")
+    file = request.files.get("certificate")
+    if file:
+        filename = save_file(file, RECEIPT_FOLDER)  # Save in receipts folder
+        conn = sqlite3.connect(DB_PATH)
+        cur = conn.cursor()
+        cur.execute("UPDATE applications SET certificate_file=? WHERE id=?", (filename, app_id))
+        conn.commit()
+        conn.close()
+        flash("Certificate uploaded successfully!")
+    else:
+        flash("No file selected!")
+    return redirect("/admin")
 
 # ------------------- DOWNLOAD FILES -------------------
 @app.route("/uploads/<path:filename>")
