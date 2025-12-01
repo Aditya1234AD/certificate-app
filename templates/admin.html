@@ -101,6 +101,11 @@
             color: green;
             margin-bottom: 15px;
         }
+
+        .small-img {
+            width: 80px;
+            border-radius: 8px;
+        }
     </style>
 </head>
 <body>
@@ -121,87 +126,81 @@
         <thead>
             <tr>
                 <th>ID</th>
-                <th>Certificate Type</th>
+                <th>Certificate</th>
                 <th>Name</th>
                 <th>Mobile</th>
                 <th>Village</th>
-                <th>Post</th>
-                <th>GP</th>
-                <th>PIN</th>
-                <th>District</th>
-                <th>State</th>
-                <th>Aadhaar</th>
-                <th>ROR</th>
-                <th>Father Aadhaar</th>
-                <th>Applicant Photo</th>
+                <th>Files</th>
+                <th>Photo</th>
                 <th>Status</th>
-                <th>Update</th>
-                <th>Delete</th>
+                <th>Payment</th>
+                <th>Receipt</th>
+                <th>Actions</th>
             </tr>
         </thead>
 
         <tbody>
             {% for app in applications %}
             <tr>
-                <td>{{ app[0] }}</td>
-                <td>{{ app[1] }}</td>
-                <td>{{ app[2] }}</td>
-                <td>{{ app[3] }}</td>
-                <td>{{ app[4] }}</td>
-                <td>{{ app[5] }}</td>
-                <td>{{ app[6] }}</td>
-                <td>{{ app[7] }}</td>
-                <td>{{ app[8] }}</td>
-                <td>{{ app[9] }}</td>
+                <td>{{ app["id"] }}</td>
+                <td>{{ app["cert_type"] }}</td>
+                <td>{{ app["name"] }}</td>
+                <td>{{ app["mobile"] }}</td>
+                <td>{{ app["village"] }}</td>
 
                 <td>
-                    {% if app[10] %}
-                        <a href="/uploads/{{ app[10] }}" target="_blank">View</a>
-                    {% else %}
-                        Not Uploaded
-                    {% endif %}
+                    {% if app["aadhar_file"] %}<a href="/uploads/{{ app['aadhar_file'] }}" target="_blank">Aadhaar</a><br>{% endif %}
+                    {% if app["father_aadhar_file"] %}<a href="/uploads/{{ app['father_aadhar_file'] }}" target="_blank">Father Aadhaar</a><br>{% endif %}
+                    {% if app["ror_file"] %}<a href="/uploads/{{ app['ror_file'] }}" target="_blank">ROR</a><br>{% endif %}
                 </td>
 
                 <td>
-                    {% if app[11] %}
-                        <a href="/uploads/{{ app[11] }}" target="_blank">View</a>
-                    {% else %}
-                        Not Uploaded
-                    {% endif %}
-                </td>
-
-                <td>
-                    {% if app[12] %}
-                        <a href="/uploads/{{ app[12] }}" target="_blank">View</a>
-                    {% else %}
-                        Not Uploaded
-                    {% endif %}
-                </td>
-
-                <td>
-                    {% if app[13] %}
-                        <img src="/uploads/{{ app[13] }}">
+                    {% if app["applicant_photo"] %}
+                        <img class="small-img" src="/uploads/{{ app['applicant_photo'] }}">
                     {% else %}
                         No Photo
                     {% endif %}
                 </td>
 
+                <td>{{ app["status"] }}</td>
+
                 <td>
-                    <form action="/update_status" method="POST">
-                        <input type="hidden" name="id" value="{{ app[0] }}">  
-                        <select name="status">
-                            <option value="Pending" {% if app[14]=='Pending' %}selected{% endif %}>Pending</option>
-                            <option value="Processing" {% if app[14]=='Processing' %}selected{% endif %}>Processing</option>
-                            <option value="Approved" {% if app[14]=='Approved' %}selected{% endif %}>Approved</option>
-                            <option value="Rejected" {% if app[14]=='Rejected' %}selected{% endif %}>Rejected</option>
+                    {% if app["payment_ss"] %}
+                        <a href="/payments/{{ app['payment_ss'] }}" target="_blank">View Payment</a><br>
+                    {% else %}
+                        Not Paid
+                    {% endif %}
+
+                    <br>
+
+                    <form action="/verify_payment" method="POST">
+                        <input type="hidden" name="id" value="{{ app['id'] }}">
+                        <select name="payment_status">
+                            <option value="Pending" {% if app['payment_status']=="Pending" %}selected{% endif %}>Pending</option>
+                            <option value="Paid" {% if app['payment_status']=="Paid" %}selected{% endif %}>Paid</option>
+                            <option value="Verified" {% if app['payment_status']=="Verified" %}selected{% endif %}>Verified</option>
                         </select>
                         <button type="submit">Update</button>
                     </form>
                 </td>
 
                 <td>
-                    <form action="/delete_application" method="POST" onsubmit="return confirm('Are you sure you want to delete this application?');">
-                        <input type="hidden" name="id" value="{{ app[0] }}">
+                    {% if app["receipt_file"] %}
+                        <a href="/receipts/{{ app['receipt_file'] }}" target="_blank">Download</a>
+                    {% else %}
+                        No Receipt
+                    {% endif %}
+
+                    <form action="/upload_receipt" method="POST" enctype="multipart/form-data">
+                        <input type="hidden" name="id" value="{{ app['id'] }}">
+                        <input type="file" name="receipt" required>
+                        <button type="submit">Upload</button>
+                    </form>
+                </td>
+
+                <td>
+                    <form action="/delete_application" method="POST" onsubmit="return confirm('Delete this application?');">
+                        <input type="hidden" name="id" value="{{ app['id'] }}">
                         <button type="submit" class="delete-btn">Delete</button>
                     </form>
                 </td>
