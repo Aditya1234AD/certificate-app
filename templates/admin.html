@@ -1,214 +1,72 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Certificate Applications</title>
-
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #eef2f3, #dfe9f3);
-            margin: 0;
-            padding: 20px;
-        }
-
-        h1 {
-            text-align: center;
-            margin-bottom: 15px;
-            color: #2c3e50;
-        }
-
-        .logout-btn {
-            display: block;
-            width: 120px;
-            margin: 0 auto 20px auto;
-            padding: 10px;
-            text-align: center;
-            background: #e74c3c;
-            color: white;
-            text-decoration: none;
-            border-radius: 6px;
-        }
-
-        .logout-btn:hover {
-            background: #c0392b;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-
-        th, td {
-            border-bottom: 1px solid #ddd;
-            padding: 12px;
-            text-align: left;
-        }
-
-        th {
-            background: #007bff;
-            color: white;
-            text-transform: uppercase;
-            font-size: 13px;
-        }
-
-        tr:hover {
-            background: #f1f1f1;
-        }
-
-        img {
-            border-radius: 6px;
-            width: 90px;
-            height: 110px;
-            object-fit: cover;
-        }
-
-        a {
-            color: #007bff;
-            font-weight: bold;
-            text-decoration: none;
-        }
-
-        a:hover {
-            text-decoration: underline;
-        }
-
-        button {
-            padding: 6px 12px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-
-        button[type="submit"] {
-            background: #4b7bec;
-            color: white;
-        }
-
-        button.delete-btn {
-            background: #e74c3c;
-            color: white;
-        }
-
-        .flash {
-            text-align: center;
-            font-size: 18px;
-            color: green;
-            margin-bottom: 15px;
-        }
-
-        .small-img {
-            width: 80px;
-            border-radius: 8px;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard</title>
+<style>
+/* styles similar to before; updated links to /static/uploads */
+body{font-family:Arial;margin:20px;background:#eef2f3;}
+h1{text-align:center;color:#2c3e50;}
+table{width:100%;border-collapse:collapse;background:white;box-shadow:0 4px 15px rgba(0,0,0,0.1);}
+th,td{padding:12px;text-align:left;border-bottom:1px solid #ddd;}
+th{background:#007bff;color:white;}
+tr:hover{background:#f1f1f1;}
+a{color:#007bff;font-weight:bold;text-decoration:none;}
+a:hover{text-decoration:underline;}
+button{padding:6px 12px;border:none;border-radius:6px;cursor:pointer;}
+button[type="submit"]{background:#4b7bec;color:white;}
+button.delete-btn{background:#e74c3c;color:white;}
+</style>
 </head>
 <body>
 
-    <h1>Admin Dashboard — Received Certificate Applications</h1>
+<h1>Admin Dashboard — Received Applications</h1>
+<a href="/admin-logout">Logout</a>
 
-    <a class="logout-btn" href="/admin-logout">Logout</a>
+<table>
+<thead>
+<tr>
+<th>ID</th><th>Certificate</th><th>Name</th><th>Mobile</th><th>Status</th>
+<th>Aadhaar</th><th>ROR</th><th>Father Aadhaar</th><th>Photo</th><th>Update</th><th>Delete</th>
+</tr>
+</thead>
+<tbody>
+{% for app in applications %}
+<tr>
+<td>{{ app['id'] }}</td>
+<td>{{ app['cert_type'] }}</td>
+<td>{{ app['name'] }}</td>
+<td>{{ app['mobile'] }}</td>
+<td>{{ app['status'] }}</td>
 
-    {% with messages = get_flashed_messages() %}
-      {% if messages %}
-        <div class="flash">
-            {{ messages[0] }}
-        </div>
-      {% endif %}
-    {% endwith %}
+<td>{% if app['aadhar_file'] %}<a href="/static/uploads/{{ app['aadhar_file'] }}" target="_blank">View</a>{% else %}N/A{% endif %}</td>
+<td>{% if app['ror_file'] %}<a href="/static/uploads/{{ app['ror_file'] }}" target="_blank">View</a>{% else %}N/A{% endif %}</td>
+<td>{% if app['father_aadhar_file'] %}<a href="/static/uploads/{{ app['father_aadhar_file'] }}" target="_blank">View</a>{% else %}N/A{% endif %}</td>
+<td>{% if app['applicant_photo'] %}<img src="/static/uploads/{{ app['applicant_photo'] }}" width="90">{% else %}No Photo{% endif %}</td>
 
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Certificate</th>
-                <th>Name</th>
-                <th>Mobile</th>
-                <th>Village</th>
-                <th>Files</th>
-                <th>Photo</th>
-                <th>Status</th>
-                <th>Payment</th>
-                <th>Receipt</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
+<td>
+<form action="/update_status" method="POST">
+<input type="hidden" name="id" value="{{ app['id'] }}">
+<select name="status">
+<option value="Pending" {% if app['status']=='Pending' %}selected{% endif %}>Pending</option>
+<option value="Processing" {% if app['status']=='Processing' %}selected{% endif %}>Processing</option>
+<option value="Approved" {% if app['status']=='Approved' %}selected{% endif %}>Approved</option>
+<option value="Rejected" {% if app['status']=='Rejected' %}selected{% endif %}>Rejected</option>
+</select>
+<button type="submit">Update</button>
+</form>
+</td>
 
-        <tbody>
-            {% for app in applications %}
-            <tr>
-                <td>{{ app["id"] }}</td>
-                <td>{{ app["cert_type"] }}</td>
-                <td>{{ app["name"] }}</td>
-                <td>{{ app["mobile"] }}</td>
-                <td>{{ app["village"] }}</td>
-
-                <td>
-                    {% if app["aadhar_file"] %}<a href="/uploads/{{ app['aadhar_file'] }}" target="_blank">Aadhaar</a><br>{% endif %}
-                    {% if app["father_aadhar_file"] %}<a href="/uploads/{{ app['father_aadhar_file'] }}" target="_blank">Father Aadhaar</a><br>{% endif %}
-                    {% if app["ror_file"] %}<a href="/uploads/{{ app['ror_file'] }}" target="_blank">ROR</a><br>{% endif %}
-                </td>
-
-                <td>
-                    {% if app["applicant_photo"] %}
-                        <img class="small-img" src="/uploads/{{ app['applicant_photo'] }}">
-                    {% else %}
-                        No Photo
-                    {% endif %}
-                </td>
-
-                <td>{{ app["status"] }}</td>
-
-                <td>
-                    {% if app["payment_ss"] %}
-                        <a href="/payments/{{ app['payment_ss'] }}" target="_blank">View Payment</a><br>
-                    {% else %}
-                        Not Paid
-                    {% endif %}
-
-                    <br>
-
-                    <form action="/verify_payment" method="POST">
-                        <input type="hidden" name="id" value="{{ app['id'] }}">
-                        <select name="payment_status">
-                            <option value="Pending" {% if app['payment_status']=="Pending" %}selected{% endif %}>Pending</option>
-                            <option value="Paid" {% if app['payment_status']=="Paid" %}selected{% endif %}>Paid</option>
-                            <option value="Verified" {% if app['payment_status']=="Verified" %}selected{% endif %}>Verified</option>
-                        </select>
-                        <button type="submit">Update</button>
-                    </form>
-                </td>
-
-                <td>
-                    {% if app["receipt_file"] %}
-                        <a href="/receipts/{{ app['receipt_file'] }}" target="_blank">Download</a>
-                    {% else %}
-                        No Receipt
-                    {% endif %}
-
-                    <form action="/upload_receipt" method="POST" enctype="multipart/form-data">
-                        <input type="hidden" name="id" value="{{ app['id'] }}">
-                        <input type="file" name="receipt" required>
-                        <button type="submit">Upload</button>
-                    </form>
-                </td>
-
-                <td>
-                    <form action="/delete_application" method="POST" onsubmit="return confirm('Delete this application?');">
-                        <input type="hidden" name="id" value="{{ app['id'] }}">
-                        <button type="submit" class="delete-btn">Delete</button>
-                    </form>
-                </td>
-
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
+<td>
+<form action="/delete_application" method="POST" onsubmit="return confirm('Are you sure?');">
+<input type="hidden" name="id" value="{{ app['id'] }}">
+<button type="submit" class="delete-btn">Delete</button>
+</form>
+</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
 </body>
-</html>
+    </html>
