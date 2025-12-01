@@ -15,7 +15,7 @@ app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 app.config["RECEIPT_FOLDER"] = RECEIPT_FOLDER
 
 # QR code image path (static folder)
-QR_FILE = "your_qr.png"
+QR_FILE = "static/Screenshot_20251201_163839.JPG"
 
 # ------------------- DATABASE -------------------
 DB_PATH = os.path.join(BASE_DIR, "data/applications.db")
