@@ -4,37 +4,151 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Apply Certificate</title>
+
 <style>
-body{font-family:Arial;margin:0;padding:15px;background:#000;color:black;}
-.container{max-width:750px;margin:auto;background:#fff;padding:20px;border-radius:14px;box-shadow:0px 0px 12px rgba(0,0,0,0.2);}
-.box{background:#ffffffcc;backdrop-filter:blur(5px);padding:18px;border-radius:14px;margin-bottom:22px;box-shadow:0px 0px 12px rgba(255,255,255,0.2);}
-h2{text-align:center;margin-bottom:15px;color:#4b7bec;font-size:26px;}
-.cert-heading{text-align:center;margin-bottom:15px;color:#27ae60;font-weight:bold;font-size:20px;}
-h3{text-align:center;margin-bottom:12px;color:black;font-size:20px;}
-label{font-weight:bold;display:block;margin-top:10px;color:black;font-size:16px;}
-input[type="text"], input[type="file"], select{width:100%;padding:10px;margin-top:6px;border:1px solid #444;border-radius:6px;background:#fff;color:black;font-size:16px;}
-button{background:#4b7bec;color:white;border:none;padding:14px 20px;width:100%;margin-top:10px;font-size:18px;border-radius:8px;cursor:pointer;}
-a{color:#0984e3;font-size:18px;font-weight:bold;text-decoration:none;}
-.link-container{text-align:center;margin-top:20px;}
-@media (max-width:600px){body{padding:10px;}.container{padding:15px;}h2{font-size:22px;}h3,.cert-heading{font-size:18px;}label{font-size:15px;}input[type="text"],input[type="file"],select{font-size:15px;padding:9px;}button{font-size:17px;padding:12px;}a{font-size:16px;}}
+body{
+    font-family:Arial;
+    margin:0;
+    padding:15px;
+    background:#000;
+    color:black;
+}
+
+.container{
+    max-width:750px;
+    margin:auto;
+    background:#fff;
+    padding:20px;
+    border-radius:14px;
+    box-shadow:0px 0px 12px rgba(0,0,0,0.2);
+}
+
+.box{
+    background:#ffffffcc;
+    backdrop-filter:blur(5px);
+    padding:18px;
+    border-radius:14px;
+    margin-bottom:22px;
+    box-shadow:0px 0px 12px rgba(255,255,255,0.2);
+}
+
+h2{
+    text-align:center;
+    margin-bottom:15px;
+    color:#4b7bec;
+    font-size:26px;
+}
+
+.cert-heading{
+    text-align:center;
+    margin-bottom:15px;
+    color:#27ae60;
+    font-weight:bold;
+    font-size:20px;
+}
+
+h3{
+    text-align:center;
+    margin-bottom:12px;
+    color:black;
+    font-size:20px;
+}
+
+label{
+    font-weight:bold;
+    display:block;
+    margin-top:10px;
+    color:black;
+    font-size:16px;
+}
+
+input[type="text"], input[type="file"], select{
+    width:100%;
+    padding:10px;
+    margin-top:6px;
+    border:1px solid #444;
+    border-radius:6px;
+    background:#fff;
+    color:black;
+    font-size:16px;
+}
+
+/* FIXED: Dropdown visible clearly */
+select {
+    color: black;
+    background: white;
+}
+
+option {
+    color: black;
+    background: white;
+}
+
+button{
+    background:#4b7bec;
+    color:white;
+    border:none;
+    padding:14px 20px;
+    width:100%;
+    margin-top:10px;
+    font-size:18px;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+a{
+    color:#0984e3;
+    font-size:18px;
+    font-weight:bold;
+    text-decoration:none;
+}
+
+.link-container{
+    text-align:center;
+    margin-top:20px;
+}
+
+@media (max-width:600px){
+    body{padding:10px;}
+    .container{padding:15px;}
+    h2{font-size:22px;}
+    h3,.cert-heading{font-size:18px;}
+    label{font-size:15px;}
+    input[type="text"], input[type="file"], select{
+        font-size:15px;
+        padding:9px;
+    }
+    button{
+        font-size:17px;
+        padding:12px;
+    }
+    a{font-size:16px;}
+}
 </style>
 </head>
+
 <body>
+
 <div class="container">
 <h2>Certificate Application Form</h2>
+
 <form action="/submit" method="POST" enctype="multipart/form-data">
+
 <div class="box">
 <h3 class="cert-heading">Select Certificate Type</h3>
+
 <label for="cert_type">Certificate Type:</label>
-<select name="cert_type" id="cert_type">
-<option value="Caste Certificate">Caste Certificate</option>
-<option value="Income Certificate">Income Certificate</option>
-<option value="Resident Certificate">Resident Certificate</option>
+<select name="cert_type" id="cert_type" required>
+    <option value="" disabled selected>-- Select Certificate Type --</option>
+    <option value="Caste Certificate">Caste Certificate</option>
+    <option value="Income Certificate">Income Certificate</option>
+    <option value="Resident Certificate">Resident Certificate</option>
 </select>
 </div>
 
 <div class="box">
 <h3>Applicant Details</h3>
+
 <label>Enter Your Name:</label><input type="text" name="name" required>
 <label>Enter Your Mobile Number:</label><input type="text" name="mobile" required>
 <label>Village Name:</label><input type="text" name="village" required>
@@ -43,13 +157,18 @@ a{color:#0984e3;font-size:18px;font-weight:bold;text-decoration:none;}
 <label>Pin Code:</label><input type="text" name="pin" required>
 <label>District:</label><input type="text" name="district" required>
 <label>State:</label><input type="text" name="state" required>
+
 </div>
 
 <div class="box">
 <h3>Upload Required Documents</h3>
+
 <label>Applicant Photo:</label><input type="file" name="photo" accept="image/*" required>
+
 <label>Applicant Aadhaar Card:</label><input type="file" name="aadhaar" accept="image/*,application/pdf" required>
+
 <label>Father's Aadhaar Card:</label><input type="file" name="father_aadhaar" accept="image/*,application/pdf" required>
+
 <label>ROR Document (optional):</label><input type="file" name="ror" accept="image/*,application/pdf">
 </div>
 
@@ -59,7 +178,9 @@ a{color:#0984e3;font-size:18px;font-weight:bold;text-decoration:none;}
 <a href="/status">Check Application Status</a> | 
 <a href="/admin-login">Admin Login</a>
 </div>
+
 </form>
 </div>
+
 </body>
-</html>
+                                          </html>
