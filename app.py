@@ -17,12 +17,7 @@ QR_FILE = "static/your_qr.png"  # QR code image
 
 # Safe folder creation
 for folder in [UPLOAD_FOLDER, RECEIPT_FOLDER, PAYMENT_FOLDER]:
-    if os.path.exists(folder):
-        if not os.path.isdir(folder):
-            os.remove(folder)
-            os.makedirs(folder)
-    else:
-        os.makedirs(folder)
+    os.makedirs(folder, exist_ok=True)
 
 # ------------------- DATABASE -------------------
 DB_DIR = os.path.join(BASE_DIR, "data")
@@ -77,7 +72,6 @@ def save_file(file, folder):
 def index():
     return render_template("index.html")
 
-# ------------------- SUBMIT APPLICATION -------------------
 @app.route("/submit", methods=["POST"])
 def submit():
     cert_type = request.form.get("cert_type")
@@ -90,7 +84,6 @@ def submit():
     district = request.form.get("district")
     state = request.form.get("state")
 
-    # Use correct HTML 'name' attributes
     photo_file = save_file(request.files.get("photo"), UPLOAD_FOLDER)
     aadhaar_file = save_file(request.files.get("aadhaar"), UPLOAD_FOLDER)
     father_file = save_file(request.files.get("father_aadhaar"), UPLOAD_FOLDER)
@@ -107,6 +100,7 @@ def submit():
           aadhaar_file, ror_file, father_file, photo_file))
     conn.commit()
     conn.close()
+    flash("Application submitted successfully!")
     return redirect("/thanks")
 
 @app.route("/thanks")
@@ -136,7 +130,6 @@ def admin_dashboard():
     conn.row_factory = sqlite3.Row
     cur = conn.cursor()
 
-    # Upload certificate or receipt
     if request.method=="POST":
         app_id = request.form.get("id")
         cert_file = request.files.get("certificate")
@@ -216,13 +209,17 @@ def check_status():
         return render_template("status.html", message="No application found for this mobile number.")
 
 # ------------------- DOWNLOAD FILES -------------------
-@app.route("/downloads/receipt/<filename>")
-def download_receipt(filename):
-    return send_from_directory(PAYMENT_FOLDER, filename, as_attachment=True)
+@app.route("/uploads/<filename>")
+def uploaded_file(filename):
+    return send_from_directory(UPLOAD_FOLDER, filename, as_attachment=True)
 
-@app.route("/downloads/certificate/<filename>")
-def download_certificate(filename):
+@app.route("/receipts/<filename>")
+def receipt_file(filename):
     return send_from_directory(RECEIPT_FOLDER, filename, as_attachment=True)
+
+@app.route("/payments/<filename>")
+def payment_file(filename):
+    return send_from_directory(PAYMENT_FOLDER, filename, as_attachment=True)
 
 # ------------------- RUN -------------------
 if __name__=="__main__":
