@@ -95,29 +95,29 @@
     {% if data %}
         <h3>Status: {{ data['status'] }}</h3>
 
-        <!-- IF PAYMENT PENDING -->
+        <!-- PAYMENT PENDING -->
         {% if data['payment_status'] == "Pending" %}
             <div class="pending-text">Payment Pending (₹60)</div>
 
             <div class="qr-box">
                 <p style="color:black;"><b>Scan & Pay</b></p>
                 <img src="/static/your_qr.png" width="250">
-                <p style="color:black;">After payment, the admin will verify and enable download.</p>
+                <p style="color:black;">After payment, admin will approve and enable download.</p>
             </div>
         {% endif %}
 
-        <!-- IF PAYMENT DONE -->
+        <!-- PAYMENT COMPLETED -->
         {% if data['payment_status'] == "Paid" %}
             <div class="paid-text">Payment Completed</div>
 
             {% if data['receipt_file'] %}
-                <a href="{{ url_for('download_file', filename=data['receipt_file']) }}" class="download-btn">
+                <a href="{{ url_for('download_receipt', filename=data['receipt_file']) }}" class="download-btn">
                     Download Receipt
                 </a>
             {% endif %}
 
             {% if data['certificate_file'] %}
-                <a href="{{ url_for('download_file', filename=data['certificate_file']) }}" class="download-btn">
+                <a href="{{ url_for('download_certificate', filename=data['certificate_file']) }}" class="download-btn">
                     Download Certificate
                 </a>
             {% endif %}
@@ -130,4 +130,4 @@
 </div>
 
 </body>
-</html>
+                    </html>
