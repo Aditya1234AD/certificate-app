@@ -6,23 +6,23 @@ from werkzeug.utils import secure_filename
 app = Flask(__name__)
 app.secret_key = "something_super_secret"
 
-# ------------------- FOLDER PATHS -------------------
+# ------------------- FOLDERS -------------------
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 STATIC_DIR = os.path.join(BASE_DIR, "static")
-
 UPLOAD_FOLDER = os.path.join(STATIC_DIR, "uploads")
 RECEIPT_FOLDER = os.path.join(STATIC_DIR, "receipts")
 PAYMENT_FOLDER = os.path.join(STATIC_DIR, "payments")
 
-# ------------------- CREATE FOLDERS SAFELY -------------------
 for folder in [UPLOAD_FOLDER, RECEIPT_FOLDER, PAYMENT_FOLDER]:
-    if not os.path.exists(folder):
+    if os.path.exists(folder):
+        if not os.path.isdir(folder):
+            os.remove(folder)
+            os.makedirs(folder)
+    else:
         os.makedirs(folder)
 
 # ------------------- DATABASE -------------------
-DB_DIR = os.path.join(BASE_DIR, "data")
-os.makedirs(DB_DIR, exist_ok=True)
-DB_PATH = os.path.join(DB_DIR, "applications.db")
+DB_PATH = os.path.join(BASE_DIR, "applications.db")
 
 def init_db():
     conn = sqlite3.connect(DB_PATH)
@@ -54,11 +54,11 @@ def init_db():
 
 init_db()
 
-# ------------------- ADMIN CREDENTIALS -------------------
+# ------------------- ADMIN -------------------
 ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD = "12345"
 
-# ------------------- HELPER -------------------
+# ------------------- HELPERS -------------------
 def save_file(file, folder):
     if file and file.filename != "":
         filename = secure_filename(file.filename)
@@ -121,32 +121,13 @@ def admin_login():
             return redirect("/admin-login")
     return render_template("admin_login.html")
 
-# ------------------- ADMIN DASHBOARD -------------------
-@app.route("/admin", methods=["GET","POST"])
+@app.route("/admin")
 def admin_dashboard():
     if not session.get("admin_logged_in"):
         return redirect("/admin-login")
-    
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cur = conn.cursor()
-
-    # Upload certificate or receipt
-    if request.method=="POST":
-        app_id = request.form.get("id")
-        cert_file = request.files.get("certificate")
-        receipt_file = request.files.get("receipt")
-        if cert_file:
-            filename = save_file(cert_file, RECEIPT_FOLDER)
-            cur.execute("UPDATE applications SET certificate_file=? WHERE id=?", (filename, app_id))
-            conn.commit()
-            flash("Certificate uploaded successfully!")
-        if receipt_file:
-            filename = save_file(receipt_file, RECEIPT_FOLDER)
-            cur.execute("UPDATE applications SET receipt_file=? WHERE id=?", (filename, app_id))
-            conn.commit()
-            flash("Receipt uploaded successfully!")
-
     cur.execute("SELECT * FROM applications ORDER BY id DESC")
     applications = cur.fetchall()
     conn.close()
@@ -188,7 +169,7 @@ def delete_application():
     flash("Application deleted!")
     return redirect("/admin")
 
-# ------------------- CLIENT STATUS -------------------
+# ------------------- CHECK STATUS -------------------
 @app.route("/status")
 def status_page():
     return render_template("status.html")
@@ -197,20 +178,18 @@ def status_page():
 def check_status():
     mobile = request.form.get("mobile")
     cert_type = request.form.get("cert_type")
-    
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cur = conn.cursor()
     cur.execute("SELECT * FROM applications WHERE mobile=? AND cert_type=?", (mobile, cert_type))
     app_data = cur.fetchone()
     conn.close()
-    
     if app_data:
         return render_template("status.html", data=app_data)
     else:
         return render_template("status.html", message="No application found for this mobile number and certificate type.")
 
-# ------------------- UPLOAD PAYMENT SCREENSHOT -------------------
+# ------------------- UPLOAD PAYMENT -------------------
 @app.route("/upload_payment/<int:app_id>", methods=["POST"])
 def upload_payment(app_id):
     file = request.files.get("payment_ss")
@@ -221,7 +200,7 @@ def upload_payment(app_id):
         cur.execute("UPDATE applications SET payment_status='Paid', receipt_file=? WHERE id=?", (filename, app_id))
         conn.commit()
         conn.close()
-        flash("Payment confirmed! You can now download the certificate.")
+        flash("Payment completed successfully!")
     return redirect("/status")
 
 # ------------------- DOWNLOAD FILES -------------------
