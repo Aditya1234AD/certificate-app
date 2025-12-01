@@ -1,130 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Check Application Status</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #000; /* Dark theme */
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
-
-        .box {
-            width: 380px;
-            margin: auto;
-            background: rgba(255,255,255,0.15);
-            backdrop-filter: blur(6px);
-            padding: 25px;
-            border-radius: 14px;
-            box-shadow: 0 0 15px rgba(255,255,255,0.15);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .box:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 0 25px rgba(255,255,255,0.25);
-        }
-
-        h2 {
-            color: #4b7bec;
-            margin-bottom: 15px;
-        }
-
-        input {
-            width: 90%;
-            padding: 12px;
-            margin: 10px 0;
-            border-radius: 6px;
-            border: 1px solid #aaa;
-        }
-
-        input:focus {
-            border-color: #4b7bec;
-            outline: none;
-            box-shadow: 0 0 5px rgba(75,123,236,0.5);
-        }
-
-        button {
-            width: 100%;
-            padding: 12px;
-            margin-top: 10px;
-            background: #4b7bec;
-            border: none;
-            color: white;
-            font-size: 16px;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background: #3867d6;
-            transform: scale(1.03);
-        }
-
-        .status-box {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 12px;
-            background: linear-gradient(45deg, red, orange, yellow, green, cyan, blue, violet);
-            background-size: 600% 600%;
-            animation: rainbowMove 4s ease infinite;
-            color: black;
-            font-weight: bold;
-        }
-
-        @keyframes rainbowMove {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        a {
-            display: inline-block;
-            margin-top: 12px;
-            padding: 10px 15px;
-            background: #4b7bec;
-            color: white;
-            border-radius: 6px;
-            text-decoration: none;
-        }
-
-        a:hover {
-            background: #3867d6;
-        }
-
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Application Status</title>
+<style>
+body{font-family:Arial;background:#000;color:white;padding:20px;}
+.box{width:380px;margin:auto;background:rgba(255,255,255,0.15);backdrop-filter:blur(6px);padding:25px;border-radius:14px;text-align:center;}
+.box h2{color:#4b7bec;margin-bottom:15px;}
+input{width:90%;padding:12px;margin:10px 0;border-radius:6px;border:1px solid #aaa;}
+button{padding:12px;width:100%;background:#4b7bec;border:none;color:white;font-size:16px;border-radius:6px;cursor:pointer;}
+a{color:#4b7bec;font-weight:bold;text-decoration:none;}
+img{max-width:250px;margin-top:15px;}
+</style>
 </head>
 <body>
-
 <div class="box">
-    <h2>Check Application Status</h2>
+<h2>Check Application Status</h2>
+<form action="/check_status" method="POST">
+<input type="text" name="mobile" placeholder="Enter your mobile number" required>
+<button type="submit">Check Status</button>
+</form>
 
-    <form action="/check_status" method="POST">
-        <input type="text" name="mobile" placeholder="Enter your mobile number" required>
-        <button type="submit">Check Status</button>
-    </form>
+{% if application %}
+<hr>
+<p><b>Status:</b> {{ application['status'] }}</p>
+<p><b>Payment:</b> {{ application['payment_status'] }}</p>
 
-    <div class="status-box">
-        {% if status %}
-            <p><b>Your application status:</b> {{ status }}</p>
+{% if application['payment_status'] == 'Pending' %}
+<p>Scan QR below and pay Rs. 60:</p>
+<img src="/static/{{ qr_file }}" alt="QR Code"><br><br>
+<form action="/receipt/{{ application['id'] }}" method="POST" enctype="multipart/form-data">
+<label>Upload Payment Screenshot:</label>
+<input type="file" name="payment_ss" accept="image/*,application/pdf" required>
+<button type="submit">Submit Payment</button>
+</form>
+{% elif application['receipt_file'] %}
+<p>Your receipt is ready: <a href="/receipts/{{ application['receipt_file'] }}" target="_blank">Download Receipt</a></p>
+{% endif %}
 
-            {% if status == "Approved" %}
-                <p>Your certificate is approved!</p>
-                <a href="/receipt/{{ app_id }}">Go to Payment / Download Receipt</a>
-            {% endif %}
-
-        {% elif message %}
-            <p>{{ message }}</p>
-
-        {% else %}
-            <p style="opacity:0;">.</p>
-        {% endif %}
-    </div>
+{% elif message %}
+<p>{{ message }}</p>
+{% endif %}
 </div>
-
 </body>
 </html>
