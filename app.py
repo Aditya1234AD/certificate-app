@@ -137,7 +137,7 @@ def admin_dashboard():
     conn.row_factory = sqlite3.Row
     cur = conn.cursor()
 
-    # Upload certificate
+    # Upload certificate or receipt
     if request.method=="POST":
         app_id = request.form.get("id")
         cert_file = request.files.get("certificate")
