@@ -6,124 +6,138 @@
 <title>Apply Certificate</title>
 
 <style>
-body{
-    font-family:Arial;
-    margin:0;
-    padding:15px;
-    background:#000;
-    color:black;
-}
-
-.container{
-    max-width:750px;
-    margin:auto;
-    background:#fff;
-    padding:20px;
-    border-radius:14px;
-    box-shadow:0px 0px 12px rgba(0,0,0,0.2);
-}
-
-.box{
-    background:#ffffffcc;
-    backdrop-filter:blur(5px);
-    padding:18px;
-    border-radius:14px;
-    margin-bottom:22px;
-    box-shadow:0px 0px 12px rgba(255,255,255,0.2);
-}
-
-h2{
-    text-align:center;
-    margin-bottom:15px;
-    color:#4b7bec;
-    font-size:26px;
-}
-
-.cert-heading{
-    text-align:center;
-    margin-bottom:15px;
-    color:#27ae60;
-    font-weight:bold;
-    font-size:20px;
-}
-
-h3{
-    text-align:center;
-    margin-bottom:12px;
-    color:black;
-    font-size:20px;
-}
-
-label{
-    font-weight:bold;
-    display:block;
-    margin-top:10px;
-    color:black;
-    font-size:16px;
-}
-
-input[type="text"], input[type="file"], select{
-    width:100%;
-    padding:10px;
-    margin-top:6px;
-    border:1px solid #444;
-    border-radius:6px;
-    background:#fff;
-    color:black;
-    font-size:16px;
-}
-
-/* FIXED: Dropdown visible clearly */
-select {
-    color: black;
-    background: white;
-}
-
-option {
-    color: black;
-    background: white;
-}
-
-button{
-    background:#4b7bec;
-    color:white;
-    border:none;
-    padding:14px 20px;
-    width:100%;
-    margin-top:10px;
-    font-size:18px;
-    border-radius:8px;
-    cursor:pointer;
-}
-
-a{
-    color:#0984e3;
-    font-size:18px;
-    font-weight:bold;
-    text-decoration:none;
-}
-
-.link-container{
-    text-align:center;
-    margin-top:20px;
-}
-
-@media (max-width:600px){
-    body{padding:10px;}
-    .container{padding:15px;}
-    h2{font-size:22px;}
-    h3,.cert-heading{font-size:18px;}
-    label{font-size:15px;}
-    input[type="text"], input[type="file"], select{
-        font-size:15px;
-        padding:9px;
+    body {
+        margin: 0;
+        padding: 20px;
+        font-family: "Segoe UI", Arial, sans-serif;
+        background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+        min-height: 100vh;
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
-    button{
-        font-size:17px;
-        padding:12px;
+
+    .container {
+        width: 100%;
+        max-width: 800px;
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(10px);
+        padding: 25px;
+        border-radius: 20px;
+        box-shadow: 0px 8px 20px rgba(0,0,0,0.3);
+        animation: fadeIn 0.9s ease-in-out;
     }
-    a{font-size:16px;}
-}
+
+    @keyframes fadeIn {
+        from { opacity:0; transform:translateY(20px); }
+        to { opacity:1; transform:translateY(0); }
+    }
+
+    h2 {
+        text-align: center;
+        color: #81ecec;
+        font-size: 28px;
+        margin-bottom: 25px;
+        font-weight: 600;
+    }
+
+    .box {
+        background: rgba(255, 255, 255, 0.15);
+        padding: 20px;
+        border-radius: 16px;
+        margin-bottom: 22px;
+        box-shadow: 0px 5px 15px rgba(0,0,0,0.15);
+    }
+
+    .cert-heading {
+        text-align: center;
+        font-size: 20px;
+        margin-bottom: 15px;
+        color: #2ecc71;
+        font-weight: bold;
+    }
+
+    h3 {
+        text-align: center;
+        font-size: 20px;
+        margin-bottom: 14px;
+        color: #dfe6e9;
+    }
+
+    label {
+        display: block;
+        margin-top: 12px;
+        font-size: 16px;
+        font-weight: 600;
+        color: #ecf0f1;
+    }
+
+    input[type="text"], input[type="file"], select {
+        width: 100%;
+        padding: 12px;
+        margin-top: 6px;
+        border: 1px solid rgba(255,255,255,0.3);
+        border-radius: 10px;
+        background: rgba(255,255,255,0.1);
+        color: white;
+        font-size: 16px;
+        outline: none;
+        transition: 0.3s;
+    }
+
+    input:focus, select:focus {
+        border-color: #74b9ff;
+        box-shadow: 0 0 10px rgba(116,185,255,0.6);
+    }
+
+    option {
+        color: black;
+    }
+
+    button {
+        width: 100%;
+        padding: 15px;
+        background: linear-gradient(135deg, #4b7bec, #3867d6);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        margin-top: 15px;
+        font-size: 18px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.3s ease;
+    }
+
+    button:hover {
+        transform: scale(1.03);
+        background: linear-gradient(135deg, #3a6ad9, #274bba);
+    }
+
+    .link-container {
+        text-align: center;
+        margin-top: 18px;
+    }
+
+    a {
+        color: #81ecec;
+        text-decoration: none;
+        font-size: 18px;
+        font-weight: bold;
+        margin: 0 12px;
+        transition: 0.3s;
+    }
+
+    a:hover {
+        color: #74b9ff;
+    }
+
+    @media (max-width: 600px) {
+        body { padding: 10px; }
+        h2 { font-size: 24px; }
+        h3, .cert-heading { font-size: 18px; }
+        input, button { font-size: 15px; }
+    }
 </style>
 </head>
 
@@ -134,53 +148,56 @@ a{
 
 <form action="/submit" method="POST" enctype="multipart/form-data">
 
-<div class="box">
-<h3 class="cert-heading">Select Certificate Type</h3>
+    <div class="box">
+        <h3 class="cert-heading">Select Certificate Type</h3>
 
-<label for="cert_type">Certificate Type:</label>
-<select name="cert_type" id="cert_type" required>
-    <option value="" disabled selected>-- Select Certificate Type --</option>
-    <option value="Caste Certificate">Caste Certificate</option>
-    <option value="Income Certificate">Income Certificate</option>
-    <option value="Resident Certificate">Resident Certificate</option>
-</select>
-</div>
+        <label for="cert_type">Certificate Type:</label>
+        <select name="cert_type" id="cert_type" required>
+            <option value="" disabled selected>-- Select Certificate Type --</option>
+            <option value="Caste Certificate">Caste Certificate</option>
+            <option value="Income Certificate">Income Certificate</option>
+            <option value="Resident Certificate">Resident Certificate</option>
+        </select>
+    </div>
 
-<div class="box">
-<h3>Applicant Details</h3>
+    <div class="box">
+        <h3>Applicant Details</h3>
 
-<label>Enter Your Name:</label><input type="text" name="name" required>
-<label>Enter Your Mobile Number:</label><input type="text" name="mobile" required>
-<label>Village Name:</label><input type="text" name="village" required>
-<label>Post Office:</label><input type="text" name="post" required>
-<label>Gram Panchayat:</label><input type="text" name="gp" required>
-<label>Pin Code:</label><input type="text" name="pin" required>
-<label>District:</label><input type="text" name="district" required>
-<label>State:</label><input type="text" name="state" required>
+        <label>Enter Your Name:</label><input type="text" name="name" required>
+        <label>Enter Your Mobile Number:</label><input type="text" name="mobile" required>
+        <label>Village Name:</label><input type="text" name="village" required>
+        <label>Post Office:</label><input type="text" name="post" required>
+        <label>Gram Panchayat:</label><input type="text" name="gp" required>
+        <label>Pin Code:</label><input type="text" name="pin" required>
+        <label>District:</label><input type="text" name="district" required>
+        <label>State:</label><input type="text" name="state" required>
+    </div>
 
-</div>
+    <div class="box">
+        <h3>Upload Required Documents</h3>
 
-<div class="box">
-<h3>Upload Required Documents</h3>
+        <label>Applicant Photo:</label>
+        <input type="file" name="photo" accept="image/*" required>
 
-<label>Applicant Photo:</label><input type="file" name="photo" accept="image/*" required>
+        <label>Applicant Aadhaar Card:</label>
+        <input type="file" name="aadhaar" accept="image/*,application/pdf" required>
 
-<label>Applicant Aadhaar Card:</label><input type="file" name="aadhaar" accept="image/*,application/pdf" required>
+        <label>Father's Aadhaar Card:</label>
+        <input type="file" name="father_aadhaar" accept="image/*,application/pdf" required>
 
-<label>Father's Aadhaar Card:</label><input type="file" name="father_aadhaar" accept="image/*,application/pdf" required>
+        <label>ROR Document (optional):</label>
+        <input type="file" name="ror" accept="image/*,application/pdf">
+    </div>
 
-<label>ROR Document (optional):</label><input type="file" name="ror" accept="image/*,application/pdf">
-</div>
+    <button type="submit">Submit Application</button>
 
-<button type="submit">Submit Application</button>
-
-<div class="link-container">
-<a href="/status">Check Application Status</a> | 
-<a href="/admin-login">Admin Login</a>
-</div>
+    <div class="link-container">
+        <a href="/status">Check Status</a> |
+        <a href="/admin-login">Admin Login</a>
+    </div>
 
 </form>
 </div>
 
 </body>
-                                          </html>
+</html>
