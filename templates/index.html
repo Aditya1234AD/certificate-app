@@ -6,95 +6,81 @@
 <title>Apply Certificate</title>
 
 <style>
-/* ----------------- ANIMATED GRADIENT BACKGROUND ----------------- */
+
+/* ------------------ BACKGROUND ------------------ */
 body {
     margin: 0;
     padding: 0;
-    font-family: "Arial", sans-serif;
+    font-family: "Poppins", sans-serif;
+    background: #0f0f0f;
     overflow-x: hidden;
-    background: linear-gradient(-45deg, #6a11cb, #2575fc, #ff6a00, #ee0979);
-    background-size: 400% 400%;
-    animation: gradientBG 10s ease infinite;
 }
 
-@keyframes gradientBG {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
-
-/* ----------------- CONTAINER GLASS EFFECT ----------------- */
+/* ------------------ CENTERED CONTAINER ------------------ */
 .container {
-    max-width: 800px;
+    max-width: 780px;
     margin: 40px auto;
-    background: rgba(255,255,255,0.13);
-    backdrop-filter: blur(10px);
-    padding: 28px;
-    border-radius: 18px;
-    border: 1px solid rgba(255,255,255,0.3);
-    animation: fadeIn 1.2s ease;
-    box-shadow: 0px 0px 25px rgba(255,255,255,0.3);
+    padding: 25px;
+    animation: fadeIn 1s ease-out;
 }
 
+/* Fade animation */
 @keyframes fadeIn {
-    from { opacity: 0; transform: scale(0.9); }
-    to { opacity: 1; transform: scale(1); }
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ----------------- HEADINGS ----------------- */
+/* ------------------ 3D FLOATING CARD STYLE ------------------ */
+.box {
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(14px);
+    border-radius: 18px;
+    padding: 22px;
+    margin-bottom: 28px;
+    border: 1px solid rgba(255,255,255,0.2);
+
+    box-shadow: 
+        0 10px 25px rgba(0,0,0,0.4),
+        inset 0 0 10px rgba(255,255,255,0.15);
+
+    transform-style: preserve-3d;
+    transform: translateZ(0);
+    animation: floatCard 4s ease-in-out infinite;
+}
+
+/* Floating animation */
+@keyframes floatCard {
+    0%   { transform: translateY(0px) rotateX(0deg) rotateY(0deg); }
+    50%  { transform: translateY(-12px) rotateX(2deg) rotateY(-2deg); }
+    100% { transform: translateY(0px) rotateX(0deg) rotateY(0deg); }
+}
+
+/* ------------------ HEADINGS ------------------ */
 h2 {
     text-align: center;
-    font-size: 32px;
-    font-weight: bold;
     color: white;
-    text-shadow: 0 0 15px white;
-    margin-bottom: 18px;
+    font-size: 32px;
+    margin-bottom: 20px;
+    text-shadow: 0 0 12px rgba(255,255,255,0.6);
 }
 
 h3 {
     text-align: center;
-    font-size: 22px;
-    color: #fff;
-    margin-bottom: 12px;
+    color: white;
+    margin-bottom: 14px;
+    font-size: 20px;
 }
 
-/* ----------------- SECTION BOX ----------------- */
-.box {
-    background: rgba(255,255,255,0.18);
-    padding: 18px;
-    border-radius: 14px;
-    margin-bottom: 22px;
-    border: 1px solid rgba(255,255,255,0.35);
-    position: relative;
-    overflow: hidden;
-}
-
-/* Shimmer animation */
-.box::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: -120%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(120deg, transparent, rgba(255,255,255,0.3), transparent);
-    animation: shine 4s infinite;
-}
-
-@keyframes shine {
-    0% { left: -120%; }
-    100% { left: 120%; }
-}
-
-/* ----------------- INPUT FIELDS ----------------- */
+/* ------------------ FORM LABELS ------------------ */
 label {
-    font-size: 16px;
-    color: #fff;
     display: block;
     margin-top: 12px;
-    font-weight: bold;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
 }
 
+/* ------------------ INPUT FIELDS ------------------ */
 input[type="text"],
 input[type="file"],
 select {
@@ -103,68 +89,65 @@ select {
     margin-top: 6px;
     border-radius: 10px;
     border: none;
-    background: rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.15);
     color: white;
     font-size: 16px;
     outline: none;
-    transition: 0.3s ease;
+    transition: 0.25s ease;
 }
 
-input:focus,
-select:focus {
+input:focus, select:focus {
+    box-shadow: 0 0 10px rgba(255,255,255,0.5);
     transform: scale(1.03);
-    box-shadow: 0 0 15px #ffffffaa;
 }
 
-/* ----------------- ANIMATED BUTTON ----------------- */
+/* ------------------ BUTTON ------------------ */
 button {
     width: 100%;
-    padding: 15px;
-    font-size: 20px;
-    border-radius: 14px;
+    padding: 14px;
+    background: linear-gradient(135deg, #4b7bec, #273c75);
     border: none;
+    border-radius: 12px;
+    font-size: 20px;
     cursor: pointer;
     color: white;
-    background: linear-gradient(45deg, #ff6a00, #ee0979);
-    animation: glow 2s infinite alternate;
-    transition: 0.3s ease;
-}
+    margin-top: 10px;
 
-@keyframes glow {
-    from { box-shadow: 0 0 10px #ff9a3c; }
-    to { box-shadow: 0 0 25px #ee0979; }
+    transform: translateZ(20px);
+    transition: 0.3s ease;
 }
 
 button:hover {
-    transform: scale(1.05);
+    transform: translateZ(40px) scale(1.06);
+    box-shadow: 0 0 18px #4b7bec;
 }
 
-/* ----------------- LINKS ----------------- */
+/* ------------------ LINKS ------------------ */
 .link-container {
     text-align: center;
-    margin-top: 15px;
+    margin-top: 20px;
 }
 
 a {
-    color: #fff;
-    font-weight: bold;
-    text-shadow: 0 0 10px white;
-    font-size: 18px;
+    color: #78aaff;
     text-decoration: none;
-    margin: 0 8px;
+    font-size: 18px;
+    font-weight: bold;
 }
 
 a:hover {
-    text-shadow: 0 0 20px white;
+    text-shadow: 0 0 10px white;
 }
 
-/* ----------------- MOBILE RESPONSIVE ----------------- */
-@media(max-width:600px) {
+/* ------------------ MOBILE ------------------ */
+@media (max-width: 600px) {
     h2 { font-size: 26px; }
     h3 { font-size: 18px; }
+    .box { padding: 18px; }
 }
 </style>
 </head>
+
 <body>
 
 <div class="container">
@@ -173,8 +156,10 @@ a:hover {
 
 <form action="/submit" method="POST" enctype="multipart/form-data">
 
+<!-- ==================== Certificate Type ==================== -->
 <div class="box">
     <h3>Select Certificate Type</h3>
+
     <label>Certificate Type:</label>
     <select name="cert_type" required>
         <option value="" disabled selected>-- Select Certificate Type --</option>
@@ -184,10 +169,12 @@ a:hover {
     </select>
 </div>
 
+<!-- ==================== Applicant Details ==================== -->
 <div class="box">
     <h3>Applicant Details</h3>
+
     <label>Enter Your Name:</label><input type="text" name="name" required>
-    <label>Enter Your Mobile Number:</label><input type="text" name="mobile" required>
+    <label>Enter Your Mobile:</label><input type="text" name="mobile" required>
     <label>Village Name:</label><input type="text" name="village" required>
     <label>Post Office:</label><input type="text" name="post" required>
     <label>Gram Panchayat:</label><input type="text" name="gp" required>
@@ -196,11 +183,13 @@ a:hover {
     <label>State:</label><input type="text" name="state" required>
 </div>
 
+<!-- ==================== Upload Documents ==================== -->
 <div class="box">
     <h3>Upload Required Documents</h3>
+
     <label>Applicant Photo:</label><input type="file" name="photo" accept="image/*" required>
-    <label>Applicant Aadhaar Card:</label><input type="file" name="aadhaar" accept="image/*,application/pdf" required>
-    <label>Father's Aadhaar Card:</label><input type="file" name="father_aadhaar" accept="image/*,application/pdf" required>
+    <label>Applicant Aadhaar:</label><input type="file" name="aadhaar" accept="image/*,application/pdf" required>
+    <label>Father's Aadhaar:</label><input type="file" name="father_aadhaar" accept="image/*,application/pdf" required>
     <label>ROR Document (optional):</label><input type="file" name="ror" accept="image/*,application/pdf">
 </div>
 
@@ -212,8 +201,7 @@ a:hover {
 </div>
 
 </form>
-
 </div>
 
 </body>
-                                      </html>
+            </html>
