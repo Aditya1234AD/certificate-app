@@ -180,7 +180,7 @@ button:hover {
 <div class="box">
     <h2>Track Your Application</h2>
 
-    <form method="POST">
+    <form method="POST" action="{{ url_for('check_status') }}">
         <input type="text" name="mobile" placeholder="Enter your mobile number" required>
         <select name="cert_type" required>
             <option value="">Select Certificate Type</option>
