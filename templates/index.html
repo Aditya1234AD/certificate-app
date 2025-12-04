@@ -28,13 +28,11 @@ body {
   background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
   border: 1px solid rgba(255,255,255,0.06);
   position: relative;
-  overflow: hidden; /* ensure children don't overflow */
+  overflow: hidden;
   box-shadow: 0 8px 40px rgba(11,18,30,0.7);
-  /* glowing animation (container glows, cards stay steady) */
   animation: containerGlow 3.6s ease-in-out infinite;
 }
 
-/* soft animated glowing border */
 @keyframes containerGlow {
   0%   { box-shadow: 0 8px 40px rgba(11,18,30,0.6), 0 0 0 rgba(75,123,236,0); }
   50%  { box-shadow: 0 12px 60px rgba(11,18,30,0.75), 0 0 36px rgba(75,123,236,0.06); }
@@ -59,7 +57,6 @@ h2 {
 }
 
 /* ---------- CARD (BOX) ---------- */
-/* ensure card stays inside container; remove float animation */
 .box {
   width: 100%;
   background: rgba(255,255,255,0.03);
@@ -71,7 +68,6 @@ h2 {
   box-shadow: 0 6px 18px rgba(2,6,12,0.6), inset 0 1px 0 rgba(255,255,255,0.01);
 }
 
-/* card headings */
 .box h3 {
   text-align: left;
   color: #e9f0ff;
@@ -103,16 +99,14 @@ input[type="file"] {
   transition: box-shadow .22s ease, transform .18s ease;
 }
 
-/* file input show shorter height on mobile */
 input[type="file"] { padding: 9px 8px; }
 
-/* focus state */
 input:focus, select:focus {
   box-shadow: 0 6px 22px rgba(75,123,236,0.14);
   transform: translateY(-1px);
 }
 
-/* small two-column grid for some inputs on wide screens (keeps inside container) */
+/* small two-column grid */
 .grid-2 {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -155,11 +149,11 @@ button[disabled] { opacity: 0.6; cursor: not-allowed; transform: none; box-shado
 }
 .link-container a:hover { text-shadow: 0 0 8px rgba(255,255,255,0.06); }
 
-/* ---------- LOADING OVERLAY (SMOOTH) ---------- */
+/* ---------- LOADING OVERLAY ---------- */
 #loadingOverlay {
   position: fixed;
   inset: 0;
-  display: none;              /* shown by JS */
+  display: none;
   align-items: center;
   justify-content: center;
   z-index: 9999;
@@ -167,7 +161,6 @@ button[disabled] { opacity: 0.6; cursor: not-allowed; transform: none; box-shado
   backdrop-filter: blur(4px);
 }
 
-/* panel inside overlay */
 .loading-panel {
   display: flex;
   gap: 18px;
@@ -181,7 +174,6 @@ button[disabled] { opacity: 0.6; cursor: not-allowed; transform: none; box-shado
   animation: panelIn .28s ease forwards;
 }
 
-/* spinner ring (smooth) */
 .loader-ring {
   width: 64px;
   height: 64px;
@@ -192,7 +184,6 @@ button[disabled] { opacity: 0.6; cursor: not-allowed; transform: none; box-shado
   flex: 0 0 auto;
 }
 
-/* animated text with stylish gradient & dots */
 .submitting-text {
   display: flex;
   flex-direction: column;
@@ -202,7 +193,6 @@ button[disabled] { opacity: 0.6; cursor: not-allowed; transform: none; box-shado
   font-weight: 800;
   font-size: 17px;
   letter-spacing: 0.6px;
-  /* gradient text */
   background: linear-gradient(90deg, #cfe3ff 0%, #ffffff 50%, #bfe0ff 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -215,8 +205,6 @@ button[disabled] { opacity: 0.6; cursor: not-allowed; transform: none; box-shado
   align-items: center;
   gap: 8px;
 }
-
-/* animated trailing dots */
 .dot-anim {
   font-weight: 700;
   font-size: 16px;
@@ -227,25 +215,11 @@ button[disabled] { opacity: 0.6; cursor: not-allowed; transform: none; box-shado
   animation: dots 1.4s steps(4, end) infinite;
 }
 
-/* animations */
+/* Animations */
 @keyframes spin { 0%{transform:rotate(0)}100%{transform:rotate(360deg)} }
-@keyframes dots {
-  0%   { content: ""; transform: translateY(0); }
-  25%  { content: "."; }
-  50%  { content: ".."; }
-  75%  { content: "..."; }
-  100% { content: ""; }
-}
-/* panel entrance */
+@keyframes dots { 0%{content:"";}25%{content:".";}50%{content:"..";}75%{content:"...";}100%{content:"";} }
 @keyframes panelIn { from { opacity: 0; transform: translateY(18px) scale(.98) } to { opacity:1; transform:none } }
 
-/* responsive small panels */
-@media (max-width:560px) {
-  .loading-panel { padding: 14px 16px; gap:12px; }
-  .loader-ring { width:48px; height:48px; border-width:5px; }
-}
-
-/* small helper to avoid file input text overflow */
 input[type="file"]::-webkit-file-upload-button { visibility: hidden; }
 input[type="file"]::before {
   content: "Choose file";
@@ -258,9 +232,6 @@ input[type="file"]::before {
   font-weight: 600;
   cursor: pointer;
 }
-
-/* ensure long content never overflows container */
-.container, .box, input, select, button { max-width: 100%; word-break: break-word; }
 </style>
 </head>
 <body>
@@ -287,8 +258,8 @@ input[type="file"]::before {
 
   <form id="certForm" action="/submit" method="POST" enctype="multipart/form-data" novalidate>
     <!-- Certificate Type -->
-    <div class="box" aria-labelledby="certTypeHeading">
-      <h3 id="certTypeHeading">Select Certificate Type</h3>
+    <div class="box">
+      <h3>Select Certificate Type</h3>
       <label for="cert_type">Certificate Type:</label>
       <select name="cert_type" id="cert_type" required>
         <option value="" disabled selected>-- Select Certificate Type --</option>
@@ -299,12 +270,10 @@ input[type="file"]::before {
     </div>
 
     <!-- Applicant Details -->
-    <div class="box" aria-labelledby="appDetailsHeading">
-      <h3 id="appDetailsHeading">Applicant Details</h3>
-
+    <div class="box">
+      <h3>Applicant Details</h3>
       <label for="name">Enter Your Name:</label>
       <input id="name" name="name" type="text" required autocomplete="name" />
-
       <label for="mobile">Enter Your Mobile:</label>
       <input id="mobile" name="mobile" type="text" inputmode="tel" required autocomplete="tel" />
 
@@ -343,25 +312,21 @@ input[type="file"]::before {
     </div>
 
     <!-- Upload Documents -->
-    <div class="box" aria-labelledby="uploadHeading">
-      <h3 id="uploadHeading">Upload Required Documents</h3>
-
+    <div class="box">
+      <h3>Upload Required Documents</h3>
       <label for="photo">Applicant Photo:</label>
       <input id="photo" name="photo" type="file" accept="image/*" required />
-
       <label for="aadhaar">Applicant Aadhaar:</label>
       <input id="aadhaar" name="aadhaar" type="file" accept="image/*,application/pdf" required />
-
       <label for="father_aadhaar">Father's Aadhaar:</label>
       <input id="father_aadhaar" name="father_aadhaar" type="file" accept="image/*,application/pdf" required />
-
       <label for="ror">ROR Document (optional):</label>
       <input id="ror" name="ror" type="file" accept="image/*,application/pdf" />
     </div>
 
     <button id="submitBtn" type="submit">Submit Application</button>
 
-    <div class="link-container" aria-hidden="false">
+    <div class="link-container">
       <a href="/status">Check Status</a> |
       <a href="/admin-login">Admin Login</a>
     </div>
@@ -369,41 +334,31 @@ input[type="file"]::before {
 </div>
 
 <script>
-/* Handle overlay + disable submit to prevent double clicks.
-   We show overlay and allow actual form submission to continue.
-*/
 (function(){
   const form = document.getElementById('certForm');
   const overlay = document.getElementById('loadingOverlay');
   const submitBtn = document.getElementById('submitBtn');
 
   form.addEventListener('submit', function(e){
-    // If form invalid according to browser, let the browser show it and do not show overlay.
+    // Prevent submission if invalid
     if(!form.checkValidity()){
-      // allow browser to show validation messages
+      e.preventDefault(); // stop form from submitting
+      form.reportValidity(); // show browser messages
       return;
     }
 
-    // Show overlay and disable button to prevent multiple submits
+    // Show overlay and disable submit
     overlay.style.display = 'flex';
     overlay.setAttribute('aria-hidden', 'false');
     submitBtn.disabled = true;
     submitBtn.textContent = 'Submitting...';
-
-    // Accessibility focus trap: move focus to overlay content
-    try {
-      overlay.querySelector('.loading-panel').focus();
-    } catch (err) {}
-
-    // Do NOT call e.preventDefault() so the form actually submits to the server.
-    // The overlay will remain visible while the network request completes.
   });
 
-  // Optional: hide overlay if user navigates away or on pagehide (graceful)
   window.addEventListener('pagehide', () => {
     overlay.style.display = 'none';
   });
 })();
 </script>
+
 </body>
-      </html>
+  </html>
