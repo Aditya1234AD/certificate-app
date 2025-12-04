@@ -4,95 +4,166 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin Dashboard - Certificate Applications</title>
+
 <style>
+/* ---------------- GLOBAL ---------------- */
 body {
-    font-family: Arial, sans-serif;
-    background: #eef2f3;
+    font-family: "Poppins", sans-serif;
+    background: linear-gradient(135deg, #1e3c72, #2a5298);
     margin: 0;
     padding: 20px;
+    color: #fff;
+    overflow-x: hidden;
 }
 
 h1 {
     text-align: center;
-    margin-bottom: 15px;
-    color: #2c3e50;
+    margin-bottom: 20px;
+    color: #fff;
+    text-shadow: 0 0 15px #00c6ff;
+    font-size: 32px;
+    font-weight: 700;
+    animation: glowPulse 2s infinite alternate;
 }
 
+@keyframes glowPulse {
+    0% { text-shadow: 0 0 8px #00eaff; }
+    100% { text-shadow: 0 0 20px #ffffff; }
+}
+
+/* ---------------- LOGOUT BUTTON ---------------- */
 .logout-btn {
     display: block;
-    width: 120px;
-    margin: 0 auto 20px auto;
-    padding: 10px;
+    width: 140px;
+    margin: 0 auto 25px auto;
+    padding: 12px;
     text-align: center;
-    background: #e74c3c;
+    background: #ff4757;
     color: white;
     text-decoration: none;
-    border-radius: 6px;
+    border-radius: 8px;
+    font-weight: bold;
+    transition: 0.3s ease;
+    box-shadow: 0 0 10px rgba(255, 71, 87, 0.6);
 }
-.logout-btn:hover { background: #c0392b; }
+.logout-btn:hover { background: #e84118; transform: scale(1.05); }
 
+/* ---------------- TABLE ---------------- */
 table {
     width: 100%;
     border-collapse: collapse;
-    background: white;
-    border-radius: 10px;
+    background: rgba(255,255,255,0.12);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
     overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    box-shadow: 0 0 25px rgba(0,0,0,0.3);
+    animation: fadeIn 1.3s ease;
 }
-
-th, td {
-    border-bottom: 1px solid #ddd;
-    padding: 12px;
-    text-align: left;
-}
-
+th, td { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); }
 th {
-    background: #007bff;
-    color: white;
+    background: rgba(0, 140, 255, 0.7);
+    color: #fff;
+    letter-spacing: 0.5px;
+    font-size: 14px;
     text-transform: uppercase;
-    font-size: 13px;
 }
-
-tr:hover { background: #f1f1f1; }
-
-img {
-    border-radius: 6px;
-    width: 90px;
-    height: 110px;
-    object-fit: cover;
-}
-
-a { color: #007bff; font-weight: bold; text-decoration: none; }
+tr { transition: 0.25s ease; }
+tr:hover { background: rgba(255,255,255,0.08); transform: scale(1.01); }
+img { border-radius: 8px; width: 90px; height: 110px; object-fit: cover; border: 2px solid #fff; }
+a { color: #00eaff; font-weight: bold; }
 a:hover { text-decoration: underline; }
+button { padding: 8px 14px; border: none; border-radius: 8px; cursor: pointer; transition: 0.3s ease; font-weight: 600; }
 
-button {
-    padding: 6px 12px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-}
+/* Buttons */
+button.update-btn { background: #1e90ff; color: #fff; }
+button.update-btn:hover { transform: scale(1.1); background: #0c63bd; }
+button.pay-btn { background: #2ecc71; color: #fff; }
+button.pay-btn:hover { transform: scale(1.1); background: #139b48; }
+button.delete-btn { background: #ff4d4d; color: #fff; }
+button.delete-btn:hover { transform: scale(1.1); background: #cc0000; }
 
-button[type="submit"] {
-    background: #4b7bec;
-    color: white;
-}
-
-button.delete-btn {
-    background: #e74c3c;
-    color: white;
-}
-
-button.pay-btn {
-    background: #27ae60;
-    color: white;
-}
-
+/* Flash message */
 .flash {
     text-align: center;
     font-size: 18px;
-    color: green;
+    color: #00ff8c;
     margin-bottom: 15px;
+    text-shadow: 0 0 10px #00ff8c;
+    animation: fadeIn 1.2s ease;
 }
+
+/* ---------------- POPUP MODAL ---------------- */
+.modal {
+    display: none; /* hidden by default */
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(4px);
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.modal.active { display: flex; }
+
+.modal-content {
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(10px);
+    border-radius: 14px;
+    padding: 24px;
+    width: 90%;
+    max-width: 450px;
+    box-shadow: 0 0 25px rgba(0,0,0,0.6);
+    animation: popupIn 0.35s ease forwards;
+    position: relative;
+}
+
+@keyframes popupIn {
+    0% { opacity: 0; transform: scale(0.8); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+/* Close button */
+.close-btn {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    font-size: 22px;
+    font-weight: bold;
+    color: #fff;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.close-btn:hover { color: #ff4d4d; transform: scale(1.2); }
+
+/* Popup form elements */
+.modal-content input[type="file"],
+.modal-content select {
+    width: 100%;
+    margin-top: 12px;
+    padding: 10px;
+    border-radius: 10px;
+    border: none;
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    font-size: 15px;
+    outline: none;
+}
+.modal-content button {
+    margin-top: 16px;
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    font-weight: 700;
+}
+
+/* Responsive for small screens */
+@media (max-width: 520px) {
+    .modal-content { padding: 18px; }
+    table th, table td { padding: 8px; font-size: 12px; }
+    img { width: 70px; height: 90px; }
+}
+
 </style>
 </head>
 <body>
@@ -124,12 +195,11 @@ button.pay-btn {
 <th>Father Aadhaar</th>
 <th>Photo</th>
 <th>Status</th>
-<th>Upload Certificate (PDF)</th>
+<th>Certificate</th>
 <th>Payment</th>
 <th>Delete</th>
 </tr>
 </thead>
-
 <tbody>
 {% for app in applications %}
 <tr>
@@ -144,79 +214,32 @@ button.pay-btn {
 <td>{{ app['district'] }}</td>
 <td>{{ app['state'] }}</td>
 
-<!-- VIEW AADHAAR -->
+<td>{% if app['aadhar_file'] %}<a href="/uploads/{{ app['aadhar_file'] }}" target="_blank">View</a>{% else %} Not Uploaded {% endif %}</td>
+<td>{% if app['ror_file'] %}<a href="/uploads/{{ app['ror_file'] }}" target="_blank">View</a>{% else %} Not Uploaded {% endif %}</td>
+<td>{% if app['father_aadhar_file'] %}<a href="/uploads/{{ app['father_aadhar_file'] }}" target="_blank">View</a>{% else %} Not Uploaded {% endif %}</td>
+<td>{% if app['applicant_photo'] %}<img src="/uploads/{{ app['applicant_photo'] }}">{% else %} No Photo {% endif %}</td>
+
 <td>
-{% if app['aadhar_file'] %}
-    <a href="/uploads/{{ app['aadhar_file'] }}" target="_blank">View</a>
-{% else %} Not Uploaded {% endif %}
+<button class="update-btn" data-action="status" data-id="{{ app['id'] }}" data-status="{{ app['status'] }}">Update Status</button>
 </td>
 
-<!-- ROR -->
 <td>
-{% if app['ror_file'] %}
-    <a href="/uploads/{{ app['ror_file'] }}" target="_blank">View</a>
-{% else %} Not Uploaded {% endif %}
-</td>
-
-<!-- FATHER AADHAAR -->
-<td>
-{% if app['father_aadhar_file'] %}
-    <a href="/uploads/{{ app['father_aadhar_file'] }}" target="_blank">View</a>
-{% else %} Not Uploaded {% endif %}
-</td>
-
-<!-- PHOTO -->
-<td>
-{% if app['applicant_photo'] %}
-    <img src="/uploads/{{ app['applicant_photo'] }}">
-{% else %} No Photo {% endif %}
-</td>
-
-<!-- STATUS UPDATE -->
-<td>
-<form action="/update_status" method="POST">
-    <input type="hidden" name="id" value="{{ app['id'] }}">
-    <select name="status">
-        <option value="Pending" {% if app['status']=='Pending' %}selected{% endif %}>Pending</option>
-        <option value="Processing" {% if app['status']=='Processing' %}selected{% endif %}>Processing</option>
-        <option value="Approved" {% if app['status']=='Approved' %}selected{% endif %}>Approved</option>
-        <option value="Rejected" {% if app['status']=='Rejected' %}selected{% endif %}>Rejected</option>
-    </select>
-    <button type="submit">Update</button>
-</form>
-</td>
-
-<!-- CERTIFICATE UPLOAD -->
-<td>
-<form action="/upload_certificate" method="POST" enctype="multipart/form-data">
-    <input type="hidden" name="id" value="{{ app['id'] }}">
-    <input type="file" name="certificate" accept="application/pdf" required>
-    <button type="submit">Upload</button>
-</form>
-
+<button class="update-btn" data-action="certificate" data-id="{{ app['id'] }}">Upload Certificate</button>
 {% if app['certificate_file'] %}
     <p><a href="/receipts/{{ app['certificate_file'] }}" target="_blank">View Certificate</a></p>
 {% endif %}
 </td>
 
-<!-- PAYMENT CONFIRM -->
 <td>
 {% if app['payment_status'] == 'Paid' %}
-    <b style="color:green;">Paid ✔</b>
+    <b style="color:#00ff8c;">Paid ✔</b>
 {% else %}
-<form action="/upload_payment/{{ app['id'] }}" method="POST" enctype="multipart/form-data">
-    <input type="file" name="payment_ss" required>
-    <button class="pay-btn" type="submit">Confirm Payment</button>
-</form>
+<button class="pay-btn" data-action="payment" data-id="{{ app['id'] }}">Confirm Payment</button>
 {% endif %}
 </td>
 
-<!-- DELETE -->
 <td>
-<form action="/delete_application" method="POST" onsubmit="return confirm('Delete this application?');">
-    <input type="hidden" name="id" value="{{ app['id'] }}">
-    <button type="submit" class="delete-btn">Delete</button>
-</form>
+<button class="delete-btn" data-action="delete" data-id="{{ app['id'] }}">Delete</button>
 </td>
 
 </tr>
@@ -224,5 +247,85 @@ button.pay-btn {
 </tbody>
 </table>
 
+<!-- ---------------- POPUP MODAL ---------------- -->
+<div id="popupModal" class="modal">
+  <div class="modal-content">
+    <span class="close-btn">&times;</span>
+    <div id="popupBody">
+        <!-- Dynamic content loaded here -->
+    </div>
+  </div>
+</div>
+
+<script>
+// ------------------ POPUP LOGIC ----------------
+const popupModal = document.getElementById('popupModal');
+const popupBody = document.getElementById('popupBody');
+const closeBtn = document.querySelector('.close-btn');
+
+document.querySelectorAll('button[data-action]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+        const action = btn.dataset.action;
+        const id = btn.dataset.id;
+        let html = '';
+
+        if(action==='status'){
+            const current = btn.dataset.status;
+            html = `
+            <h3>Update Status</h3>
+            <form action="/update_status" method="POST">
+                <input type="hidden" name="id" value="${id}">
+                <select name="status" required>
+                    <option value="Pending" ${current==='Pending'?'selected':''}>Pending</option>
+                    <option value="Processing" ${current==='Processing'?'selected':''}>Processing</option>
+                    <option value="Approved" ${current==='Approved'?'selected':''}>Approved</option>
+                    <option value="Rejected" ${current==='Rejected'?'selected':''}>Rejected</option>
+                </select>
+                <button type="submit" class="update-btn">Update</button>
+            </form>`;
+        }
+
+        if(action==='certificate'){
+            html = `
+            <h3>Upload Certificate</h3>
+            <form action="/upload_certificate" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="id" value="${id}">
+                <input type="file" name="certificate" accept="application/pdf" required>
+                <button type="submit" class="update-btn">Upload</button>
+            </form>`;
+        }
+
+        if(action==='payment'){
+            html = `
+            <h3>Confirm Payment</h3>
+            <form action="/upload_payment/${id}" method="POST" enctype="multipart/form-data">
+                <input type="file" name="payment_ss" required>
+                <button type="submit" class="pay-btn">Confirm Payment</button>
+            </form>`;
+        }
+
+        if(action==='delete'){
+            html = `
+            <h3>Delete Application</h3>
+            <p>Are you sure you want to delete this application?</p>
+            <form action="/delete_application" method="POST">
+                <input type="hidden" name="id" value="${id}">
+                <button type="submit" class="delete-btn">Delete</button>
+            </form>`;
+        }
+
+        popupBody.innerHTML = html;
+        popupModal.classList.add('active');
+    });
+});
+
+// Close modal
+closeBtn.addEventListener('click', ()=>{ popupModal.classList.remove('active'); });
+// Close on click outside
+popupModal.addEventListener('click', (e)=>{
+    if(e.target===popupModal){ popupModal.classList.remove('active'); }
+});
+</script>
+
 </body>
-  </html>
+    </html>
