@@ -126,6 +126,7 @@ button:hover {
     cursor: pointer;
     transition: 0.2s;
 }
+
 .close-btn:hover { color: #ff4d4d; transform: scale(1.2); }
 
 /* Status text */
@@ -201,20 +202,33 @@ button:hover {
                 <h3>Certificate: {{ data.cert_type }}</h3>
                 <div class="status-text {{ data.status|lower }}">Status: {{ data.status }}</div>
 
-                {% if data.payment_status == 'Pending' %}
-                    <div class="status-text pending">Payment Pending</div>
-                    <div class="qr-box">
-                        <p>Scan & Pay</p>
-                        <img src="{{ url_for('static', filename='IMG_20251202_164810.JPG') }}" width="250">
-                    </div>
-                {% endif %}
-
-                {% if data.payment_status == 'Paid' %}
-                    {% if data.status == 'Processing' and data.receipt_file %}
+                <!-- Processing -->
+                {% if data.status == 'Processing' %}
+                    {% if data.payment_status == 'Pending' %}
+                        <div class="status-text pending">Complete 70 rupees payment to download receipt</div>
+                        <div class="qr-box">
+                            <p>Scan & Pay</p>
+                            <img src="{{ url_for('static', filename='IMG_20251202_164810.JPG') }}" width="250">
+                        </div>
+                    {% elif data.payment_status == 'Paid' and data.receipt_file %}
                         <a class="download-btn" href="{{ url_for('download_receipt', filename=data.receipt_file) }}">Download Receipt</a>
-                    {% elif data.status == 'Approved' and data.certificate_file %}
+                    {% endif %}
+
+                <!-- Approved -->
+                {% elif data.status == 'Approved' %}
+                    {% if data.payment_status == 'Pending' %}
+                        <div class="status-text pending">Complete 70 rupees payment to download your Certificate</div>
+                        <div class="qr-box">
+                            <p>Scan & Pay</p>
+                            <img src="{{ url_for('static', filename='IMG_20251202_164810.JPG') }}" width="250">
+                        </div>
+                    {% elif data.payment_status == 'Paid' and data.certificate_file %}
                         <a class="download-btn" href="{{ url_for('download_certificate', filename=data.certificate_file) }}">Download Certificate</a>
                     {% endif %}
+
+                <!-- Rejected -->
+                {% elif data.status == 'Rejected' %}
+                    <div class="status-text rejected">Your application has been rejected.</div>
                 {% endif %}
 
             {% elif message %}
@@ -239,4 +253,4 @@ window.onclick = e => { if(e.target===modal) modal.classList.remove('active'); }
 </script>
 
 </body>
-</html>
+    </html>
