@@ -6,246 +6,214 @@
 <title>Apply Certificate</title>
 
 <style>
-/* ---------- BACKGROUND ANIMATION ---------- */
-body{
-    margin:0;
-    padding:0;
-    font-family: 'Arial', sans-serif;
-    overflow-x:hidden;
-    background: #000;
-    color:white;
+/* ----------------- ANIMATED GRADIENT BACKGROUND ----------------- */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: "Arial", sans-serif;
+    overflow-x: hidden;
+    background: linear-gradient(-45deg, #6a11cb, #2575fc, #ff6a00, #ee0979);
+    background-size: 400% 400%;
+    animation: gradientBG 10s ease infinite;
 }
 
-/* Floating neon circles */
-.bg-circle{
-    position: fixed;
-    width:220px;
-    height:220px;
-    border-radius:50%;
-    background: radial-gradient(circle, #4b7becaa, #0000);
-    animation: float 8s infinite ease-in-out alternate;
-    filter: blur(30px);
-    z-index:-1;
+@keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
 
-#c1{ top:8%; left:12%; animation-delay:0s; }
-#c2{ top:60%; left:70%; animation-delay:2s; }
-#c3{ top:30%; left:50%; animation-delay:4s; }
-
-@keyframes float{
-    from{ transform: translateY(-40px) scale(1); }
-    to{ transform: translateY(40px) scale(1.2); }
-}
-
-/* ---------- FORM CONTAINER ---------- */
-.container{
-    max-width:800px;
-    margin:auto;
-    margin-top:40px;
-    background: rgba(255,255,255,0.07);
-    padding:28px;
-    border-radius:20px;
+/* ----------------- CONTAINER GLASS EFFECT ----------------- */
+.container {
+    max-width: 800px;
+    margin: 40px auto;
+    background: rgba(255,255,255,0.13);
     backdrop-filter: blur(10px);
-    box-shadow:0px 0px 18px rgba(0,255,255,0.3);
+    padding: 28px;
+    border-radius: 18px;
+    border: 1px solid rgba(255,255,255,0.3);
     animation: fadeIn 1.2s ease;
+    box-shadow: 0px 0px 25px rgba(255,255,255,0.3);
 }
 
-@keyframes fadeIn{
-    from{ opacity:0; transform:scale(0.9); }
-    to{ opacity:1; transform:scale(1); }
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
 }
 
-h2{
-    text-align:center;
-    font-size:30px;
-    margin-bottom:20px;
-    background: linear-gradient(45deg, #4b7bec, #00f3ff);
-    -webkit-background-clip: text;
-    color:transparent;
-    animation: glow 2.5s infinite alternate;
+/* ----------------- HEADINGS ----------------- */
+h2 {
+    text-align: center;
+    font-size: 32px;
+    font-weight: bold;
+    color: white;
+    text-shadow: 0 0 15px white;
+    margin-bottom: 18px;
 }
 
-@keyframes glow{
-    0% { text-shadow: 0 0 10px #4b7bec; }
-    100% { text-shadow: 0 0 25px #00f3ff; }
+h3 {
+    text-align: center;
+    font-size: 22px;
+    color: #fff;
+    margin-bottom: 12px;
 }
 
-/* ----- Animated box sections ----- */
-.box{
-    background: rgba(255, 255, 255, 0.09);
-    padding:20px;
-    border-radius:16px;
-    margin-bottom:25px;
-    backdrop-filter: blur(20px);
-    border:1px solid rgba(255,255,255,0.2);
-    position:relative;
-    overflow:hidden;
-    animation: slideUp 1s ease;
+/* ----------------- SECTION BOX ----------------- */
+.box {
+    background: rgba(255,255,255,0.18);
+    padding: 18px;
+    border-radius: 14px;
+    margin-bottom: 22px;
+    border: 1px solid rgba(255,255,255,0.35);
+    position: relative;
+    overflow: hidden;
 }
 
-@keyframes slideUp{
-    from{ transform:translateY(40px); opacity:0; }
-    to{ transform:translateY(0); opacity:1; }
+/* Shimmer animation */
+.box::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -120%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(120deg, transparent, rgba(255,255,255,0.3), transparent);
+    animation: shine 4s infinite;
 }
 
-.box::after{
-    content:"";
-    position:absolute;
-    top:0;
-    left:-100%;
-    width:100%;
-    height:100%;
-    background: linear-gradient(120deg, transparent, rgba(255,255,255,0.25), transparent);
-    animation: shine 3s infinite;
+@keyframes shine {
+    0% { left: -120%; }
+    100% { left: 120%; }
 }
 
-@keyframes shine{
-    0% { left:-100%; }
-    100% { left:100%; }
-}
-
-/* ----- Headings ----- */
-h3{
-    text-align:center;
-    font-size:22px;
-    margin-bottom:15px;
-    color:#00f3ff;
-    text-shadow: 0 0 10px #00f3ff;
-}
-
-/* ----- Labels and Inputs ----- */
-label{
-    font-size:16px;
-    font-weight:bold;
-    margin-top:12px;
-    display:block;
-    color:#dff;
+/* ----------------- INPUT FIELDS ----------------- */
+label {
+    font-size: 16px;
+    color: #fff;
+    display: block;
+    margin-top: 12px;
+    font-weight: bold;
 }
 
 input[type="text"],
 input[type="file"],
-select{
-    width:100%;
-    padding:12px;
-    margin-top:6px;
-    border-radius:10px;
-    border:none;
-    background: rgba(255,255,255,0.1);
-    backdrop-filter: blur(5px);
-    color:white;
-    font-size:16px;
-    transition:0.3s;
+select {
+    width: 100%;
+    padding: 12px;
+    margin-top: 6px;
+    border-radius: 10px;
+    border: none;
+    background: rgba(255,255,255,0.2);
+    color: white;
+    font-size: 16px;
+    outline: none;
+    transition: 0.3s ease;
 }
 
-input:focus, select:focus{
-    outline:none;
-    box-shadow:0 0 12px #00eaff;
-    transform:scale(1.02);
+input:focus,
+select:focus {
+    transform: scale(1.03);
+    box-shadow: 0 0 15px #ffffffaa;
 }
 
-/* ----- Button Animation ----- */
-button{
-    width:100%;
-    padding:15px;
-    font-size:20px;
-    margin-top:15px;
-    border:none;
-    border-radius:12px;
-    background: linear-gradient(45deg, #4b7bec, #00eaff);
-    color:white;
-    cursor:pointer;
-    transition:0.3s;
-    animation: pulse 2s infinite;
+/* ----------------- ANIMATED BUTTON ----------------- */
+button {
+    width: 100%;
+    padding: 15px;
+    font-size: 20px;
+    border-radius: 14px;
+    border: none;
+    cursor: pointer;
+    color: white;
+    background: linear-gradient(45deg, #ff6a00, #ee0979);
+    animation: glow 2s infinite alternate;
+    transition: 0.3s ease;
 }
 
-@keyframes pulse {
-    0% { box-shadow:0 0 10px #00eaff; }
-    50% { box-shadow:0 0 25px #00eaff; }
-    100% { box-shadow:0 0 10px #00eaff; }
+@keyframes glow {
+    from { box-shadow: 0 0 10px #ff9a3c; }
+    to { box-shadow: 0 0 25px #ee0979; }
 }
 
-button:hover{
-    transform:scale(1.05);
+button:hover {
+    transform: scale(1.05);
 }
 
-/* ----- Links ----- */
-.link-container{
-    text-align:center;
-    margin-top:20px;
+/* ----------------- LINKS ----------------- */
+.link-container {
+    text-align: center;
+    margin-top: 15px;
 }
 
-a{
-    color:#00eaff;
-    font-size:18px;
-    text-decoration:none;
-    transition:0.3s;
+a {
+    color: #fff;
+    font-weight: bold;
+    text-shadow: 0 0 10px white;
+    font-size: 18px;
+    text-decoration: none;
+    margin: 0 8px;
 }
 
-a:hover{
-    text-shadow:0 0 12px #00eaff;
+a:hover {
+    text-shadow: 0 0 20px white;
 }
 
-/* Responsive */
-@media(max-width:600px){
-    h2{font-size:24px;}
-    h3{font-size:18px;}
+/* ----------------- MOBILE RESPONSIVE ----------------- */
+@media(max-width:600px) {
+    h2 { font-size: 26px; }
+    h3 { font-size: 18px; }
 }
 </style>
 </head>
-
 <body>
 
-<div id="c1" class="bg-circle"></div>
-<div id="c2" class="bg-circle"></div>
-<div id="c3" class="bg-circle"></div>
-
 <div class="container">
+
 <h2>Certificate Application Form</h2>
 
 <form action="/submit" method="POST" enctype="multipart/form-data">
 
 <div class="box">
-<h3>Select Certificate Type</h3>
-<label>Certificate Type:</label>
-<select name="cert_type" required>
-    <option value="" disabled selected>-- Select Certificate Type --</option>
-    <option value="Caste Certificate">Caste Certificate</option>
-    <option value="Income Certificate">Income Certificate</option>
-    <option value="Resident Certificate">Resident Certificate</option>
-</select>
+    <h3>Select Certificate Type</h3>
+    <label>Certificate Type:</label>
+    <select name="cert_type" required>
+        <option value="" disabled selected>-- Select Certificate Type --</option>
+        <option value="Caste Certificate">Caste Certificate</option>
+        <option value="Income Certificate">Income Certificate</option>
+        <option value="Resident Certificate">Resident Certificate</option>
+    </select>
 </div>
 
 <div class="box">
-<h3>Applicant Details</h3>
-
-<label>Enter Your Name:</label><input type="text" name="name" required>
-<label>Enter Your Mobile Number:</label><input type="text" name="mobile" required>
-<label>Village Name:</label><input type="text" name="village" required>
-<label>Post Office:</label><input type="text" name="post" required>
-<label>Gram Panchayat:</label><input type="text" name="gp" required>
-<label>Pin Code:</label><input type="text" name="pin" required>
-<label>District:</label><input type="text" name="district" required>
-<label>State:</label><input type="text" name="state" required>
+    <h3>Applicant Details</h3>
+    <label>Enter Your Name:</label><input type="text" name="name" required>
+    <label>Enter Your Mobile Number:</label><input type="text" name="mobile" required>
+    <label>Village Name:</label><input type="text" name="village" required>
+    <label>Post Office:</label><input type="text" name="post" required>
+    <label>Gram Panchayat:</label><input type="text" name="gp" required>
+    <label>Pin Code:</label><input type="text" name="pin" required>
+    <label>District:</label><input type="text" name="district" required>
+    <label>State:</label><input type="text" name="state" required>
 </div>
 
 <div class="box">
-<h3>Upload Required Documents</h3>
-
-<label>Applicant Photo:</label><input type="file" name="photo" accept="image/*" required>
-<label>Applicant Aadhaar Card:</label><input type="file" name="aadhaar" accept="image/*,application/pdf" required>
-<label>Father's Aadhaar Card:</label><input type="file" name="father_aadhaar" accept="image/*,application/pdf" required>
-<label>ROR Document (optional):</label><input type="file" name="ror" accept="image/*,application/pdf">
+    <h3>Upload Required Documents</h3>
+    <label>Applicant Photo:</label><input type="file" name="photo" accept="image/*" required>
+    <label>Applicant Aadhaar Card:</label><input type="file" name="aadhaar" accept="image/*,application/pdf" required>
+    <label>Father's Aadhaar Card:</label><input type="file" name="father_aadhaar" accept="image/*,application/pdf" required>
+    <label>ROR Document (optional):</label><input type="file" name="ror" accept="image/*,application/pdf">
 </div>
 
 <button type="submit">Submit Application</button>
 
 <div class="link-container">
-<a href="/status">Check Application Status</a> |
-<a href="/admin-login">Admin Login</a>
+    <a href="/status">Check Status</a> |
+    <a href="/admin-login">Admin Login</a>
 </div>
 
 </form>
+
 </div>
 
 </body>
-</html>
+                                      </html>
