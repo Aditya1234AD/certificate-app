@@ -4,79 +4,134 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Check Application Status</title>
+
 <style>
-body {
-    font-family: Arial, sans-serif;
-    background: #000;
-    padding: 20px;
-    color: white;
-}
-.box {
-    width: 400px;
-    margin: auto;
-    background: rgba(255,255,255,0.15);
-    backdrop-filter: blur(6px);
-    padding: 25px;
-    border-radius: 14px;
-    text-align: center;
-}
-h2 { color: #4b7bec; margin-bottom: 20px; }
-input, select {
-    width: 90%;
-    padding: 12px;
-    margin: 10px 0;
-    border-radius: 6px;
-    border: 1px solid #aaa;
-}
-button {
-    padding: 12px;
-    width: 100%;
-    background: #4b7bec;
-    border: none;
-    color: white;
-    font-size: 16px;
-    border-radius: 6px;
-    cursor: pointer;
-}
-.qr-box {
-    background: white;
-    padding: 15px;
-    border-radius: 12px;
-    margin-top: 20px;
-}
-.download-btn {
-    display: block;
-    margin-top: 15px;
-    background: #27ae60;
-    padding: 12px;
-    border-radius: 8px;
-    color: white;
-    text-decoration: none;
-    font-size: 18px;
-}
-.pending-text {
-    background: yellow;
-    color: black;
-    padding: 10px;
-    border-radius: 10px;
-    margin-top: 20px;
-    font-weight: bold;
-}
-.paid-text {
-    background: #2ecc71;
-    padding: 10px;
-    border-radius: 10px;
-    margin-top: 20px;
-    font-weight: bold;
-}
+    body {
+        margin: 0;
+        font-family: 'Segoe UI', Arial, sans-serif;
+        background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+        color: white;
+    }
+
+    .box {
+        width: 100%;
+        max-width: 420px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0px 8px 25px rgba(0,0,0,0.25);
+        animation: fadeIn 0.8s ease-in;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(12px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    h2 {
+        color: #74b9ff;
+        margin-bottom: 20px;
+        font-size: 26px;
+    }
+
+    input, select {
+        width: 100%;
+        padding: 14px;
+        margin: 10px 0;
+        background: rgba(255,255,255,0.15);
+        border: 1px solid rgba(255,255,255,0.3);
+        border-radius: 10px;
+        color: white;
+        font-size: 16px;
+        outline: none;
+        transition: 0.3s;
+    }
+
+    input:focus, select:focus {
+        border-color: #74b9ff;
+        box-shadow: 0px 0px 10px rgba(116,185,255,0.5);
+    }
+
+    button {
+        width: 100%;
+        padding: 14px;
+        background: linear-gradient(135deg, #4b7bec, #3867d6);
+        border: none;
+        border-radius: 12px;
+        color: white;
+        font-size: 18px;
+        font-weight: bold;
+        cursor: pointer;
+        margin-top: 10px;
+        transition: 0.3s;
+    }
+
+    button:hover {
+        background: linear-gradient(135deg, #3a6ad9, #274bba);
+        transform: scale(1.02);
+    }
+
+    .qr-box {
+        background: white;
+        padding: 15px;
+        border-radius: 15px;
+        margin-top: 20px;
+        text-align: center;
+        box-shadow: 0px 8px 20px rgba(0,0,0,0.25);
+    }
+
+    .download-btn {
+        display: block;
+        margin-top: 20px;
+        background: #2ecc71;
+        padding: 14px;
+        border-radius: 12px;
+        color: white;
+        text-decoration: none;
+        font-size: 18px;
+        font-weight: bold;
+        transition: 0.3s;
+        text-align: center;
+    }
+
+    .download-btn:hover {
+        background: #27ae60;
+        transform: scale(1.03);
+    }
+
+    .pending-text, .paid-text {
+        padding: 12px;
+        border-radius: 12px;
+        margin-top: 20px;
+        font-weight: bold;
+        text-align: center;
+        font-size: 16px;
+    }
+
+    .pending-text {
+        background: #ffeb3b;
+        color: #000;
+    }
+
+    .paid-text {
+        background: #2ecc71;
+        color: white;
+    }
+
 </style>
 </head>
+
 <body>
 
 <div class="box">
     <h2>Check Application Status</h2>
 
-    <!-- Form to track application -->
     <form action="/check_status" method="POST">
         <input type="text" name="mobile" placeholder="Enter your mobile number" required>
         <select name="cert_type" required>
@@ -89,27 +144,27 @@ button {
     </form>
 
     {% if data %}
-        <h3>Status: {{ data['status'] }}</h3>
+        <h3 style="margin-top:20px; color:#81ecec;">Status: {{ data['status'] }}</h3>
 
-        <!-- Show QR only if Processing or Approved but Payment Pending -->
         {% if (data['status'] == 'Processing' and data['payment_status'] == 'Pending') %}
             <div class="pending-text">Please complete payment to download receipt</div>
             <div class="qr-box">
                 <p style="color:black;"><b>Scan & Pay</b></p>
                 <img src="{{ url_for('static', filename='IMG_20251202_164810.JPG') }}" width="250">
             </div>
+
         {% elif (data['status'] == 'Approved' and data['payment_status'] == 'Pending') %}
             <div class="pending-text">Complete your payment to download your certificate</div>
             <div class="qr-box">
                 <p style="color:black;"><b>Scan & Pay</b></p>
-                <img src="{{ url_for('static', filename='static/IMG_20251202_164810.JPG') }}" width="250">
+                <img src="{{ url_for('static', filename='IMG_20251202_164810.JPG') }}" width="250">
             </div>
         {% endif %}
 
-        <!-- Show download buttons if Payment Completed -->
         {% if data['payment_status'] == 'Paid' %}
             {% if data['status'] == 'Processing' and data['receipt_file'] %}
                 <a href="{{ url_for('download_receipt', filename=data['receipt_file']) }}" class="download-btn">Download Receipt</a>
+
             {% elif data['status'] == 'Approved' and data['certificate_file'] %}
                 <a href="{{ url_for('download_certificate', filename=data['certificate_file']) }}" class="download-btn">Download Certificate</a>
             {% endif %}
@@ -121,4 +176,4 @@ button {
 </div>
 
 </body>
-              </html>
+</html>
