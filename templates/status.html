@@ -180,7 +180,7 @@ button:hover {
 <div class="box">
     <h2>Track Your Application</h2>
 
-    <form id="statusForm" method="POST">
+    <form method="POST">
         <input type="text" name="mobile" placeholder="Enter your mobile number" required>
         <select name="cert_type" required>
             <option value="">Select Certificate Type</option>
@@ -197,57 +197,46 @@ button:hover {
     <div class="modal-content">
         <span class="close-btn">&times;</span>
         <div id="modalBody">
-            <!-- Status will appear here -->
+            {% if data %}
+                <h3>Certificate: {{ data.cert_type }}</h3>
+                <div class="status-text {{ data.status|lower }}">Status: {{ data.status }}</div>
+
+                {% if data.payment_status == 'Pending' %}
+                    <div class="status-text pending">Payment Pending</div>
+                    <div class="qr-box">
+                        <p>Scan & Pay</p>
+                        <img src="{{ url_for('static', filename='IMG_20251202_164810.JPG') }}" width="250">
+                    </div>
+                {% endif %}
+
+                {% if data.payment_status == 'Paid' %}
+                    {% if data.status == 'Processing' and data.receipt_file %}
+                        <a class="download-btn" href="{{ url_for('download_receipt', filename=data.receipt_file) }}">Download Receipt</a>
+                    {% elif data.status == 'Approved' and data.certificate_file %}
+                        <a class="download-btn" href="{{ url_for('download_certificate', filename=data.certificate_file) }}">Download Certificate</a>
+                    {% endif %}
+                {% endif %}
+
+            {% elif message %}
+                <p>{{ message }}</p>
+            {% endif %}
         </div>
     </div>
 </div>
 
 <script>
 const modal = document.getElementById('statusModal');
-const modalBody = document.getElementById('modalBody');
 const closeBtn = document.querySelector('.close-btn');
-const form = document.getElementById('statusForm');
 
 // Close modal
 closeBtn.onclick = () => modal.classList.remove('active');
 window.onclick = e => { if(e.target===modal) modal.classList.remove('active'); }
 
-// Form submission
-form.onsubmit = async (e) => {
-    e.preventDefault();
-    modalBody.innerHTML = '<p style="font-size:18px; font-weight:bold;">Loading application status...</p>';
+// Open modal automatically if data exists
+{% if data or message %}
     modal.classList.add('active');
-
-    const formData = new FormData(form);
-
-    // Fetch status (assuming your backend returns JSON with status, payment, files)
-    const response = await fetch('/check_status', {
-        method: 'POST',
-        body: formData
-    });
-    const data = await response.json();
-
-    let html = `<h3>Certificate: ${data.cert_type}</h3>`;
-    html += `<div class="status-text ${data.status.toLowerCase()}">Status: ${data.status}</div>`;
-
-    if(data.payment_status==='Pending') {
-        html += `<div class="status-text pending">Payment Pending</div>`;
-        html += `<div class="qr-box">
-                    <p>Scan & Pay</p>
-                    <img src="/static/IMG_20251202_164810.JPG" width="250">
-                 </div>`;
-    }
-
-    if(data.payment_status==='Paid') {
-        if(data.status==='Processing' && data.receipt_file)
-            html += `<a class="download-btn" href="/download_receipt/${data.receipt_file}">Download Receipt</a>`;
-        else if(data.status==='Approved' && data.certificate_file)
-            html += `<a class="download-btn" href="/download_certificate/${data.certificate_file}">Download Certificate</a>`;
-    }
-
-    modalBody.innerHTML = html;
-}
+{% endif %}
 </script>
 
 </body>
-    </html>
+</html>
