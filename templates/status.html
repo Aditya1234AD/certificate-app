@@ -4,135 +4,183 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Check Application Status</title>
-
 <style>
-    body {
-        margin: 0;
-        font-family: 'Segoe UI', Arial, sans-serif;
-        background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-        min-height: 100vh;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 20px;
-        color: white;
-    }
+/* ---------------- GLOBAL ---------------- */
+body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    color: white;
+}
 
-    .box {
-        width: 100%;
-        max-width: 420px;
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-        border-radius: 20px;
-        padding: 30px;
-        box-shadow: 0px 8px 25px rgba(0,0,0,0.25);
-        animation: fadeIn 0.8s ease-in;
-    }
+/* ---------------- GLASSMORPHIC BOX ---------------- */
+.box {
+    width: 100%;
+    max-width: 420px;
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(12px);
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+    animation: fadeIn 0.8s ease-in;
+    position: relative;
+}
 
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(12px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
 
-    h2 {
-        color: #74b9ff;
-        margin-bottom: 20px;
-        font-size: 26px;
-    }
+h2 {
+    color: #74b9ff;
+    margin-bottom: 20px;
+    font-size: 28px;
+    text-align: center;
+}
 
-    input, select {
-        width: 100%;
-        padding: 14px;
-        margin: 10px 0;
-        background: rgba(255,255,255,0.15);
-        border: 1px solid rgba(255,255,255,0.3);
-        border-radius: 10px;
-        color: white;
-        font-size: 16px;
-        outline: none;
-        transition: 0.3s;
-    }
+/* ---------------- INPUTS & BUTTON ---------------- */
+input, select {
+    width: 100%;
+    padding: 14px;
+    margin: 10px 0;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 10px;
+    color: white;
+    font-size: 16px;
+    outline: none;
+    transition: 0.3s;
+}
 
-    input:focus, select:focus {
-        border-color: #74b9ff;
-        box-shadow: 0px 0px 10px rgba(116,185,255,0.5);
-    }
+input:focus, select:focus {
+    border-color: #74b9ff;
+    box-shadow: 0 0 12px rgba(116,185,255,0.5);
+}
 
-    button {
-        width: 100%;
-        padding: 14px;
-        background: linear-gradient(135deg, #4b7bec, #3867d6);
-        border: none;
-        border-radius: 12px;
-        color: white;
-        font-size: 18px;
-        font-weight: bold;
-        cursor: pointer;
-        margin-top: 10px;
-        transition: 0.3s;
-    }
+button {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #4b7bec, #3867d6);
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: 0.3s;
+}
 
-    button:hover {
-        background: linear-gradient(135deg, #3a6ad9, #274bba);
-        transform: scale(1.02);
-    }
+button:hover {
+    background: linear-gradient(135deg, #3a6ad9, #274bba);
+    transform: scale(1.03);
+}
 
-    .qr-box {
-        background: white;
-        padding: 15px;
-        border-radius: 15px;
-        margin-top: 20px;
-        text-align: center;
-        box-shadow: 0px 8px 20px rgba(0,0,0,0.25);
-    }
+/* ---------------- POPUP MODAL ---------------- */
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.65);
+    backdrop-filter: blur(6px);
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
 
-    .download-btn {
-        display: block;
-        margin-top: 20px;
-        background: #2ecc71;
-        padding: 14px;
-        border-radius: 12px;
-        color: white;
-        text-decoration: none;
-        font-size: 18px;
-        font-weight: bold;
-        transition: 0.3s;
-        text-align: center;
-    }
+.modal.active {
+    display: flex;
+}
 
-    .download-btn:hover {
-        background: #27ae60;
-        transform: scale(1.03);
-    }
+.modal-content {
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(14px);
+    border-radius: 20px;
+    padding: 25px;
+    width: 90%;
+    max-width: 450px;
+    box-shadow: 0 0 30px rgba(0,0,0,0.6);
+    position: relative;
+    text-align: center;
+    animation: popupIn 0.35s ease forwards;
+}
 
-    .pending-text, .paid-text {
-        padding: 12px;
-        border-radius: 12px;
-        margin-top: 20px;
-        font-weight: bold;
-        text-align: center;
-        font-size: 16px;
-    }
+@keyframes popupIn {
+    0% { opacity: 0; transform: scale(0.8); }
+    100% { opacity: 1; transform: scale(1); }
+}
 
-    .pending-text {
-        background: #ffeb3b;
-        color: #000;
-    }
+/* Close button */
+.close-btn {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    font-size: 24px;
+    font-weight: bold;
+    color: white;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.close-btn:hover { color: #ff4d4d; transform: scale(1.2); }
 
-    .paid-text {
-        background: #2ecc71;
-        color: white;
-    }
+/* Status text */
+.status-text {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 15px 0;
+    padding: 12px;
+    border-radius: 12px;
+}
 
+.pending { background: #ffeb3b; color: #000; }
+.processing { background: #fd9644; color: #fff; }
+.approved { background: #2ecc71; color: #fff; }
+.rejected { background: #e74c3c; color: #fff; }
+
+/* QR box */
+.qr-box {
+    background: rgba(255,255,255,0.15);
+    padding: 15px;
+    border-radius: 15px;
+    margin-top: 20px;
+    text-align: center;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+}
+
+.qr-box p { font-weight: bold; color: black; margin-bottom: 8px; }
+
+/* Download button */
+.download-btn {
+    display: block;
+    margin: 20px auto 0 auto;
+    background: #2ecc71;
+    padding: 14px;
+    border-radius: 12px;
+    color: white;
+    font-weight: bold;
+    font-size: 18px;
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+.download-btn:hover {
+    background: #27ae60;
+    transform: scale(1.03);
+}
 </style>
 </head>
 
 <body>
 
 <div class="box">
-    <h2>Check Application Status</h2>
+    <h2>Track Your Application</h2>
 
-    <form action="/check_status" method="POST">
+    <form id="statusForm" method="POST">
         <input type="text" name="mobile" placeholder="Enter your mobile number" required>
         <select name="cert_type" required>
             <option value="">Select Certificate Type</option>
@@ -140,40 +188,66 @@
             <option value="Income Certificate">Income Certificate</option>
             <option value="Resident Certificate">Resident Certificate</option>
         </select>
-        <button type="submit">Check Status</button>
+        <button type="submit">Track Application</button>
     </form>
-
-    {% if data %}
-        <h3 style="margin-top:20px; color:#81ecec;">Status: {{ data['status'] }}</h3>
-
-        {% if (data['status'] == 'Processing' and data['payment_status'] == 'Pending') %}
-            <div class="pending-text">Please complete payment to download receipt</div>
-            <div class="qr-box">
-                <p style="color:black;"><b>Scan & Pay</b></p>
-                <img src="{{ url_for('static', filename='IMG_20251202_164810.JPG') }}" width="250">
-            </div>
-
-        {% elif (data['status'] == 'Approved' and data['payment_status'] == 'Pending') %}
-            <div class="pending-text">Complete your payment to download your certificate</div>
-            <div class="qr-box">
-                <p style="color:black;"><b>Scan & Pay</b></p>
-                <img src="{{ url_for('static', filename='IMG_20251202_164810.JPG') }}" width="250">
-            </div>
-        {% endif %}
-
-        {% if data['payment_status'] == 'Paid' %}
-            {% if data['status'] == 'Processing' and data['receipt_file'] %}
-                <a href="{{ url_for('download_receipt', filename=data['receipt_file']) }}" class="download-btn">Download Receipt</a>
-
-            {% elif data['status'] == 'Approved' and data['certificate_file'] %}
-                <a href="{{ url_for('download_certificate', filename=data['certificate_file']) }}" class="download-btn">Download Certificate</a>
-            {% endif %}
-        {% endif %}
-
-    {% elif message %}
-        <p>{{ message }}</p>
-    {% endif %}
 </div>
 
+<!-- Popup Modal -->
+<div id="statusModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <div id="modalBody">
+            <!-- Status will appear here -->
+        </div>
+    </div>
+</div>
+
+<script>
+const modal = document.getElementById('statusModal');
+const modalBody = document.getElementById('modalBody');
+const closeBtn = document.querySelector('.close-btn');
+const form = document.getElementById('statusForm');
+
+// Close modal
+closeBtn.onclick = () => modal.classList.remove('active');
+window.onclick = e => { if(e.target===modal) modal.classList.remove('active'); }
+
+// Form submission
+form.onsubmit = async (e) => {
+    e.preventDefault();
+    modalBody.innerHTML = '<p style="font-size:18px; font-weight:bold;">Loading application status...</p>';
+    modal.classList.add('active');
+
+    const formData = new FormData(form);
+
+    // Fetch status (assuming your backend returns JSON with status, payment, files)
+    const response = await fetch('/check_status', {
+        method: 'POST',
+        body: formData
+    });
+    const data = await response.json();
+
+    let html = `<h3>Certificate: ${data.cert_type}</h3>`;
+    html += `<div class="status-text ${data.status.toLowerCase()}">Status: ${data.status}</div>`;
+
+    if(data.payment_status==='Pending') {
+        html += `<div class="status-text pending">Payment Pending</div>`;
+        html += `<div class="qr-box">
+                    <p>Scan & Pay</p>
+                    <img src="/static/IMG_20251202_164810.JPG" width="250">
+                 </div>`;
+    }
+
+    if(data.payment_status==='Paid') {
+        if(data.status==='Processing' && data.receipt_file)
+            html += `<a class="download-btn" href="/download_receipt/${data.receipt_file}">Download Receipt</a>`;
+        else if(data.status==='Approved' && data.certificate_file)
+            html += `<a class="download-btn" href="/download_certificate/${data.certificate_file}">Download Certificate</a>`;
+    }
+
+    modalBody.innerHTML = html;
+}
+</script>
+
 </body>
-</html>
+    </html>
