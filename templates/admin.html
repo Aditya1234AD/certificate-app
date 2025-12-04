@@ -48,39 +48,77 @@ h1 {
 }
 .logout-btn:hover { background: #e84118; transform: scale(1.05); }
 
-/* ---------------- TABLE ---------------- */
+/* ---------------- MODERN TABLE ---------------- */
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+    margin-top: 20px;
+    padding-bottom: 10px;
+}
+
 table {
     width: 100%;
-    border-collapse: collapse;
-    background: rgba(255,255,255,0.12);
-    backdrop-filter: blur(10px);
-    border-radius: 15px;
-    overflow: hidden;
-    box-shadow: 0 0 25px rgba(0,0,0,0.3);
-    animation: fadeIn 1.3s ease;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: transparent;
+    animation: fadeIn 1s ease;
 }
-th, td { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); }
-th {
-    background: rgba(0, 140, 255, 0.7);
+
+thead th {
+    position: sticky;
+    top: 0;
+    background: linear-gradient(135deg, #00c6ff, #0072ff);
     color: #fff;
-    letter-spacing: 0.5px;
+    font-weight: 700;
     font-size: 14px;
+    padding: 12px 10px;
     text-transform: uppercase;
+    border-radius: 10px 10px 0 0;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
 }
-tr { transition: 0.25s ease; }
-tr:hover { background: rgba(255,255,255,0.08); transform: scale(1.01); }
-img { border-radius: 8px; width: 90px; height: 110px; object-fit: cover; border: 2px solid #fff; }
-a { color: #00eaff; font-weight: bold; }
-a:hover { text-decoration: underline; }
-button { padding: 8px 14px; border: none; border-radius: 8px; cursor: pointer; transition: 0.3s ease; font-weight: 600; }
+
+tbody td {
+    padding: 12px 10px;
+    background: rgba(255,255,255,0.05);
+    color: #fff;
+    transition: transform 0.2s, background 0.2s;
+    text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+tbody tr:hover td {
+    background: rgba(255,255,255,0.12);
+    transform: scale(1.02);
+}
+
+tbody tr:nth-child(even) td {
+    background: rgba(255,255,255,0.08);
+}
+
+img {
+    border-radius: 6px;
+    width: 70px;
+    height: 90px;
+    object-fit: cover;
+    border: 2px solid #fff;
+}
+
+button {
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: transform 0.25s;
+}
+
+button:hover { transform: scale(1.1); }
 
 /* Buttons */
 button.update-btn { background: #1e90ff; color: #fff; }
-button.update-btn:hover { transform: scale(1.1); background: #0c63bd; }
+button.update-btn:hover { background: #0c63bd; }
 button.pay-btn { background: #2ecc71; color: #fff; }
-button.pay-btn:hover { transform: scale(1.1); background: #139b48; }
+button.pay-btn:hover { background: #139b48; }
 button.delete-btn { background: #ff4d4d; color: #fff; }
-button.delete-btn:hover { transform: scale(1.1); background: #cc0000; }
+button.delete-btn:hover { background: #cc0000; }
 
 /* Flash message */
 .flash {
@@ -94,7 +132,7 @@ button.delete-btn:hover { transform: scale(1.1); background: #cc0000; }
 
 /* ---------------- POPUP MODAL ---------------- */
 .modal {
-    display: none; /* hidden by default */
+    display: none;
     position: fixed;
     inset: 0;
     background: rgba(0,0,0,0.55);
@@ -160,8 +198,8 @@ button.delete-btn:hover { transform: scale(1.1); background: #cc0000; }
 /* Responsive for small screens */
 @media (max-width: 520px) {
     .modal-content { padding: 18px; }
-    table th, table td { padding: 8px; font-size: 12px; }
-    img { width: 70px; height: 90px; }
+    table th, table td { padding: 8px 6px; font-size: 12px; }
+    img { width: 50px; height: 65px; }
 }
 
 </style>
@@ -177,11 +215,12 @@ button.delete-btn:hover { transform: scale(1.1); background: #cc0000; }
   {% endif %}
 {% endwith %}
 
+<div class="table-container">
 <table>
 <thead>
 <tr>
 <th>ID</th>
-<th>Certificate Type</th>
+<th>Cert Type</th>
 <th>Name</th>
 <th>Mobile</th>
 <th>Village</th>
@@ -214,46 +253,31 @@ button.delete-btn:hover { transform: scale(1.1); background: #cc0000; }
 <td>{{ app['district'] }}</td>
 <td>{{ app['state'] }}</td>
 
-<td>{% if app['aadhar_file'] %}<a href="/uploads/{{ app['aadhar_file'] }}" target="_blank">View</a>{% else %} Not Uploaded {% endif %}</td>
-<td>{% if app['ror_file'] %}<a href="/uploads/{{ app['ror_file'] }}" target="_blank">View</a>{% else %} Not Uploaded {% endif %}</td>
-<td>{% if app['father_aadhar_file'] %}<a href="/uploads/{{ app['father_aadhar_file'] }}" target="_blank">View</a>{% else %} Not Uploaded {% endif %}</td>
-<td>{% if app['applicant_photo'] %}<img src="/uploads/{{ app['applicant_photo'] }}">{% else %} No Photo {% endif %}</td>
+<td>{% if app['aadhar_file'] %}<a href="/uploads/{{ app['aadhar_file'] }}" target="_blank">View</a>{% else %}N/A{% endif %}</td>
+<td>{% if app['ror_file'] %}<a href="/uploads/{{ app['ror_file'] }}" target="_blank">View</a>{% else %}N/A{% endif %}</td>
+<td>{% if app['father_aadhar_file'] %}<a href="/uploads/{{ app['father_aadhar_file'] }}" target="_blank">View</a>{% else %}N/A{% endif %}</td>
+<td>{% if app['applicant_photo'] %}<img src="/uploads/{{ app['applicant_photo'] }}">{% else %}No Photo{% endif %}</td>
 
-<td>
-<button class="update-btn" data-action="status" data-id="{{ app['id'] }}" data-status="{{ app['status'] }}">Update Status</button>
-</td>
-
-<td>
-<button class="update-btn" data-action="certificate" data-id="{{ app['id'] }}">Upload Certificate</button>
+<td><button class="update-btn" data-action="status" data-id="{{ app['id'] }}" data-status="{{ app['status'] }}">Update Status</button></td>
+<td><button class="update-btn" data-action="certificate" data-id="{{ app['id'] }}">Upload</button>
 {% if app['certificate_file'] %}
-    <p><a href="/receipts/{{ app['certificate_file'] }}" target="_blank">View Certificate</a></p>
+<p><a href="/receipts/{{ app['certificate_file'] }}" target="_blank">View</a></p>
 {% endif %}
 </td>
-
-<td>
-{% if app['payment_status'] == 'Paid' %}
-    <b style="color:#00ff8c;">Paid ✔</b>
-{% else %}
-<button class="pay-btn" data-action="payment" data-id="{{ app['id'] }}">Confirm Payment</button>
-{% endif %}
-</td>
-
-<td>
-<button class="delete-btn" data-action="delete" data-id="{{ app['id'] }}">Delete</button>
-</td>
+<td>{% if app['payment_status']=='Paid' %}<b style="color:#00ff8c;">Paid ✔</b>{% else %}<button class="pay-btn" data-action="payment" data-id="{{ app['id'] }}">Confirm</button>{% endif %}</td>
+<td><button class="delete-btn" data-action="delete" data-id="{{ app['id'] }}">Delete</button></td>
 
 </tr>
 {% endfor %}
 </tbody>
 </table>
+</div>
 
 <!-- ---------------- POPUP MODAL ---------------- -->
 <div id="popupModal" class="modal">
   <div class="modal-content">
     <span class="close-btn">&times;</span>
-    <div id="popupBody">
-        <!-- Dynamic content loaded here -->
-    </div>
+    <div id="popupBody"></div>
   </div>
 </div>
 
@@ -321,11 +345,10 @@ document.querySelectorAll('button[data-action]').forEach(btn=>{
 
 // Close modal
 closeBtn.addEventListener('click', ()=>{ popupModal.classList.remove('active'); });
-// Close on click outside
 popupModal.addEventListener('click', (e)=>{
     if(e.target===popupModal){ popupModal.classList.remove('active'); }
 });
 </script>
 
 </body>
-    </html>
+</html>
