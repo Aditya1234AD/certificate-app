@@ -96,11 +96,6 @@ tbody td {
     transition: all 0.3s ease;
 }
 
-tbody tr {
-    transition: all 0.3s ease;
-    border-radius: 10px;
-}
-
 tbody tr:hover td {
     background: rgba(255,255,255,0.15);
     transform: translateY(-2px);
@@ -275,12 +270,30 @@ button.delete-btn:hover { background: #cc0000; }
 <td>{{ app['district'] }}</td>
 <td>{{ app['state'] }}</td>
 
-<td>{% if app['aadhar_file'] %}<a href="{{ app['aadhar_file'] }}" target="_blank">View</a>{% else %}N/A{% endif %}</td>
-<td>{% if app['ror_file'] %}<a href="{{ app['ror_file'] }}" target="_blank">View</a>{% else %}N/A{% endif %}</td>
-<td>{% if app['father_aadhar_file'] %}<a href="{{ app['father_aadhar_file'] }}" target="_blank">View</a>{% else %}N/A{% endif %}</td>
-<td>{% if app['applicant_photo'] %}<img src="{{ app['applicant_photo'] }}">{% else %}No Photo{% endif %}</td>
+<td>
+{% if app['aadhar_file'] %}
+  <a href="{{ app['aadhar_file'] }}" target="_blank">View</a>
+{% else %}N/A{% endif %}
+</td>
+<td>
+{% if app['ror_file'] %}
+  <a href="{{ app['ror_file'] }}" target="_blank">View</a>
+{% else %}N/A{% endif %}
+</td>
+<td>
+{% if app['father_aadhar_file'] %}
+  <a href="{{ app['father_aadhar_file'] }}" target="_blank">View</a>
+{% else %}N/A{% endif %}
+</td>
+<td>
+{% if app['applicant_photo'] %}
+  <img src="{{ app['applicant_photo'] }}">
+{% else %}No Photo{% endif %}
+</td>
 
-<td><button class="update-btn" data-action="status" data-id="{{ app['id'] }}" data-status="{{ app['status'] }}">Update Status</button></td>
+<td>
+<button class="update-btn" data-action="status" data-id="{{ app['id'] }}" data-status="{{ app['status'] }}">Update Status</button>
+</td>
 <td>
 <button class="update-btn" data-action="certificate" data-id="{{ app['id'] }}">Upload</button>
 {% if app['certificate_file'] %}
@@ -289,12 +302,14 @@ button.delete-btn:hover { background: #cc0000; }
 </td>
 <td>
 {% if app['payment_status']=='Paid' %}
-<b style="color:#00ff8c;">Paid ✔</b>
+  <b style="color:#00ff8c;">Paid ✔</b>
 {% else %}
-<button class="pay-btn" data-action="payment" data-id="{{ app['id'] }}">Confirm</button>
+  <button class="pay-btn" data-action="payment" data-id="{{ app['id'] }}">Confirm</button>
 {% endif %}
 </td>
-<td><button class="delete-btn" data-action="delete" data-id="{{ app['id'] }}">Delete</button></td>
+<td>
+<button class="delete-btn" data-action="delete" data-id="{{ app['id'] }}">Delete</button>
+</td>
 
 </tr>
 {% endfor %}
@@ -380,4 +395,4 @@ popupModal.addEventListener('click', (e)=>{
 </script>
 
 </body>
-    </html>
+      </html>
