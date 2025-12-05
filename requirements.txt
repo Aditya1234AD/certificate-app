@@ -1,1 +1,4 @@
-supabase==2.4.6
+flask
+supabase
+python-dotenv
+gunicorn
