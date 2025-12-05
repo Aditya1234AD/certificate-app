@@ -12,17 +12,15 @@ app.secret_key = os.getenv("SECRET_KEY", "local_dev_secret_key_1234567890")
 
 # ------------------- SUPABASE CONFIG -------------------
 SUPABASE_URL = os.getenv("SUPABASE_URL", "https://souedaocajeetpmdixme.supabase.co")
-SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNvdWVkYW9jYWplZXRwbWRpeG1lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ4NTk2ODcsImV4cCI6MjA4MDQzNTY4N30.3QOeS3jpI6f1-auxKlYmUZCjZmJRqBomnINuy6xkn6Q")
+SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY", "<YOUR_SERVICE_KEY>")
 BUCKET_NAME = os.getenv("BUCKET_NAME", "uploads")
 
-# Supabase client
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 
 # ------------------- SUPABASE UPLOAD FUNCTION -------------------
 def upload_to_supabase(file, folder_name):
     if not file or file.filename == "":
         return None
-
     original = secure_filename(file.filename)
     unique_suffix = f"{int(time.time())}-{uuid.uuid4().hex[:8]}"
     filename = f"{unique_suffix}-{original}"
@@ -30,7 +28,6 @@ def upload_to_supabase(file, folder_name):
 
     try:
         file_bytes = file.read()
-        file.seek(0)
         supabase.storage.from_(BUCKET_NAME).upload(
             path_in_bucket,
             file_bytes,
@@ -40,30 +37,18 @@ def upload_to_supabase(file, folder_name):
         print("Supabase upload failed:", repr(e))
         return None
 
-    # Public URL
     try:
         result = supabase.storage.from_(BUCKET_NAME).get_public_url(path_in_bucket)
-        if isinstance(result, dict):
-            public_url = result.get("publicUrl") or result.get("public_url")
-            if public_url:
-                return public_url
+        public_url = result.get("publicUrl") or result.get("public_url")
+        if public_url:
+            return public_url
     except Exception as e:
-        print("get_public_url() failed:", repr(e))
+        print("get_public_url failed:", repr(e))
 
-    # Signed URL
-    try:
-        signed = supabase.storage.from_(BUCKET_NAME).create_signed_url(path_in_bucket, 60*60)
-        if isinstance(signed, dict):
-            signed_url = signed.get("signed_url") or signed.get("signedUrl")
-            if signed_url:
-                return signed_url
-    except Exception as e:
-        print("create_signed_url() failed:", repr(e))
+    fallback = f"{SUPABASE_URL}/storage/v1/object/public/{BUCKET_NAME}/{path_in_bucket}"
+    return fallback
 
-    # Fallback
-    return f"{SUPABASE_URL}/storage/v1/object/public/{BUCKET_NAME}/{path_in_bucket}"
-
-# ------------------- DATABASE (SQLite) -------------------
+# ------------------- DATABASE -------------------
 DB_PATH = "applications.db"
 
 def init_db():
@@ -118,7 +103,7 @@ def submit():
     district = request.form.get("district")
     state = request.form.get("state")
 
-    # Upload files to Supabase
+    # Upload files
     aadhar_file = upload_to_supabase(request.files.get("aadhaar"), "aadhaar")
     father_file = upload_to_supabase(request.files.get("father_aadhaar"), "father_aadhaar")
     photo_file = upload_to_supabase(request.files.get("photo"), "photos")
@@ -149,6 +134,7 @@ def admin_login():
     if request.method == "POST":
         username = request.form.get("username")
         password = request.form.get("password")
+
         if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
             session["admin_logged_in"] = True
             return redirect("/admin")
@@ -181,13 +167,11 @@ def admin_logout():
 def update_status():
     app_id = request.form.get("id")
     status = request.form.get("status")
-
     conn = sqlite3.connect(DB_PATH)
-    c = conn.cursor()
-    c.execute("UPDATE applications SET status=? WHERE id=?", (status, app_id))
+    cur = conn.cursor()
+    cur.execute("UPDATE applications SET status=? WHERE id=?", (status, app_id))
     conn.commit()
     conn.close()
-
     flash("Status updated successfully!")
     return redirect("/admin")
 
@@ -195,60 +179,20 @@ def update_status():
 @app.route("/delete_application", methods=["POST"])
 def delete_application():
     app_id = request.form.get("id")
-
     conn = sqlite3.connect(DB_PATH)
-    c = conn.cursor()
-    c.execute("DELETE FROM applications WHERE id=?", (app_id,))
+    cur = conn.cursor()
+    cur.execute("DELETE FROM applications WHERE id=?", (app_id,))
     conn.commit()
     conn.close()
-
     flash("Application deleted!")
     return redirect("/admin")
-
-# ------------------- CHECK STATUS -------------------
-@app.route("/status")
-def status_page():
-    return render_template("status.html")
-
-@app.route("/check_status", methods=["POST"])
-def check_status():
-    mobile = request.form.get("mobile")
-    cert_type = request.form.get("cert_type")
-
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM applications WHERE mobile=? AND cert_type=?", (mobile, cert_type))
-    app_data = cur.fetchone()
-    conn.close()
-
-    if app_data:
-        return render_template("status.html", data=app_data)
-    else:
-        return render_template("status.html", message="No application found.")
-
-# ------------------- UPLOAD PAYMENT -------------------
-@app.route("/upload_payment/<int:app_id>", methods=["POST"])
-def upload_payment(app_id):
-    file = request.files.get("payment_ss")
-    if file:
-        file_url = upload_to_supabase(file, "payment")
-        conn = sqlite3.connect(DB_PATH)
-        cur = conn.cursor()
-        cur.execute("""
-            UPDATE applications SET payment_status='Paid', receipt_file=? 
-            WHERE id=?
-        """, (file_url, app_id))
-        conn.commit()
-        conn.close()
-        flash("Payment uploaded successfully!")
-    return redirect("/status")
 
 # ------------------- UPLOAD CERTIFICATE -------------------
 @app.route("/upload_certificate", methods=["POST"])
 def upload_certificate():
     app_id = request.form.get("id")
     file = request.files.get("certificate")
+
     if file:
         file_url = upload_to_supabase(file, "certificate")
         conn = sqlite3.connect(DB_PATH)
