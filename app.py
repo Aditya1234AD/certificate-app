@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, flash, session
 import sqlite3
 from supabase import create_client, Client
 from werkzeug.utils import secure_filename
@@ -8,27 +8,28 @@ app.secret_key = "something_super_secret"
 
 # ------------------- SUPABASE CONFIG -------------------
 SUPABASE_URL = "https://souedaocajeetpmdixme.supabase.co"
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNvdWVkYW9jYWplZXRwbWRpeG1lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ4NTk2ODcsImV4cCI6MjA4MDQzNTY4N30.3QOeS3jpI6f1-auxKlYmUZCjZmJRqBomnINuy6xkn6Q"
+SUPABASE_SERVICE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNvdWVkYW9jYWplZXRwbWRpeG1lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ4NTk2ODcsImV4cCI6MjA4MDQzNTY4N30.3QOeS3jpI6f1-auxKlYmUZCjZmJRqBomnINuy6xkn6Q"  # <-- Replace with your Service Role Key
 BUCKET_NAME = "uploads"
 
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 
 # ------------------- SUPABASE UPLOAD FUNCTION -------------------
 def upload_to_supabase(file, folder_name):
     if file and file.filename != "":
         filename = secure_filename(file.filename)
         file_bytes = file.read()
-
         path_in_bucket = f"{folder_name}/{filename}"
 
-        # Upload
-        supabase.storage.from_(BUCKET_NAME).upload(
-            path_in_bucket,
-            file_bytes,
-            {"content-type": file.content_type}
-        )
+        try:
+            supabase.storage.from_(BUCKET_NAME).upload(
+                path_in_bucket,
+                file_bytes,
+                {"content-type": file.content_type}
+            )
+        except Exception as e:
+            print("Supabase upload failed:", e)
+            return None
 
-        # Public URL
         public_url = f"{SUPABASE_URL}/storage/v1/object/public/{BUCKET_NAME}/{folder_name}/{filename}"
         return public_url
     return None
