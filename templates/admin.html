@@ -5,41 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f3f3f3;
-            padding: 20px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            background: white;
-        }
-        th, td {
-            padding: 10px;
-            border: 1px solid #ccc;
-            text-align: center;
-            vertical-align: middle;
-        }
-        th {
-            background: #222;
-            color: white;
-        }
+        body { font-family: Arial, sans-serif; background: #f3f3f3; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; }
+        th, td { padding: 10px; border: 1px solid #ccc; text-align: center; vertical-align: middle; }
+        th { background: #222; color: white; }
         tr:nth-child(even){background:#f9f9f9;}
         tr:hover{background:#e0e0e0;}
-        img {
-            width: 90px;
-            height: auto;
-            border-radius: 6px;
-        }
-        .btn {
-            padding: 6px 10px;
-            border-radius: 5px;
-            color: white;
-            cursor: pointer;
-            border: none;
-        }
+        img { width: 90px; height: auto; border-radius: 6px; }
+        .btn { padding: 6px 10px; border-radius: 5px; color: white; cursor: pointer; border: none; }
         .btn-del { background: red; }
         .btn-status { background: green; }
     </style>
@@ -60,7 +33,7 @@
         <th>PIN</th>
         <th>District</th>
         <th>State</th>
-        <th>Photo</th>
+        <th>Applicant Photo</th> <!-- Explicit Applicant Photo Column -->
         <th>Aadhaar</th>
         <th>Father Aadhaar</th>
         <th>ROR</th>
@@ -83,10 +56,10 @@
         <td>{{ app['district'] }}</td>
         <td>{{ app['state'] }}</td>
 
-        <!-- Photo -->
+        <!-- Applicant Photo -->
         <td>
             {% if app['applicant_photo'] %}
-                <img src="{{ app['applicant_photo'] }}">
+                <img src="{{ app['applicant_photo'] }}" alt="Applicant Photo">
             {% else %}
                 No photo
             {% endif %}
@@ -170,4 +143,4 @@
 </table>
 
 </body>
-            </html>
+                    </html>
