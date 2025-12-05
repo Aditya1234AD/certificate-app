@@ -275,18 +275,25 @@ button.delete-btn:hover { background: #cc0000; }
 <td>{{ app['district'] }}</td>
 <td>{{ app['state'] }}</td>
 
-<td>{% if app['aadhar_file'] %}<a href="/uploads/{{ app['aadhar_file'] }}" target="_blank">View</a>{% else %}N/A{% endif %}</td>
-<td>{% if app['ror_file'] %}<a href="/uploads/{{ app['ror_file'] }}" target="_blank">View</a>{% else %}N/A{% endif %}</td>
-<td>{% if app['father_aadhar_file'] %}<a href="/uploads/{{ app['father_aadhar_file'] }}" target="_blank">View</a>{% else %}N/A{% endif %}</td>
-<td>{% if app['applicant_photo'] %}<img src="/uploads/{{ app['applicant_photo'] }}">{% else %}No Photo{% endif %}</td>
+<td>{% if app['aadhar_file'] %}<a href="{{ app['aadhar_file'] }}" target="_blank">View</a>{% else %}N/A{% endif %}</td>
+<td>{% if app['ror_file'] %}<a href="{{ app['ror_file'] }}" target="_blank">View</a>{% else %}N/A{% endif %}</td>
+<td>{% if app['father_aadhar_file'] %}<a href="{{ app['father_aadhar_file'] }}" target="_blank">View</a>{% else %}N/A{% endif %}</td>
+<td>{% if app['applicant_photo'] %}<img src="{{ app['applicant_photo'] }}">{% else %}No Photo{% endif %}</td>
 
 <td><button class="update-btn" data-action="status" data-id="{{ app['id'] }}" data-status="{{ app['status'] }}">Update Status</button></td>
-<td><button class="update-btn" data-action="certificate" data-id="{{ app['id'] }}">Upload</button>
+<td>
+<button class="update-btn" data-action="certificate" data-id="{{ app['id'] }}">Upload</button>
 {% if app['certificate_file'] %}
-<p><a href="/receipts/{{ app['certificate_file'] }}" target="_blank">View</a></p>
+<p><a href="{{ app['certificate_file'] }}" target="_blank">View</a></p>
 {% endif %}
 </td>
-<td>{% if app['payment_status']=='Paid' %}<b style="color:#00ff8c;">Paid ✔</b>{% else %}<button class="pay-btn" data-action="payment" data-id="{{ app['id'] }}">Confirm</button>{% endif %}</td>
+<td>
+{% if app['payment_status']=='Paid' %}
+<b style="color:#00ff8c;">Paid ✔</b>
+{% else %}
+<button class="pay-btn" data-action="payment" data-id="{{ app['id'] }}">Confirm</button>
+{% endif %}
+</td>
 <td><button class="delete-btn" data-action="delete" data-id="{{ app['id'] }}">Delete</button></td>
 
 </tr>
