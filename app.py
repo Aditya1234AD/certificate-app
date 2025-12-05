@@ -4,8 +4,11 @@ from supabase import create_client, Client
 from werkzeug.utils import secure_filename
 import os
 
+# ------------------- FLASK APP -------------------
 app = Flask(__name__)
-app.secret_key = "something_super_secret"
+
+# Load secret key from environment (REQUIRED ON RENDER)
+app.secret_key = os.getenv("SECRET_KEY", "JSHD73hsd78shd&*3hsd78ASD87as787Aasjdh67")
 
 # ------------------- SUPABASE CONFIG -------------------
 SUPABASE_URL = "https://souedaocajeetpmdixme.supabase.co"
@@ -16,11 +19,11 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 
 # ------------------- SUPABASE UPLOAD FUNCTION -------------------
 def upload_to_supabase(file, folder_name):
-    """Upload file to Supabase storage and return the public URL."""
     if file and file.filename != "":
         filename = secure_filename(file.filename)
         file_bytes = file.read()
         path_in_bucket = f"{folder_name}/{filename}"
+
         try:
             supabase.storage.from_(BUCKET_NAME).upload(
                 path_in_bucket,
@@ -28,11 +31,13 @@ def upload_to_supabase(file, folder_name):
                 {"content-type": file.content_type}
             )
         except Exception as e:
-            print("Supabase upload failed:", e)
+            print("Supabase Upload Failed:", e)
             return None
 
         public_url = f"{SUPABASE_URL}/storage/v1/object/public/{BUCKET_NAME}/{folder_name}/{filename}"
+        print("Uploaded File URL:", public_url)
         return public_url
+
     return None
 
 # ------------------- DATABASE -------------------
@@ -77,7 +82,6 @@ ADMIN_PASSWORD = "12345"
 def index():
     return render_template("index.html")
 
-# ------------------- SUBMIT APPLICATION -------------------
 @app.route("/submit", methods=["POST"])
 def submit():
     cert_type = request.form.get("cert_type")
@@ -90,7 +94,7 @@ def submit():
     district = request.form.get("district")
     state = request.form.get("state")
 
-    # Upload files to Supabase
+    # Upload files
     aadhar_file = upload_to_supabase(request.files.get("aadhaar"), "aadhaar")
     father_file = upload_to_supabase(request.files.get("father_aadhaar"), "father_aadhaar")
     photo_file = upload_to_supabase(request.files.get("photo"), "photos")
@@ -99,12 +103,13 @@ def submit():
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
     cur.execute("""
-        INSERT INTO applications
+        INSERT INTO applications 
         (cert_type,name,mobile,village,post,gp,pin,district,state,
-        aadhar_file,ror_file,father_aadhar_file,applicant_photo)
+         aadhar_file,ror_file,father_aadhar_file,applicant_photo)
         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
-    """, (cert_type, name, mobile, village, post, gp, pin, district, state,
+    """, (cert_type,name,mobile,village,post,gp,pin,district,state,
           aadhar_file, ror_file, father_file, photo_file))
+    
     conn.commit()
     conn.close()
 
@@ -116,17 +121,19 @@ def thanks():
     return render_template("thanks.html")
 
 # ------------------- ADMIN LOGIN -------------------
-@app.route("/admin-login", methods=["GET", "POST"])
+@app.route("/admin-login", methods=["GET","POST"])
 def admin_login():
     if request.method == "POST":
         username = request.form.get("username")
         password = request.form.get("password")
+
         if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
             session["admin_logged_in"] = True
             return redirect("/admin")
         else:
             flash("Invalid credentials!")
             return redirect("/admin-login")
+
     return render_template("admin_login.html")
 
 @app.route("/admin")
@@ -203,14 +210,21 @@ def check_status():
 @app.route("/upload_payment/<int:app_id>", methods=["POST"])
 def upload_payment(app_id):
     file = request.files.get("payment_ss")
+
     if file:
         file_url = upload_to_supabase(file, "payment")
+
         conn = sqlite3.connect(DB_PATH)
         cur = conn.cursor()
-        cur.execute("UPDATE applications SET payment_status='Paid', receipt_file=? WHERE id=?", (file_url, app_id))
+        cur.execute("""
+            UPDATE applications SET payment_status='Paid', receipt_file=? 
+            WHERE id=?
+        """, (file_url, app_id))
         conn.commit()
         conn.close()
+
         flash("Payment uploaded successfully!")
+
     return redirect("/status")
 
 # ------------------- UPLOAD CERTIFICATE -------------------
@@ -218,19 +232,23 @@ def upload_payment(app_id):
 def upload_certificate():
     app_id = request.form.get("id")
     file = request.files.get("certificate")
+
     if file:
         file_url = upload_to_supabase(file, "certificate")
+
         conn = sqlite3.connect(DB_PATH)
         cur = conn.cursor()
         cur.execute("UPDATE applications SET certificate_file=? WHERE id=?", (file_url, app_id))
         conn.commit()
         conn.close()
+
         flash("Certificate uploaded successfully!")
     else:
         flash("No file selected!")
+
     return redirect("/admin")
 
-# ------------------- RUN SERVER -------------------
-if __name__ == "__main__":
+# ------------------- RUN APP -------------------
+if __name__=="__main__":
     port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=True)
+    app.run(host="0.0.0.0", port=port)
