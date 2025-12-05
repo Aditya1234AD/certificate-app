@@ -12,7 +12,7 @@ app.secret_key = os.getenv("SECRET_KEY", "local_dev_secret_key_1234567890")
 
 # ------------------- SUPABASE CONFIG -------------------
 SUPABASE_URL = os.getenv("SUPABASE_URL", "https://souedaocajeetpmdixme.supabase.co")
-SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY", "<YOUR_SERVICE_KEY>")
+SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY", "<eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNvdWVkYW9jYWplZXRwbWRpeG1lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ4NTk2ODcsImV4cCI6MjA4MDQzNTY4N30.3QOeS3jpI6f1-auxKlYmUZCjZmJRqBomnINuy6xkn6Q>")
 BUCKET_NAME = os.getenv("BUCKET_NAME", "uploads")
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
