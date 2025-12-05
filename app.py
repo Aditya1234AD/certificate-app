@@ -8,9 +8,6 @@ import uuid
 
 # ------------------- FLASK APP -------------------
 app = Flask(__name__)
-
-# Load secret key from environment (REQUIRED ON RENDER)
-# In production set SECRET_KEY as an environment variable
 app.secret_key = os.getenv("SECRET_KEY", "local_dev_secret_key_1234567890")
 
 # ------------------- SUPABASE CONFIG -------------------
@@ -18,19 +15,14 @@ SUPABASE_URL = os.getenv("SUPABASE_URL", "https://souedaocajeetpmdixme.supabase.
 SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNvdWVkYW9jYWplZXRwbWRpeG1lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ4NTk2ODcsImV4cCI6MjA4MDQzNTY4N30.3QOeS3jpI6f1-auxKlYmUZCjZmJRqBomnINuy6xkn6Q")
 BUCKET_NAME = os.getenv("BUCKET_NAME", "uploads")
 
-# Create supabase client (use service role key server-side only)
+# Supabase client
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 
 # ------------------- SUPABASE UPLOAD FUNCTION -------------------
 def upload_to_supabase(file, folder_name):
-    """
-    Uploads `file` (werkzeug FileStorage) to Supabase storage under folder_name.
-    Returns a URL (public or signed) to access the uploaded object, or None on failure.
-    """
     if not file or file.filename == "":
         return None
 
-    # make filename safe and unique to avoid collisions
     original = secure_filename(file.filename)
     unique_suffix = f"{int(time.time())}-{uuid.uuid4().hex[:8]}"
     filename = f"{unique_suffix}-{original}"
@@ -38,33 +30,29 @@ def upload_to_supabase(file, folder_name):
 
     try:
         file_bytes = file.read()
-        # Upload the file bytes
+        file.seek(0)
         supabase.storage.from_(BUCKET_NAME).upload(
             path_in_bucket,
             file_bytes,
             {"content-type": file.content_type or "application/octet-stream"}
         )
     except Exception as e:
-        # Log and return None so the caller can handle missing file URL
         print("Supabase upload failed:", repr(e))
         return None
 
-    # Try to get a proper public URL from SDK
+    # Public URL
     try:
-        # SDK method may return different shapes depending on version
         result = supabase.storage.from_(BUCKET_NAME).get_public_url(path_in_bucket)
-        # result might be {'publicUrl': '...'} or {'public_url': '...'}
         if isinstance(result, dict):
             public_url = result.get("publicUrl") or result.get("public_url")
             if public_url:
                 return public_url
     except Exception as e:
-        print("get_public_url() failed or not available:", repr(e))
+        print("get_public_url() failed:", repr(e))
 
-    # If public URL not available (private bucket), create a signed URL (temporary)
+    # Signed URL
     try:
-        signed = supabase.storage.from_(BUCKET_NAME).create_signed_url(path_in_bucket, 60 * 60)  # 1 hour
-        # signed may be dict like {'signed_url': '...'}
+        signed = supabase.storage.from_(BUCKET_NAME).create_signed_url(path_in_bucket, 60*60)
         if isinstance(signed, dict):
             signed_url = signed.get("signed_url") or signed.get("signedUrl")
             if signed_url:
@@ -72,9 +60,8 @@ def upload_to_supabase(file, folder_name):
     except Exception as e:
         print("create_signed_url() failed:", repr(e))
 
-    # Last fallback: construct the conventional public URL (may 403 if bucket not public)
-    fallback = f"{SUPABASE_URL}/storage/v1/object/public/{BUCKET_NAME}/{path_in_bucket}"
-    return fallback
+    # Fallback
+    return f"{SUPABASE_URL}/storage/v1/object/public/{BUCKET_NAME}/{path_in_bucket}"
 
 # ------------------- DATABASE (SQLite) -------------------
 DB_PATH = "applications.db"
@@ -131,7 +118,7 @@ def submit():
     district = request.form.get("district")
     state = request.form.get("state")
 
-    # Upload files (store returned full URLs in DB)
+    # Upload files to Supabase
     aadhar_file = upload_to_supabase(request.files.get("aadhaar"), "aadhaar")
     father_file = upload_to_supabase(request.files.get("father_aadhaar"), "father_aadhaar")
     photo_file = upload_to_supabase(request.files.get("photo"), "photos")
@@ -162,14 +149,12 @@ def admin_login():
     if request.method == "POST":
         username = request.form.get("username")
         password = request.form.get("password")
-
         if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
             session["admin_logged_in"] = True
             return redirect("/admin")
         else:
             flash("Invalid credentials!")
             return redirect("/admin-login")
-
     return render_template("admin_login.html")
 
 @app.route("/admin")
@@ -246,10 +231,8 @@ def check_status():
 @app.route("/upload_payment/<int:app_id>", methods=["POST"])
 def upload_payment(app_id):
     file = request.files.get("payment_ss")
-
     if file:
         file_url = upload_to_supabase(file, "payment")
-
         conn = sqlite3.connect(DB_PATH)
         cur = conn.cursor()
         cur.execute("""
@@ -258,9 +241,7 @@ def upload_payment(app_id):
         """, (file_url, app_id))
         conn.commit()
         conn.close()
-
         flash("Payment uploaded successfully!")
-
     return redirect("/status")
 
 # ------------------- UPLOAD CERTIFICATE -------------------
@@ -268,23 +249,19 @@ def upload_payment(app_id):
 def upload_certificate():
     app_id = request.form.get("id")
     file = request.files.get("certificate")
-
     if file:
         file_url = upload_to_supabase(file, "certificate")
-
         conn = sqlite3.connect(DB_PATH)
         cur = conn.cursor()
         cur.execute("UPDATE applications SET certificate_file=? WHERE id=?", (file_url, app_id))
         conn.commit()
         conn.close()
-
         flash("Certificate uploaded successfully!")
     else:
         flash("No file selected!")
-
     return redirect("/admin")
 
 # ------------------- RUN APP -------------------
-if __name__=="__main__":
+if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=True)
