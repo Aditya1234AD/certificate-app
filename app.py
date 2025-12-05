@@ -3,44 +3,80 @@ import sqlite3
 from supabase import create_client, Client
 from werkzeug.utils import secure_filename
 import os
+import time
+import uuid
 
 # ------------------- FLASK APP -------------------
 app = Flask(__name__)
 
 # Load secret key from environment (REQUIRED ON RENDER)
-app.secret_key = os.getenv("SECRET_KEY", "JSHD73hsd78shd&*3hsd78ASD87as787Aasjdh67")
+# In production set SECRET_KEY as an environment variable
+app.secret_key = os.getenv("SECRET_KEY", "local_dev_secret_key_1234567890")
 
 # ------------------- SUPABASE CONFIG -------------------
-SUPABASE_URL = "https://souedaocajeetpmdixme.supabase.co"
-SUPABASE_SERVICE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNvdWVkYW9jYWplZXRwbWRpeG1lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ4NTk2ODcsImV4cCI6MjA4MDQzNTY4N30.3QOeS3jpI6f1-auxKlYmUZCjZmJRqBomnINuy6xkn6Q"
-BUCKET_NAME = "uploads"
+SUPABASE_URL = os.getenv("SUPABASE_URL", "https://souedaocajeetpmdixme.supabase.co")
+SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY", "<put_service_role_key_in_env>")
+BUCKET_NAME = os.getenv("BUCKET_NAME", "uploads")
 
+# Create supabase client (use service role key server-side only)
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 
 # ------------------- SUPABASE UPLOAD FUNCTION -------------------
 def upload_to_supabase(file, folder_name):
-    if file and file.filename != "":
-        filename = secure_filename(file.filename)
+    """
+    Uploads `file` (werkzeug FileStorage) to Supabase storage under folder_name.
+    Returns a URL (public or signed) to access the uploaded object, or None on failure.
+    """
+    if not file or file.filename == "":
+        return None
+
+    # make filename safe and unique to avoid collisions
+    original = secure_filename(file.filename)
+    unique_suffix = f"{int(time.time())}-{uuid.uuid4().hex[:8]}"
+    filename = f"{unique_suffix}-{original}"
+    path_in_bucket = f"{folder_name}/{filename}"
+
+    try:
         file_bytes = file.read()
-        path_in_bucket = f"{folder_name}/{filename}"
+        # Upload the file bytes
+        supabase.storage.from_(BUCKET_NAME).upload(
+            path_in_bucket,
+            file_bytes,
+            {"content-type": file.content_type or "application/octet-stream"}
+        )
+    except Exception as e:
+        # Log and return None so the caller can handle missing file URL
+        print("Supabase upload failed:", repr(e))
+        return None
 
-        try:
-            supabase.storage.from_(BUCKET_NAME).upload(
-                path_in_bucket,
-                file_bytes,
-                {"content-type": file.content_type}
-            )
-        except Exception as e:
-            print("Supabase Upload Failed:", e)
-            return None
+    # Try to get a proper public URL from SDK
+    try:
+        # SDK method may return different shapes depending on version
+        result = supabase.storage.from_(BUCKET_NAME).get_public_url(path_in_bucket)
+        # result might be {'publicUrl': '...'} or {'public_url': '...'}
+        if isinstance(result, dict):
+            public_url = result.get("publicUrl") or result.get("public_url")
+            if public_url:
+                return public_url
+    except Exception as e:
+        print("get_public_url() failed or not available:", repr(e))
 
-        public_url = f"{SUPABASE_URL}/storage/v1/object/public/{BUCKET_NAME}/{folder_name}/{filename}"
-        print("Uploaded File URL:", public_url)
-        return public_url
+    # If public URL not available (private bucket), create a signed URL (temporary)
+    try:
+        signed = supabase.storage.from_(BUCKET_NAME).create_signed_url(path_in_bucket, 60 * 60)  # 1 hour
+        # signed may be dict like {'signed_url': '...'}
+        if isinstance(signed, dict):
+            signed_url = signed.get("signed_url") or signed.get("signedUrl")
+            if signed_url:
+                return signed_url
+    except Exception as e:
+        print("create_signed_url() failed:", repr(e))
 
-    return None
+    # Last fallback: construct the conventional public URL (may 403 if bucket not public)
+    fallback = f"{SUPABASE_URL}/storage/v1/object/public/{BUCKET_NAME}/{path_in_bucket}"
+    return fallback
 
-# ------------------- DATABASE -------------------
+# ------------------- DATABASE (SQLite) -------------------
 DB_PATH = "applications.db"
 
 def init_db():
@@ -65,7 +101,8 @@ def init_db():
             receipt_file TEXT,
             certificate_file TEXT,
             status TEXT DEFAULT 'Pending',
-            payment_status TEXT DEFAULT 'Pending'
+            payment_status TEXT DEFAULT 'Pending',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
     conn.commit()
@@ -74,8 +111,8 @@ def init_db():
 init_db()
 
 # ------------------- ADMIN CREDENTIALS -------------------
-ADMIN_USERNAME = "admin"
-ADMIN_PASSWORD = "12345"
+ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "12345")
 
 # ------------------- ROUTES -------------------
 @app.route("/")
@@ -94,7 +131,7 @@ def submit():
     district = request.form.get("district")
     state = request.form.get("state")
 
-    # Upload files
+    # Upload files (store returned full URLs in DB)
     aadhar_file = upload_to_supabase(request.files.get("aadhaar"), "aadhaar")
     father_file = upload_to_supabase(request.files.get("father_aadhaar"), "father_aadhaar")
     photo_file = upload_to_supabase(request.files.get("photo"), "photos")
@@ -107,9 +144,8 @@ def submit():
         (cert_type,name,mobile,village,post,gp,pin,district,state,
          aadhar_file,ror_file,father_aadhar_file,applicant_photo)
         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
-    """, (cert_type,name,mobile,village,post,gp,pin,district,state,
+    """, (cert_type, name, mobile, village, post, gp, pin, district, state,
           aadhar_file, ror_file, father_file, photo_file))
-    
     conn.commit()
     conn.close()
 
@@ -121,7 +157,7 @@ def thanks():
     return render_template("thanks.html")
 
 # ------------------- ADMIN LOGIN -------------------
-@app.route("/admin-login", methods=["GET","POST"])
+@app.route("/admin-login", methods=["GET", "POST"])
 def admin_login():
     if request.method == "POST":
         username = request.form.get("username")
@@ -251,4 +287,4 @@ def upload_certificate():
 # ------------------- RUN APP -------------------
 if __name__=="__main__":
     port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=port, debug=True)
