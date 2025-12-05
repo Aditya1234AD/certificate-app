@@ -2,24 +2,25 @@ from flask import Flask, render_template, request, redirect, flash, session
 import sqlite3
 from supabase import create_client, Client
 from werkzeug.utils import secure_filename
+import os
 
 app = Flask(__name__)
 app.secret_key = "something_super_secret"
 
 # ------------------- SUPABASE CONFIG -------------------
 SUPABASE_URL = "https://souedaocajeetpmdixme.supabase.co"
-SUPABASE_SERVICE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNvdWVkYW9jYWplZXRwbWRpeG1lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ4NTk2ODcsImV4cCI6MjA4MDQzNTY4N30.3QOeS3jpI6f1-auxKlYmUZCjZmJRqBomnINuy6xkn6Q"  # <-- Replace with your Service Role Key
+SUPABASE_SERVICE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNvdWVkYW9jYWplZXRwbWRpeG1lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ4NTk2ODcsImV4cCI6MjA4MDQzNTY4N30.3QOeS3jpI6f1-auxKlYmUZCjZmJRqBomnINuy6xkn6Q"
 BUCKET_NAME = "uploads"
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 
 # ------------------- SUPABASE UPLOAD FUNCTION -------------------
 def upload_to_supabase(file, folder_name):
+    """Upload file to Supabase storage and return the public URL."""
     if file and file.filename != "":
         filename = secure_filename(file.filename)
         file_bytes = file.read()
         path_in_bucket = f"{folder_name}/{filename}"
-
         try:
             supabase.storage.from_(BUCKET_NAME).upload(
                 path_in_bucket,
@@ -67,7 +68,7 @@ def init_db():
 
 init_db()
 
-# ------------------- ADMIN -------------------
+# ------------------- ADMIN CREDENTIALS -------------------
 ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD = "12345"
 
@@ -76,6 +77,7 @@ ADMIN_PASSWORD = "12345"
 def index():
     return render_template("index.html")
 
+# ------------------- SUBMIT APPLICATION -------------------
 @app.route("/submit", methods=["POST"])
 def submit():
     cert_type = request.form.get("cert_type")
@@ -96,17 +98,16 @@ def submit():
 
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
-
     cur.execute("""
         INSERT INTO applications
         (cert_type,name,mobile,village,post,gp,pin,district,state,
         aadhar_file,ror_file,father_aadhar_file,applicant_photo)
         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
-    """,(cert_type,name,mobile,village,post,gp,pin,district,state,
-         aadhar_file, ror_file, father_file, photo_file))
-
+    """, (cert_type, name, mobile, village, post, gp, pin, district, state,
+          aadhar_file, ror_file, father_file, photo_file))
     conn.commit()
     conn.close()
+
     flash("Application submitted successfully!")
     return redirect("/thanks")
 
@@ -115,19 +116,17 @@ def thanks():
     return render_template("thanks.html")
 
 # ------------------- ADMIN LOGIN -------------------
-@app.route("/admin-login", methods=["GET","POST"])
+@app.route("/admin-login", methods=["GET", "POST"])
 def admin_login():
-    if request.method=="POST":
+    if request.method == "POST":
         username = request.form.get("username")
         password = request.form.get("password")
-
-        if username==ADMIN_USERNAME and password==ADMIN_PASSWORD:
+        if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
             session["admin_logged_in"] = True
             return redirect("/admin")
         else:
             flash("Invalid credentials!")
             return redirect("/admin-login")
-
     return render_template("admin_login.html")
 
 @app.route("/admin")
@@ -149,6 +148,7 @@ def admin_logout():
     session.pop("admin_logged_in", None)
     return redirect("/")
 
+# ------------------- UPDATE STATUS -------------------
 @app.route("/update_status", methods=["POST"])
 def update_status():
     app_id = request.form.get("id")
@@ -163,6 +163,7 @@ def update_status():
     flash("Status updated successfully!")
     return redirect("/admin")
 
+# ------------------- DELETE APPLICATION -------------------
 @app.route("/delete_application", methods=["POST"])
 def delete_application():
     app_id = request.form.get("id")
@@ -189,7 +190,6 @@ def check_status():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cur = conn.cursor()
-
     cur.execute("SELECT * FROM applications WHERE mobile=? AND cert_type=?", (mobile, cert_type))
     app_data = cur.fetchone()
     conn.close()
@@ -203,19 +203,14 @@ def check_status():
 @app.route("/upload_payment/<int:app_id>", methods=["POST"])
 def upload_payment(app_id):
     file = request.files.get("payment_ss")
-
     if file:
         file_url = upload_to_supabase(file, "payment")
-
         conn = sqlite3.connect(DB_PATH)
         cur = conn.cursor()
-        cur.execute("UPDATE applications SET payment_status='Paid', receipt_file=? WHERE id=?",
-                    (file_url, app_id))
+        cur.execute("UPDATE applications SET payment_status='Paid', receipt_file=? WHERE id=?", (file_url, app_id))
         conn.commit()
         conn.close()
-
         flash("Payment uploaded successfully!")
-
     return redirect("/status")
 
 # ------------------- UPLOAD CERTIFICATE -------------------
@@ -223,24 +218,19 @@ def upload_payment(app_id):
 def upload_certificate():
     app_id = request.form.get("id")
     file = request.files.get("certificate")
-
     if file:
         file_url = upload_to_supabase(file, "certificate")
-
         conn = sqlite3.connect(DB_PATH)
         cur = conn.cursor()
         cur.execute("UPDATE applications SET certificate_file=? WHERE id=?", (file_url, app_id))
         conn.commit()
         conn.close()
-
         flash("Certificate uploaded successfully!")
     else:
         flash("No file selected!")
-
     return redirect("/admin")
 
-# ------------------- RUN -------------------
-if __name__=="__main__":
-    import os
-    port = int(os.environ.get("PORT",5000))
+# ------------------- RUN SERVER -------------------
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=True)
