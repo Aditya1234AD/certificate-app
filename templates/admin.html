@@ -1,146 +1,165 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
-    <style>
-        body { font-family: Arial, sans-serif; background: #f3f3f3; padding: 20px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; }
-        th, td { padding: 10px; border: 1px solid #ccc; text-align: center; vertical-align: middle; }
-        th { background: #222; color: white; }
-        tr:nth-child(even){background:#f9f9f9;}
-        tr:hover{background:#e0e0e0;}
-        img { width: 90px; height: auto; border-radius: 6px; }
-        .btn { padding: 6px 10px; border-radius: 5px; color: white; cursor: pointer; border: none; }
-        .btn-del { background: red; }
-        .btn-status { background: green; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard</title>
+<style>
+    body { font-family: Arial, sans-serif; background: #f3f3f3; padding: 20px; }
+    h2 { text-align: center; margin-bottom: 20px; }
+    .table-container { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 1200px; background: white; }
+    th, td { padding: 10px; border: 1px solid #ccc; text-align: center; vertical-align: middle; }
+    th { background: #222; color: white; position: sticky; top: 0; z-index: 1; }
+    tr:nth-child(even){background:#f9f9f9;}
+    tr:hover{background:#e0e0e0;}
+    img { width: 90px; height: auto; border-radius: 6px; }
+    .btn { padding: 6px 10px; border-radius: 5px; color: white; cursor: pointer; border: none; font-weight: bold; }
+    .btn-del { background: red; }
+    .btn-status { background: green; }
+    .file-input { padding: 4px; }
+    select { padding: 4px; border-radius: 4px; }
+</style>
 </head>
 <body>
 
 <h2>Admin Dashboard</h2>
 
+<div class="table-container">
 <table>
-    <tr>
-        <th>ID</th>
-        <th>Certificate Type</th>
-        <th>Name</th>
-        <th>Mobile</th>
-        <th>Village</th>
-        <th>Post</th>
-        <th>GP</th>
-        <th>PIN</th>
-        <th>District</th>
-        <th>State</th>
-        <th>Applicant Photo</th> <!-- Explicit Applicant Photo Column -->
-        <th>Aadhaar</th>
-        <th>Father Aadhaar</th>
-        <th>ROR</th>
-        <th>Status</th>
-        <th>Payment</th>
-        <th>Certificate</th>
-        <th>Actions</th>
-    </tr>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Certificate Type</th>
+            <th>Name</th>
+            <th>Mobile</th>
+            <th>Village</th>
+            <th>Post</th>
+            <th>GP</th>
+            <th>PIN</th>
+            <th>District</th>
+            <th>State</th>
+            <th>Applicant Photo</th>
+            <th>Aadhaar</th>
+            <th>Father Aadhaar</th>
+            <th>ROR</th>
+            <th>Receipt</th>
+            <th>Status</th>
+            <th>Payment</th>
+            <th>Certificate</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for app in applications %}
+        <tr>
+            <td>{{ app['id'] }}</td>
+            <td>{{ app['cert_type'] }}</td>
+            <td>{{ app['name'] }}</td>
+            <td>{{ app['mobile'] }}</td>
+            <td>{{ app['village'] }}</td>
+            <td>{{ app['post'] }}</td>
+            <td>{{ app['gp'] }}</td>
+            <td>{{ app['pin'] }}</td>
+            <td>{{ app['district'] }}</td>
+            <td>{{ app['state'] }}</td>
 
-    {% for app in applications %}
-    <tr>
-        <td>{{ app['id'] }}</td>
-        <td>{{ app['cert_type'] }}</td>
-        <td>{{ app['name'] }}</td>
-        <td>{{ app['mobile'] }}</td>
-        <td>{{ app['village'] }}</td>
-        <td>{{ app['post'] }}</td>
-        <td>{{ app['gp'] }}</td>
-        <td>{{ app['pin'] }}</td>
-        <td>{{ app['district'] }}</td>
-        <td>{{ app['state'] }}</td>
+            <!-- Applicant Photo -->
+            <td>
+                {% if app['applicant_photo'] %}
+                    <img src="{{ app['applicant_photo'] }}" alt="Applicant Photo">
+                {% else %}
+                    No photo
+                {% endif %}
+            </td>
 
-        <!-- Applicant Photo -->
-        <td>
-            {% if app['applicant_photo'] %}
-                <img src="{{ app['applicant_photo'] }}" alt="Applicant Photo">
-            {% else %}
-                No photo
-            {% endif %}
-        </td>
+            <!-- Aadhaar -->
+            <td>
+                {% if app['aadhar_file'] %}
+                    <a href="{{ app['aadhar_file'] }}" target="_blank">View</a>
+                {% else %}
+                    No file
+                {% endif %}
+            </td>
 
-        <!-- Aadhaar -->
-        <td>
-            {% if app['aadhar_file'] %}
-                <a href="{{ app['aadhar_file'] }}" target="_blank">View</a>
-            {% else %}
-                No file
-            {% endif %}
-        </td>
+            <!-- Father Aadhaar -->
+            <td>
+                {% if app['father_aadhar_file'] %}
+                    <a href="{{ app['father_aadhar_file'] }}" target="_blank">View</a>
+                {% else %}
+                    No file
+                {% endif %}
+            </td>
 
-        <!-- Father Aadhaar -->
-        <td>
-            {% if app['father_aadhar_file'] %}
-                <a href="{{ app['father_aadhar_file'] }}" target="_blank">View</a>
-            {% else %}
-                No file
-            {% endif %}
-        </td>
+            <!-- ROR -->
+            <td>
+                {% if app['ror_file'] %}
+                    <a href="{{ app['ror_file'] }}" target="_blank">View</a>
+                {% else %}
+                    No file
+                {% endif %}
+            </td>
 
-        <!-- ROR -->
-        <td>
-            {% if app['ror_file'] %}
-                <a href="{{ app['ror_file'] }}" target="_blank">View</a>
-            {% else %}
-                No file
-            {% endif %}
-        </td>
+            <!-- Receipt -->
+            <td>
+                {% if app['receipt_file'] %}
+                    <a href="{{ app['receipt_file'] }}" target="_blank">View</a>
+                {% else %}
+                    Not Uploaded
+                {% endif %}
+            </td>
 
-        <!-- Status -->
-        <td>
-            <form action="/update_status" method="POST">
-                <input type="hidden" name="id" value="{{ app['id'] }}">
-                <select name="status">
-                    <option value="Pending" {% if app['status'] == 'Pending' %}selected{% endif %}>Pending</option>
-                    <option value="Processing" {% if app['status'] == 'Processing' %}selected{% endif %}>Processing</option>
-                    <option value="Completed" {% if app['status'] == 'Completed' %}selected{% endif %}>Completed</option>
-                </select>
-                <button class="btn btn-status">Update</button>
-            </form>
-        </td>
+            <!-- Status -->
+            <td>
+                <form action="/update_status" method="POST">
+                    <input type="hidden" name="id" value="{{ app['id'] }}">
+                    <select name="status">
+                        <option value="Pending" {% if app['status'] == 'Pending' %}selected{% endif %}>Pending</option>
+                        <option value="Processing" {% if app['status'] == 'Processing' %}selected{% endif %}>Processing</option>
+                        <option value="Completed" {% if app['status'] == 'Completed' %}selected{% endif %}>Completed</option>
+                    </select>
+                    <button class="btn btn-status">Update</button>
+                </form>
+            </td>
 
-        <!-- Payment -->
-        <td>
-            {% if app['payment_status'] == 'Paid' %}
-                <span style="color:green;font-weight:bold;">Paid</span>
-            {% else %}
-                <span style="color:red;">Pending</span>
-            {% endif %}
-        </td>
+            <!-- Payment -->
+            <td>
+                {% if app['payment_status'] == 'Paid' %}
+                    <span style="color:green;font-weight:bold;">Paid</span>
+                {% else %}
+                    <span style="color:red;">Pending</span>
+                {% endif %}
+            </td>
 
-        <!-- Certificate -->
-        <td>
-            {% if app['certificate_file'] %}
-                <a href="{{ app['certificate_file'] }}" target="_blank">Download</a>
-            {% else %}
-                Not Uploaded
-            {% endif %}
-        </td>
+            <!-- Certificate -->
+            <td>
+                {% if app['certificate_file'] %}
+                    <a href="{{ app['certificate_file'] }}" target="_blank">Download</a>
+                {% else %}
+                    Not Uploaded
+                {% endif %}
+            </td>
 
-        <!-- Actions -->
-        <td>
-            <!-- Delete -->
-            <form action="/delete_application" method="POST" style="margin-bottom:6px;">
-                <input type="hidden" name="id" value="{{ app['id'] }}">
-                <button class="btn btn-del" onclick="return confirm('Are you sure you want to delete this application?')">Delete</button>
-            </form>
+            <!-- Actions -->
+            <td>
+                <!-- Delete -->
+                <form action="/delete_application" method="POST" style="margin-bottom:6px;">
+                    <input type="hidden" name="id" value="{{ app['id'] }}">
+                    <button class="btn btn-del" onclick="return confirm('Are you sure you want to delete this application?')">Delete</button>
+                </form>
 
-            <!-- Upload Certificate -->
-            <form action="/upload_certificate" method="POST" enctype="multipart/form-data">
-                <input type="hidden" name="id" value="{{ app['id'] }}">
-                <input type="file" name="certificate" required>
-                <button class="btn btn-status">Upload Certificate</button>
-            </form>
-        </td>
-    </tr>
-    {% endfor %}
+                <!-- Upload Certificate -->
+                <form action="/upload_certificate" method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="id" value="{{ app['id'] }}">
+                    <input class="file-input" type="file" name="certificate" accept="application/pdf,image/*" required>
+                    <button class="btn btn-status">Upload Certificate</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
 </table>
+</div>
 
 </body>
-                    </html>
+    </html>
