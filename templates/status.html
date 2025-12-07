@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Check Application Status</title>
+
 <style>
 /* ---------------- GLOBAL ---------------- */
 body {
@@ -27,19 +28,10 @@ body {
     border-radius: 20px;
     padding: 30px;
     box-shadow: 0 8px 25px rgba(0,0,0,0.25);
-    animation: fadeIn 0.8s ease-in;
-    position: relative;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
 }
 
 h2 {
     color: #74b9ff;
-    margin-bottom: 20px;
-    font-size: 28px;
     text-align: center;
 }
 
@@ -52,14 +44,7 @@ input, select {
     border: 1px solid rgba(255,255,255,0.3);
     border-radius: 10px;
     color: white;
-    font-size: 16px;
     outline: none;
-    transition: 0.3s;
-}
-
-input:focus, select:focus {
-    border-color: #74b9ff;
-    box-shadow: 0 0 12px rgba(116,185,255,0.5);
 }
 
 button {
@@ -70,15 +55,7 @@ button {
     border-radius: 12px;
     color: white;
     font-size: 18px;
-    font-weight: bold;
     cursor: pointer;
-    margin-top: 10px;
-    transition: 0.3s;
-}
-
-button:hover {
-    background: linear-gradient(135deg, #3a6ad9, #274bba);
-    transform: scale(1.03);
 }
 
 /* ---------------- POPUP MODAL ---------------- */
@@ -93,41 +70,26 @@ button:hover {
     z-index: 9999;
 }
 
-.modal.active {
-    display: flex;
-}
+.modal.active { display: flex; }
 
 .modal-content {
-    background: rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.1);
     backdrop-filter: blur(14px);
     border-radius: 20px;
     padding: 25px;
     width: 90%;
     max-width: 450px;
-    box-shadow: 0 0 30px rgba(0,0,0,0.6);
-    position: relative;
     text-align: center;
-    animation: popupIn 0.35s ease forwards;
+    position: relative;
 }
 
-@keyframes popupIn {
-    0% { opacity: 0; transform: scale(0.8); }
-    100% { opacity: 1; transform: scale(1); }
-}
-
-/* Close button */
 .close-btn {
     position: absolute;
     top: 12px;
     right: 16px;
     font-size: 24px;
-    font-weight: bold;
-    color: white;
     cursor: pointer;
-    transition: 0.2s;
 }
-
-.close-btn:hover { color: #ff4d4d; transform: scale(1.2); }
 
 /* Status text */
 .status-text {
@@ -140,38 +102,26 @@ button:hover {
 
 .pending { background: #ffeb3b; color: #000; }
 .processing { background: #fd9644; color: #fff; }
-.approved { background: #2ecc71; color: #fff; }
+.completed { background: #2ecc71; color: #fff; }
 .rejected { background: #e74c3c; color: #fff; }
 
-/* QR box */
+/* QR Box */
 .qr-box {
     background: rgba(255,255,255,0.15);
     padding: 15px;
     border-radius: 15px;
     margin-top: 20px;
-    text-align: center;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
 }
 
-.qr-box p { font-weight: bold; color: black; margin-bottom: 8px; }
-
-/* Download button */
 .download-btn {
     display: block;
-    margin: 20px auto 0 auto;
+    margin-top: 20px;
     background: #2ecc71;
     padding: 14px;
     border-radius: 12px;
     color: white;
-    font-weight: bold;
-    font-size: 18px;
     text-decoration: none;
-    transition: 0.3s;
-}
-
-.download-btn:hover {
-    background: #27ae60;
-    transform: scale(1.03);
+    font-size: 18px;
 }
 </style>
 </head>
@@ -193,42 +143,45 @@ button:hover {
     </form>
 </div>
 
-<!-- Popup Modal -->
+
+<!-- ---------------- MODAL ---------------- -->
 <div id="statusModal" class="modal">
     <div class="modal-content">
         <span class="close-btn">&times;</span>
+
         <div id="modalBody">
             {% if data %}
-                <h3>Certificate: {{ data.cert_type }}</h3>
-                <div class="status-text {{ data.status|lower }}">Status: {{ data.status }}</div>
+                <h3>Certificate: {{ data['cert_type'] }}</h3>
 
-                <!-- Processing -->
-                {% if data.status == 'Processing' %}
-                    {% if data.payment_status == 'Pending' %}
-                        <div class="status-text pending">Complete 70 rupees payment to download receipt</div>
-                        <div class="qr-box">
-                            <p>Scan & Pay</p>
-                            <img src="{{ url_for('static', filename='IMG_20251202_164810.JPG') }}" width="250">
-                        </div>
-                    {% elif data.payment_status == 'Paid' and data.receipt_file %}
-                        <a class="download-btn" href="{{ url_for('download_receipt', filename=data.receipt_file) }}">Download Receipt</a>
+                <div class="status-text {{ data['status']|lower }}">
+                    Status: {{ data['status'] }}
+                </div>
+
+                <!-- PENDING PAYMENT -->
+                {% if data['payment_status'] == 'Pending' %}
+                    <div class="status-text pending">
+                        Please pay ₹70 to proceed.
+                    </div>
+
+                    <div class="qr-box">
+                        <p>Scan & Pay</p>
+                        <img src="{{ url_for('static', filename='IMG_20251202_164810.JPG') }}" width="230">
+                    </div>
+
+                {% elif data['payment_status'] == 'Paid' %}
+                    
+                    <!-- IF certificate uploaded -->
+                    {% if data['certificate_file'] %}
+                        <a class="download-btn" href="{{ data['certificate_file'] }}" target="_blank">
+                            Download Certificate
+                        </a>
+
+                    {% elif data['receipt_file'] %}
+                        <a class="download-btn" href="{{ data['receipt_file'] }}" target="_blank">
+                            Download Receipt
+                        </a>
                     {% endif %}
 
-                <!-- Approved -->
-                {% elif data.status == 'Approved' %}
-                    {% if data.payment_status == 'Pending' %}
-                        <div class="status-text pending">Complete 70 rupees payment to download your Certificate</div>
-                        <div class="qr-box">
-                            <p>Scan & Pay</p>
-                            <img src="{{ url_for('static', filename='IMG_20251202_164810.JPG') }}" width="250">
-                        </div>
-                    {% elif data.payment_status == 'Paid' and data.certificate_file %}
-                        <a class="download-btn" href="{{ url_for('download_certificate', filename=data.certificate_file) }}">Download Certificate</a>
-                    {% endif %}
-
-                <!-- Rejected -->
-                {% elif data.status == 'Rejected' %}
-                    <div class="status-text rejected">Your application has been rejected.</div>
                 {% endif %}
 
             {% elif message %}
@@ -239,18 +192,16 @@ button:hover {
 </div>
 
 <script>
-const modal = document.getElementById('statusModal');
-const closeBtn = document.querySelector('.close-btn');
+const modal = document.getElementById("statusModal");
+const closeBtn = document.querySelector(".close-btn");
 
-// Close modal
-closeBtn.onclick = () => modal.classList.remove('active');
-window.onclick = e => { if(e.target===modal) modal.classList.remove('active'); }
+closeBtn.onclick = ()=> modal.classList.remove("active");
+window.onclick = e => { if(e.target === modal) modal.classList.remove("active"); };
 
-// Open modal automatically if data exists
 {% if data or message %}
-    modal.classList.add('active');
+    modal.classList.add("active");
 {% endif %}
 </script>
 
 </body>
-    </html>
+                            </html>
