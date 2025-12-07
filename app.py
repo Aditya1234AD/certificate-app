@@ -43,7 +43,7 @@ def upload_to_supabase(file, folder_name):
         public_url = url_obj.get("publicUrl") or url_obj.get("public_url")
         if public_url:
             return public_url
-    except:
+    except Exception:
         pass
 
     return f"{SUPABASE_URL}/storage/v1/object/public/{BUCKET_NAME}/{path}"
@@ -73,45 +73,40 @@ def submit():
         "pin": request.form.get("pin"),
         "district": request.form.get("district"),
         "state": request.form.get("state"),
-
         "aadhar_file": upload_to_supabase(request.files.get("aadhaar"), "aadhaar"),
         "father_aadhar_file": upload_to_supabase(request.files.get("father_aadhaar"), "father_aadhaar"),
         "applicant_photo": upload_to_supabase(request.files.get("photo"), "photos"),
         "ror_file": upload_to_supabase(request.files.get("ror"), "ror"),
-
         "payment_status": "Pending",
         "status": "Pending",
-        "certificate_file": None,
-        "receipt_file": None,
     }
 
-    supabase.table("applications").insert(data).execute()
-    flash("Application submitted successfully!")
-    return redirect("/thanks")
+    response = supabase.table("applications").insert(data).execute()
+    new_id = response.data[0]["id"]
+
+    return redirect(f"/status/{new_id}")
 
 
+# ------------------- THANK YOU PAGE -------------------
 @app.route("/thanks")
 def thanks():
     return render_template("thanks.html")
 
 
-# ------------------- CHECK STATUS (CLIENT SIDE) -------------------
+# ------------------- CHECK STATUS (FORM SUBMIT) -------------------
 @app.route("/check_status", methods=["POST"])
 def check_status():
-    mobile = request.form.get("mobile")
-    cert_type = request.form.get("cert_type")
+    app_id = request.form.get("app_id")
+    return redirect(f"/status/{app_id}")
 
-    response = supabase.table("applications") \
-        .select("*") \
-        .eq("mobile", mobile) \
-        .eq("cert_type", cert_type) \
-        .execute()
 
-    if response.data:
-        data = response.data[0]
-        return render_template("status.html", data=data, message=None)
-
-    return render_template("status.html", data=None, message="No application found!")
+# ------------------- STATUS PAGE -------------------
+@app.route("/status/<app_id>")
+def status_page(app_id):
+    data = supabase.table("applications").select("*").eq("id", app_id).execute()
+    if not data.data:
+        return "Application ID not found!"
+    return render_template("status.html", app=data.data[0])
 
 
 # ------------------- ADMIN LOGIN -------------------
@@ -168,7 +163,7 @@ def delete_application():
     return redirect("/admin")
 
 
-# ------------------- UPLOAD CERTIFICATE (ADMIN) -------------------
+# ------------------- UPLOAD CERTIFICATE -------------------
 @app.route("/upload_certificate", methods=["POST"])
 def upload_certificate():
     app_id = request.form.get("id")
