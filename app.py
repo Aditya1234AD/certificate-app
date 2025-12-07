@@ -38,16 +38,14 @@ def upload_to_supabase(file, folder_name):
         print("Upload failed:", e)
         return None
 
-    # Get public URL
     try:
         url_obj = supabase.storage.from_(BUCKET_NAME).get_public_url(path)
         public_url = url_obj.get("publicUrl") or url_obj.get("public_url")
         if public_url:
             return public_url
-    except Exception:
+    except:
         pass
 
-    # Fallback public URL
     return f"{SUPABASE_URL}/storage/v1/object/public/{BUCKET_NAME}/{path}"
 
 
@@ -75,16 +73,19 @@ def submit():
         "pin": request.form.get("pin"),
         "district": request.form.get("district"),
         "state": request.form.get("state"),
+
         "aadhar_file": upload_to_supabase(request.files.get("aadhaar"), "aadhaar"),
         "father_aadhar_file": upload_to_supabase(request.files.get("father_aadhaar"), "father_aadhaar"),
         "applicant_photo": upload_to_supabase(request.files.get("photo"), "photos"),
         "ror_file": upload_to_supabase(request.files.get("ror"), "ror"),
+
         "payment_status": "Pending",
         "status": "Pending",
+        "certificate_file": None,
+        "receipt_file": None,
     }
 
     supabase.table("applications").insert(data).execute()
-
     flash("Application submitted successfully!")
     return redirect("/thanks")
 
@@ -92,6 +93,25 @@ def submit():
 @app.route("/thanks")
 def thanks():
     return render_template("thanks.html")
+
+
+# ------------------- CHECK STATUS (CLIENT SIDE) -------------------
+@app.route("/check_status", methods=["POST"])
+def check_status():
+    mobile = request.form.get("mobile")
+    cert_type = request.form.get("cert_type")
+
+    response = supabase.table("applications") \
+        .select("*") \
+        .eq("mobile", mobile) \
+        .eq("cert_type", cert_type) \
+        .execute()
+
+    if response.data:
+        data = response.data[0]
+        return render_template("status.html", data=data, message=None)
+
+    return render_template("status.html", data=None, message="No application found!")
 
 
 # ------------------- ADMIN LOGIN -------------------
@@ -148,7 +168,7 @@ def delete_application():
     return redirect("/admin")
 
 
-# ------------------- UPLOAD CERTIFICATE -------------------
+# ------------------- UPLOAD CERTIFICATE (ADMIN) -------------------
 @app.route("/upload_certificate", methods=["POST"])
 def upload_certificate():
     app_id = request.form.get("id")
