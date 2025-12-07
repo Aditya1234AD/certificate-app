@@ -47,7 +47,6 @@ def upload_to_supabase(file, folder_name):
 
     return f"{SUPABASE_URL}/storage/v1/object/public/{BUCKET_NAME}/{path}"
 
-
 # ------------------- ADMIN LOGIN CREDENTIALS -------------------
 ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD = "12345"
@@ -56,7 +55,6 @@ ADMIN_PASSWORD = "12345"
 @app.route("/")
 def index():
     return render_template("index.html")
-
 
 # ------------------- SUBMIT APPLICATION -------------------
 @app.route("/submit", methods=["POST"])
@@ -77,19 +75,15 @@ def submit():
         "ror_file": upload_to_supabase(request.files.get("ror"), "ror"),
         "payment_status": "Pending",
         "status": "Pending",
-        "certificate_file": None,
-        "receipt_file": None
     }
 
     supabase.table("applications").insert(data).execute()
     flash("Application submitted successfully!")
     return redirect("/thanks")
 
-
 @app.route("/thanks")
 def thanks():
     return render_template("thanks.html")
-
 
 # ------------------- ADMIN LOGIN -------------------
 @app.route("/admin-login", methods=["GET", "POST"])
@@ -98,29 +92,22 @@ def admin_login():
         if request.form.get("username") == ADMIN_USERNAME and request.form.get("password") == ADMIN_PASSWORD:
             session["admin_logged_in"] = True
             return redirect("/admin")
-
         flash("Invalid credentials!")
         return redirect("/admin-login")
-
     return render_template("admin_login.html")
-
 
 @app.route("/admin")
 def admin_dashboard():
     if not session.get("admin_logged_in"):
         return redirect("/admin-login")
-
     response = supabase.table("applications").select("*").order("id", desc=True).execute()
     applications = response.data
-
     return render_template("admin.html", applications=applications)
-
 
 @app.route("/admin-logout")
 def admin_logout():
     session.pop("admin_logged_in", None)
     return redirect("/")
-
 
 # ------------------- UPDATE STATUS -------------------
 @app.route("/update_status", methods=["POST"])
@@ -131,7 +118,6 @@ def update_status():
     flash("Status updated successfully!")
     return redirect("/admin")
 
-
 # ------------------- DELETE APPLICATION -------------------
 @app.route("/delete_application", methods=["POST"])
 def delete_application():
@@ -140,45 +126,37 @@ def delete_application():
     flash("Application deleted!")
     return redirect("/admin")
 
-
 # ------------------- UPLOAD CERTIFICATE -------------------
 @app.route("/upload_certificate", methods=["POST"])
 def upload_certificate():
     app_id = request.form.get("id")
     file = request.files.get("certificate")
-
     if file:
         url = upload_to_supabase(file, "certificate")
-        supabase.table("applications").update({"certificate_file": url, "status": "Approved"}).eq("id", app_id).execute()
+        supabase.table("applications").update({"certificate_file": url}).eq("id", app_id).execute()
         flash("Certificate uploaded successfully!")
     else:
         flash("No file selected!")
-
     return redirect("/admin")
 
-
-# ------------------- UPLOAD RECEIPT (MARK PAYMENT AS PAID) -------------------
+# ------------------- UPLOAD RECEIPT -------------------
 @app.route("/upload_receipt", methods=["POST"])
 def upload_receipt():
     app_id = request.form.get("id")
     file = request.files.get("receipt")
-
     if file:
         url = upload_to_supabase(file, "receipt")
         supabase.table("applications").update({
             "receipt_file": url,
             "payment_status": "Paid"
         }).eq("id", app_id).execute()
-
         flash("Receipt uploaded and payment marked as Paid!")
     else:
         flash("No file selected!")
-
     return redirect("/admin")
 
-
 # ------------------- CHECK STATUS -------------------
-@app.route("/status", methods=["GET", "POST"])
+@app.route("/check-status", methods=["GET", "POST"])
 def check_status():
     if request.method == "POST":
         mobile = request.form.get("mobile")
@@ -193,13 +171,12 @@ def check_status():
         )
 
         if query.data:
-            data = query.data[0]
-            return render_template("status.html", data=data)
+            app_data = query.data[0]
+            return render_template("status.html", app=app_data)
         else:
-            return render_template("status.html", message="No application found!")
+            return render_template("status.html", app=None, message="No application found!")
 
-    return render_template("status.html")
-
+    return render_template("status.html", app=None)
 
 # ------------------- RUN APP -------------------
 if __name__ == "__main__":
