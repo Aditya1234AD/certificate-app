@@ -8,7 +8,7 @@
     body { font-family: Arial, sans-serif; background: #f3f3f3; padding: 20px; }
     h2 { text-align: center; margin-bottom: 20px; }
     .table-container { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; min-width: 1200px; background: white; }
+    table { width: 100%; border-collapse: collapse; min-width: 1500px; background: white; }
     th, td { padding: 10px; border: 1px solid #ccc; text-align: center; vertical-align: middle; }
     th { background: #222; color: white; position: sticky; top: 0; z-index: 1; }
     tr:nth-child(even){background:#f9f9f9;}
@@ -39,20 +39,24 @@
             <th>PIN</th>
             <th>District</th>
             <th>State</th>
+
             <th>Applicant Photo</th>
             <th>Aadhaar</th>
             <th>Father Aadhaar</th>
             <th>ROR</th>
             <th>Receipt</th>
+            <th>Certificate</th>
+
             <th>Status</th>
             <th>Payment</th>
-            <th>Certificate</th>
             <th>Actions</th>
         </tr>
     </thead>
+
     <tbody>
         {% for app in applications %}
         <tr>
+
             <td>{{ app['id'] }}</td>
             <td>{{ app['cert_type'] }}</td>
             <td>{{ app['name'] }}</td>
@@ -67,7 +71,7 @@
             <!-- Applicant Photo -->
             <td>
                 {% if app['applicant_photo'] %}
-                    <img src="{{ app['applicant_photo'] }}" alt="Applicant Photo">
+                    <img src="{{ app['applicant_photo'] }}" alt="Photo">
                 {% else %}
                     No photo
                 {% endif %}
@@ -103,7 +107,16 @@
             <!-- Receipt -->
             <td>
                 {% if app['receipt_file'] %}
-                    <a href="{{ app['receipt_file'] }}" target="_blank">View</a>
+                    <a href="{{ app['receipt_file'] }}" target="_blank">Download</a>
+                {% else %}
+                    Not Uploaded
+                {% endif %}
+            </td>
+
+            <!-- Certificate -->
+            <td>
+                {% if app['certificate_file'] %}
+                    <a href="{{ app['certificate_file'] }}" target="_blank">Download</a>
                 {% else %}
                     Not Uploaded
                 {% endif %}
@@ -117,6 +130,7 @@
                         <option value="Pending" {% if app['status'] == 'Pending' %}selected{% endif %}>Pending</option>
                         <option value="Processing" {% if app['status'] == 'Processing' %}selected{% endif %}>Processing</option>
                         <option value="Completed" {% if app['status'] == 'Completed' %}selected{% endif %}>Completed</option>
+                        <option value="Rejected" {% if app['status'] == 'Rejected' %}selected{% endif %}>Rejected</option>
                     </select>
                     <button class="btn btn-status">Update</button>
                 </form>
@@ -131,21 +145,20 @@
                 {% endif %}
             </td>
 
-            <!-- Certificate -->
-            <td>
-                {% if app['certificate_file'] %}
-                    <a href="{{ app['certificate_file'] }}" target="_blank">Download</a>
-                {% else %}
-                    Not Uploaded
-                {% endif %}
-            </td>
-
             <!-- Actions -->
             <td>
+
                 <!-- Delete -->
                 <form action="/delete_application" method="POST" style="margin-bottom:6px;">
                     <input type="hidden" name="id" value="{{ app['id'] }}">
-                    <button class="btn btn-del" onclick="return confirm('Are you sure you want to delete this application?')">Delete</button>
+                    <button class="btn btn-del" onclick="return confirm('Delete this application?')">Delete</button>
+                </form>
+
+                <!-- Upload Receipt -->
+                <form action="/upload_receipt" method="POST" enctype="multipart/form-data" style="margin-bottom:6px;">
+                    <input type="hidden" name="id" value="{{ app['id'] }}">
+                    <input class="file-input" type="file" name="receipt" accept="application/pdf,image/*" required>
+                    <button class="btn btn-status">Upload Receipt</button>
                 </form>
 
                 <!-- Upload Certificate -->
@@ -154,7 +167,9 @@
                     <input class="file-input" type="file" name="certificate" accept="application/pdf,image/*" required>
                     <button class="btn btn-status">Upload Certificate</button>
                 </form>
+
             </td>
+
         </tr>
         {% endfor %}
     </tbody>
@@ -162,4 +177,4 @@
 </div>
 
 </body>
-    </html>
+                </html>
