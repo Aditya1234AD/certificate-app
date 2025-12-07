@@ -3,116 +3,95 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Check Application Status</title>
-
+<title>Application Status</title>
 <style>
-/* ---------------- GLOBAL ---------------- */
 body {
-    margin: 0;
-    font-family: 'Poppins', sans-serif;
-    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    font-family: "Poppins", sans-serif;
+    background: radial-gradient(circle at 10% 10%, #152033 0%, #071018 45%, #020406 100%);
+    color: #eaeef7;
     min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    margin: 0;
     padding: 20px;
-    color: white;
 }
-
-/* ---------------- GLASSMORPHIC BOX ---------------- */
-.box {
-    width: 100%;
-    max-width: 480px;
-    background: rgba(255,255,255,0.1);
-    backdrop-filter: blur(12px);
-    border-radius: 20px;
-    padding: 30px;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+.container {
+    max-width: 800px;
+    margin: auto;
+    background: rgba(255,255,255,0.03);
+    padding: 24px;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.06);
+    box-shadow: 0 8px 40px rgba(11,18,30,0.7);
 }
-
-h2 {
-    color: #74b9ff;
-    text-align: center;
+h2 { text-align: center; margin-bottom: 20px; }
+h4 { margin: 8px 0; }
+.status {
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 8px;
+    display: inline-block;
+    margin-bottom: 12px;
 }
-
-/* ---------------- STATUS & QR ---------------- */
-.status-text {
-    font-size: 18px;
-    font-weight: bold;
-    margin: 15px 0;
-    padding: 12px;
-    border-radius: 12px;
-}
-
-.pending { background: #ffeb3b; color: #000; }
-.processing { background: #fd9644; color: #fff; }
-.completed { background: #2ecc71; color: #fff; }
-.rejected { background: #e74c3c; color: #fff; }
-
-.qr-box {
-    background: rgba(255,255,255,0.15);
-    padding: 15px;
-    border-radius: 15px;
-    margin-top: 20px;
-    text-align: center;
-}
-
-.download-btn {
-    display: block;
-    margin-top: 20px;
-    background: #2ecc71;
-    padding: 14px;
-    border-radius: 12px;
+.pending { background-color: #ffa500; color: #fff; }
+.rejected { background-color: #ff4c4c; color: #fff; }
+.processed { background-color: #4b7bec; color: #fff; }
+.approved { background-color: #2bc48a; color: #fff; }
+.qr-code { margin: 16px 0; text-align: center; }
+a.download-btn {
+    display: inline-block;
+    padding: 10px 16px;
+    background-color: #4b7bec;
     color: white;
     text-decoration: none;
-    font-size: 18px;
+    border-radius: 8px;
+    font-weight: 600;
 }
+a.download-btn:hover { background-color: #2b4aa4; }
+.message { text-align: center; margin-top: 40px; font-size: 18px; color: #ffcc00; }
 </style>
 </head>
 <body>
 
-<div class="box">
-    <h2>Track Your Application</h2>
+<div class="container">
+    <h2>Application Status</h2>
 
-    {% if app %}
-        <h3>Certificate: {{ app.cert_type }}</h3>
-        <div class="status-text {{ app.status|lower }}">
-            Status: {{ app.status }}
-        </div>
+    {% if data %}
+        <h4><strong>Name:</strong> {{ data.name }}</h4>
+        <h4><strong>Certificate Type:</strong> {{ data.cert_type }}</h4>
+        <h4><strong>Mobile:</strong> {{ data.mobile }}</h4>
+        <h4><strong>Village:</strong> {{ data.village }}</h4>
+        <h4><strong>Post:</strong> {{ data.post }}</h4>
+        <h4><strong>Gram Panchayat:</strong> {{ data.gp }}</h4>
+        <h4><strong>Pin Code:</strong> {{ data.pin }}</h4>
+        <h4><strong>District:</strong> {{ data.district }}</h4>
+        <h4><strong>State:</strong> {{ data.state }}</h4>
+        <h4><strong>Payment Status:</strong> {{ data.payment_status }}</h4>
+        <h4 class="status {% if data.status == 'Pending' %}pending{% elif data.status == 'Rejected' %}rejected{% elif data.status == 'Processed' %}processed{% elif data.status == 'Approved' %}approved{% endif %}">
+            {{ data.status }}
+        </h4>
 
-        <h4><strong>Name:</strong> {{ app.name }}</h4>
-        <h4><strong>Mobile:</strong> {{ app.mobile }}</h4>
-
-        <!-- PAYMENT / QR / DOWNLOAD LOGIC -->
-        {% if app.payment_status == 'Pending' %}
-            {% if app.status in ['Processing', 'Approved'] %}
-                <div class="status-text pending">
-                    Please pay ₹70 to proceed.
-                </div>
-                <div class="qr-box">
-                    <p>Scan & Pay</p>
-                    <img src="{{ url_for('static', filename='IMG_20251202_164810.JPG') }}" width="230">
+        {% if (data.status == 'Processed' or data.status == 'Approved') and data.payment_status == 'Paid' %}
+            {% if data.certificate_file %}
+                <a class="download-btn" href="{{ data.certificate_file }}" target="_blank">Download Your Certificate</a>
+            {% else %}
+                <div class="qr-code">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={{ data.id }}" alt="QR Code">
+                    <p>Scan QR code for verification</p>
                 </div>
             {% endif %}
-
-        {% elif app.payment_status == 'Paid' %}
-            {% if app.certificate_file and app.status in ['Approved', 'Completed'] %}
-                <a class="download-btn" href="{{ app.certificate_file }}" target="_blank">
-                    Download Certificate
-                </a>
-            {% elif app.receipt_file and app.status in ['Processing'] %}
-                <a class="download-btn" href="{{ app.receipt_file }}" target="_blank">
-                    Download Receipt
-                </a>
-            {% endif %}
+        {% else %}
+            <p>Your certificate will appear here once it is processed and payment is complete.</p>
         {% endif %}
 
     {% elif message %}
-        <p>{{ message }}</p>
+        <div class="message">{{ message }}</div>
     {% else %}
-        <p>No application selected.</p>
+        <div class="message">No application found.</div>
     {% endif %}
+
+    <div style="text-align:center; margin-top:20px;">
+        <a href="/" class="download-btn">Back to Home</a>
+    </div>
 </div>
 
 </body>
-    </html>
+</html>
