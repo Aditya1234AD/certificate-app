@@ -4,23 +4,135 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin Dashboard</title>
+
 <style>
-    body { font-family: Arial, sans-serif; background: #f3f3f3; padding: 20px; }
-    h2 { text-align: center; margin-bottom: 20px; }
-    .table-container { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; min-width: 1500px; background: white; }
-    th, td { padding: 10px; border: 1px solid #ccc; text-align: center; vertical-align: middle; }
-    th { background: #222; color: white; position: sticky; top: 0; z-index: 1; }
-    tr:nth-child(even){background:#f9f9f9;}
-    tr:hover{background:#e0e0e0;}
-    img { width: 90px; height: auto; border-radius: 6px; }
-    .btn { padding: 6px 10px; border-radius: 5px; color: white; cursor: pointer; border: none; font-weight: bold; }
-    .btn-del { background: red; }
-    .btn-status { background: green; }
-    .file-input { padding: 4px; }
-    select { padding: 4px; border-radius: 4px; }
+    body {
+        font-family: "Poppins", Arial, sans-serif;
+        background: linear-gradient(135deg, #dfe9f3, #ffffff);
+        padding: 25px;
+        animation: fadeIn 1s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(15px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    h2 {
+        text-align: center;
+        margin-bottom: 25px;
+        font-size: 28px;
+        font-weight: 600;
+        letter-spacing: 1px;
+        color: #222;
+    }
+
+    .table-container {
+        overflow-x: auto;
+        background: rgba(255, 255, 255, 0.6);
+        padding: 20px;
+        border-radius: 15px;
+        backdrop-filter: blur(8px);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        animation: slideUp 0.8s ease;
+    }
+
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 1700px;
+    }
+
+    th {
+        background: #1e1e1e;
+        color: white;
+        padding: 12px;
+        font-size: 14px;
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+    }
+
+    td {
+        padding: 12px;
+        border-bottom: 1px solid #ddd;
+        text-align: center;
+    }
+
+    tr {
+        transition: background 0.3s ease;
+    }
+
+    tr:hover {
+        background: rgba(0, 0, 0, 0.05);
+        transform: scale(1.01);
+        transition: 0.2s;
+    }
+
+    img {
+        width: 80px;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        transition: transform 0.3s;
+    }
+
+    img:hover {
+        transform: scale(1.1);
+    }
+
+    select {
+        padding: 6px;
+        border-radius: 6px;
+        border: 1px solid #444;
+        outline: none;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    select:hover {
+        transform: scale(1.02);
+    }
+
+    .btn {
+        padding: 7px 12px;
+        border-radius: 6px;
+        color: white;
+        border: none;
+        cursor: pointer;
+        font-weight: 600;
+        transition: 0.2s;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+
+    .btn:hover {
+        transform: scale(1.05);
+        opacity: 0.9;
+    }
+
+    .btn-del { background: #e60000; }
+    .btn-status { background: #007bff; }
+
+    .file-input {
+        padding: 5px;
+        border-radius: 6px;
+        background: #eee;
+        border: 1px solid #aaa;
+        transition: 0.2s;
+    }
+
+    .file-input:hover {
+        background: #ddd;
+    }
 </style>
 </head>
+
 <body>
 
 <h2>Admin Dashboard</h2>
@@ -30,7 +142,7 @@
     <thead>
         <tr>
             <th>ID</th>
-            <th>Certificate Type</th>
+            <th>Certificate</th>
             <th>Name</th>
             <th>Mobile</th>
             <th>Village</th>
@@ -40,7 +152,7 @@
             <th>District</th>
             <th>State</th>
 
-            <th>Applicant Photo</th>
+            <th>Photo</th>
             <th>Aadhaar</th>
             <th>Father Aadhaar</th>
             <th>ROR</th>
@@ -68,7 +180,7 @@
             <td>{{ app['district'] }}</td>
             <td>{{ app['state'] }}</td>
 
-            <!-- Applicant Photo -->
+            <!-- Photo -->
             <td>
                 {% if app['applicant_photo'] %}
                     <img src="{{ app['applicant_photo'] }}" alt="Photo">
@@ -141,21 +253,20 @@
                 {% if app['payment_status'] == 'Paid' %}
                     <span style="color:green;font-weight:bold;">Paid</span>
                 {% else %}
-                    <span style="color:red;">Pending</span>
+                    <span style="color:red;font-weight:bold;">Pending</span>
                 {% endif %}
             </td>
 
-            <!-- Actions -->
             <td>
 
                 <!-- Delete -->
-                <form action="/delete_application" method="POST" style="margin-bottom:6px;">
+                <form action="/delete_application" method="POST" style="margin-bottom:8px;">
                     <input type="hidden" name="id" value="{{ app['id'] }}">
                     <button class="btn btn-del" onclick="return confirm('Delete this application?')">Delete</button>
                 </form>
 
                 <!-- Upload Receipt -->
-                <form action="/upload_receipt" method="POST" enctype="multipart/form-data" style="margin-bottom:6px;">
+                <form action="/upload_receipt" method="POST" enctype="multipart/form-data" style="margin-bottom:8px;">
                     <input type="hidden" name="id" value="{{ app['id'] }}">
                     <input class="file-input" type="file" name="receipt" accept="application/pdf,image/*" required>
                     <button class="btn btn-status">Upload Receipt</button>
@@ -177,4 +288,4 @@
 </div>
 
 </body>
-                </html>
+    </html>
