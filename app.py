@@ -169,10 +169,16 @@ def check_status():
     mobile = request.form.get("mobile")
     cert_type = request.form.get("cert_type")
 
-    query = supabase.table("applications").select("*").eq("mobile", mobile).eq("cert_type", cert_type).execute()
+    query = (
+        supabase.table("applications")
+        .select("*")
+        .eq("mobile", mobile)
+        .eq("cert_type", cert_type)
+        .execute()
+    )
 
     if query.data:
-        return render_template("status.html", app=query.data[0])
+        return render_template("status.html", data=query.data[0])
     else:
         return render_template("status.html", message="No application found!")
 
