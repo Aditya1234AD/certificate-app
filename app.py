@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, flash, session
+from flask import Flask, render_template, request, redirect, flash, session, url_for
 from supabase import create_client, Client
 from werkzeug.utils import secure_filename
 import os
@@ -92,16 +92,20 @@ def admin_login():
         if request.form.get("username") == ADMIN_USERNAME and request.form.get("password") == ADMIN_PASSWORD:
             session["admin_logged_in"] = True
             return redirect("/admin")
+
         flash("Invalid credentials!")
         return redirect("/admin-login")
+
     return render_template("admin_login.html")
 
 @app.route("/admin")
 def admin_dashboard():
     if not session.get("admin_logged_in"):
         return redirect("/admin-login")
+
     response = supabase.table("applications").select("*").order("id", desc=True).execute()
     applications = response.data
+
     return render_template("admin.html", applications=applications)
 
 @app.route("/admin-logout")
@@ -131,12 +135,14 @@ def delete_application():
 def upload_certificate():
     app_id = request.form.get("id")
     file = request.files.get("certificate")
+
     if file:
         url = upload_to_supabase(file, "certificate")
         supabase.table("applications").update({"certificate_file": url}).eq("id", app_id).execute()
         flash("Certificate uploaded successfully!")
     else:
         flash("No file selected!")
+
     return redirect("/admin")
 
 # ------------------- UPLOAD RECEIPT -------------------
@@ -144,6 +150,7 @@ def upload_certificate():
 def upload_receipt():
     app_id = request.form.get("id")
     file = request.files.get("receipt")
+
     if file:
         url = upload_to_supabase(file, "receipt")
         supabase.table("applications").update({
@@ -153,30 +160,21 @@ def upload_receipt():
         flash("Receipt uploaded and payment marked as Paid!")
     else:
         flash("No file selected!")
+
     return redirect("/admin")
 
 # ------------------- CHECK STATUS -------------------
-@app.route("/check-status", methods=["GET", "POST"])
+@app.route("/check-status", methods=["POST"])
 def check_status():
-    if request.method == "POST":
-        mobile = request.form.get("mobile")
-        cert_type = request.form.get("cert_type")
+    mobile = request.form.get("mobile")
+    cert_type = request.form.get("cert_type")
 
-        query = (
-            supabase.table("applications")
-            .select("*")
-            .eq("mobile", mobile)
-            .eq("cert_type", cert_type)
-            .execute()
-        )
+    query = supabase.table("applications").select("*").eq("mobile", mobile).eq("cert_type", cert_type).execute()
 
-        if query.data:
-            app_data = query.data[0]
-            return render_template("status.html", app=app_data)
-        else:
-            return render_template("status.html", app=None, message="No application found!")
-
-    return render_template("status.html", app=None)
+    if query.data:
+        return render_template("status.html", app=query.data[0])
+    else:
+        return render_template("status.html", message="No application found!")
 
 # ------------------- RUN APP -------------------
 if __name__ == "__main__":
