@@ -16,7 +16,6 @@ BUCKET_NAME = os.getenv("BUCKET_NAME", "uploads")
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 
-
 # ------------------- FILE UPLOAD FUNCTION -------------------
 def upload_to_supabase(file, folder_name):
     if not file or file.filename == "":
@@ -53,7 +52,6 @@ def upload_to_supabase(file, folder_name):
 ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD = "12345"
 
-
 # ------------------- ROUTES -------------------
 @app.route("/")
 def index():
@@ -79,6 +77,8 @@ def submit():
         "ror_file": upload_to_supabase(request.files.get("ror"), "ror"),
         "payment_status": "Pending",
         "status": "Pending",
+        "certificate_file": None,
+        "receipt_file": None
     }
 
     supabase.table("applications").insert(data).execute()
@@ -127,9 +127,7 @@ def admin_logout():
 def update_status():
     app_id = request.form.get("id")
     status = request.form.get("status")
-
     supabase.table("applications").update({"status": status}).eq("id", app_id).execute()
-
     flash("Status updated successfully!")
     return redirect("/admin")
 
@@ -138,7 +136,6 @@ def update_status():
 @app.route("/delete_application", methods=["POST"])
 def delete_application():
     app_id = request.form.get("id")
-
     supabase.table("applications").delete().eq("id", app_id).execute()
     flash("Application deleted!")
     return redirect("/admin")
@@ -152,7 +149,7 @@ def upload_certificate():
 
     if file:
         url = upload_to_supabase(file, "certificate")
-        supabase.table("applications").update({"certificate_file": url}).eq("id", app_id).execute()
+        supabase.table("applications").update({"certificate_file": url, "status": "Approved"}).eq("id", app_id).execute()
         flash("Certificate uploaded successfully!")
     else:
         flash("No file selected!")
@@ -181,23 +178,27 @@ def upload_receipt():
 
 
 # ------------------- CHECK STATUS -------------------
-@app.route("/check-status", methods=["POST"])
+@app.route("/status", methods=["GET", "POST"])
 def check_status():
-    mobile = request.form.get("mobile")
-    cert_type = request.form.get("cert_type")
+    if request.method == "POST":
+        mobile = request.form.get("mobile")
+        cert_type = request.form.get("cert_type")
 
-    query = (
-        supabase.table("applications")
-        .select("*")
-        .eq("mobile", mobile)
-        .eq("cert_type", cert_type)
-        .execute()
-    )
+        query = (
+            supabase.table("applications")
+            .select("*")
+            .eq("mobile", mobile)
+            .eq("cert_type", cert_type)
+            .execute()
+        )
 
-    if query.data:
-        return render_template("status.html", data=query.data[0])
-    else:
-        return render_template("status.html", message="No application found!")
+        if query.data:
+            data = query.data[0]
+            return render_template("status.html", data=data)
+        else:
+            return render_template("status.html", message="No application found!")
+
+    return render_template("status.html")
 
 
 # ------------------- RUN APP -------------------
