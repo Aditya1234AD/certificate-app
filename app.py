@@ -4,6 +4,7 @@ from werkzeug.utils import secure_filename
 import os
 import time
 import uuid
+import requests   # ← Required for WhatsApp API
 
 # ------------------- FLASK APP -------------------
 app = Flask(__name__)
@@ -15,6 +16,31 @@ SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY", "sb_secret_03LWwqFkrGo9
 BUCKET_NAME = os.getenv("BUCKET_NAME", "uploads")
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
+
+# ------------------- WHATSAPP META CONFIG -------------------
+WHATSAPP_PHONE_ID = "YOUR_PHONE_NUMBER_ID"
+WHATSAPP_TOKEN = "YOUR_PERMANENT_ACCESS_TOKEN"
+ADMIN_WHATSAPP = "YOUR_ADMIN_WHATSAPP_NUMBER"   # Example: "919876543210"
+
+def send_whatsapp_message(text):
+    url = f"https://graph.facebook.com/v20.0/{WHATSAPP_PHONE_ID}/messages"
+
+    payload = {
+        "messaging_product": "whatsapp",
+        "to": ADMIN_WHATSAPP,
+        "type": "text",
+        "text": {"body": text}
+    }
+
+    headers = {
+        "Authorization": f"Bearer {WHATSAPP_TOKEN}",
+        "Content-Type": "application/json"
+    }
+
+    try:
+        requests.post(url, json=payload, headers=headers)
+    except Exception as e:
+        print("WhatsApp Error:", e)
 
 # ------------------- FILE UPLOAD FUNCTION -------------------
 def upload_to_supabase(file, folder_name):
@@ -77,7 +103,21 @@ def submit():
         "status": "Pending",
     }
 
+    # Save to database
     supabase.table("applications").insert(data).execute()
+
+    # --------------------- SEND WHATSAPP MESSAGE ---------------------
+    msg = (
+        "Dear Aditya, a new application is submitted.\n\n"
+        "📩 *New Certificate Application Details*\n\n"
+        f"*Name:* {data['name']}\n"
+        f"*Mobile:* {data['mobile']}\n"
+        f"*Certificate:* {data['cert_type']}\n"
+        f"*District:* {data['district']}\n"
+        f"*Village:* {data['village']}"
+    )
+    send_whatsapp_message(msg)
+
     flash("Application submitted successfully!")
     return redirect("/thanks")
 
