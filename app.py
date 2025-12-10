@@ -4,7 +4,7 @@ from werkzeug.utils import secure_filename
 import os
 import time
 import uuid
-import requests   # ← Required for WhatsApp API
+import requests  # Required for WhatsApp API
 
 # ------------------- FLASK APP -------------------
 app = Flask(__name__)
@@ -20,16 +20,31 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 # ------------------- WHATSAPP META CONFIG -------------------
 WHATSAPP_PHONE_ID = "919882897874031"
 WHATSAPP_TOKEN = "EAAL7yRPJFPQBQOObhvKLPfUaWtbn9vAviCH9ZAlnndLsKwgwIQdpTiieZAKnc3yjqye7zCZBuZC3IZBBAyhYao39NOrlr3zpvJ7kwG5rtrATl9edKEm8V2hIZCKI4wH9ZBnwhErufL3UvkA20sozd0lEG2c3sX8zMzLs8NuGv0MVZC8mHkKxUGsdr3MZCV2S12RPUuQZDZD"
-ADMIN_WHATSAPP = "918895466851"   # Example: "919876543210"
+ADMIN_WHATSAPP = "918895466851"  # Admin phone number
+TEMPLATE_NAME = "new_application_notification"  # Approved template name
 
-def send_whatsapp_message(text):
+# ------------------- SEND WHATSAPP TEMPLATE -------------------
+def send_whatsapp_template(client_name, cert_type):
     url = f"https://graph.facebook.com/v20.0/{WHATSAPP_PHONE_ID}/messages"
 
     payload = {
         "messaging_product": "whatsapp",
         "to": ADMIN_WHATSAPP,
-        "type": "text",
-        "text": {"body": text}
+        "type": "template",
+        "template": {
+            "name": TEMPLATE_NAME,
+            "language": {"code": "en_US"},
+            "components": [
+                {
+                    "type": "body",
+                    "parameters": [
+                        {"type": "text", "text": "Aditya"},       # {{1}} Admin name
+                        {"type": "text", "text": client_name},    # {{2}} Client name
+                        {"type": "text", "text": cert_type},      # {{3}} Certificate type
+                    ]
+                }
+            ]
+        }
     }
 
     headers = {
@@ -38,7 +53,8 @@ def send_whatsapp_message(text):
     }
 
     try:
-        requests.post(url, json=payload, headers=headers)
+        response = requests.post(url, json=payload, headers=headers)
+        print("WhatsApp API response:", response.json())
     except Exception as e:
         print("WhatsApp Error:", e)
 
@@ -73,7 +89,7 @@ def upload_to_supabase(file, folder_name):
 
     return f"{SUPABASE_URL}/storage/v1/object/public/{BUCKET_NAME}/{path}"
 
-# ------------------- ADMIN LOGIN CREDENTIALS -------------------
+# ------------------- ADMIN LOGIN -------------------
 ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD = "12345"
 
@@ -103,20 +119,11 @@ def submit():
         "status": "Pending",
     }
 
-    # Save to database
+    # Save to Supabase
     supabase.table("applications").insert(data).execute()
 
-    # --------------------- SEND WHATSAPP MESSAGE ---------------------
-    msg = (
-        "Dear Aditya, a new application is submitted.\n\n"
-        "📩 *New Certificate Application Details*\n\n"
-        f"*Name:* {data['name']}\n"
-        f"*Mobile:* {data['mobile']}\n"
-        f"*Certificate:* {data['cert_type']}\n"
-        f"*District:* {data['district']}\n"
-        f"*Village:* {data['village']}"
-    )
-    send_whatsapp_message(msg)
+    # Send WhatsApp template message
+    send_whatsapp_template(data["name"], data["cert_type"])
 
     flash("Application submitted successfully!")
     return redirect("/thanks")
@@ -125,27 +132,23 @@ def submit():
 def thanks():
     return render_template("thanks.html")
 
-# ------------------- ADMIN LOGIN -------------------
+# ------------------- ADMIN LOGIN ROUTES -------------------
 @app.route("/admin-login", methods=["GET", "POST"])
 def admin_login():
     if request.method == "POST":
         if request.form.get("username") == ADMIN_USERNAME and request.form.get("password") == ADMIN_PASSWORD:
             session["admin_logged_in"] = True
             return redirect("/admin")
-
         flash("Invalid credentials!")
         return redirect("/admin-login")
-
     return render_template("admin_login.html")
 
 @app.route("/admin")
 def admin_dashboard():
     if not session.get("admin_logged_in"):
         return redirect("/admin-login")
-
     response = supabase.table("applications").select("*").order("id", desc=True).execute()
     applications = response.data
-
     return render_template("admin.html", applications=applications)
 
 @app.route("/admin-logout")
@@ -175,14 +178,12 @@ def delete_application():
 def upload_certificate():
     app_id = request.form.get("id")
     file = request.files.get("certificate")
-
     if file:
         url = upload_to_supabase(file, "certificate")
         supabase.table("applications").update({"certificate_file": url}).eq("id", app_id).execute()
         flash("Certificate uploaded successfully!")
     else:
         flash("No file selected!")
-
     return redirect("/admin")
 
 # ------------------- UPLOAD RECEIPT -------------------
@@ -190,7 +191,6 @@ def upload_certificate():
 def upload_receipt():
     app_id = request.form.get("id")
     file = request.files.get("receipt")
-
     if file:
         url = upload_to_supabase(file, "receipt")
         supabase.table("applications").update({
@@ -200,7 +200,6 @@ def upload_receipt():
         flash("Receipt uploaded and payment marked as Paid!")
     else:
         flash("No file selected!")
-
     return redirect("/admin")
 
 # ------------------- CHECK STATUS -------------------
@@ -208,15 +207,7 @@ def upload_receipt():
 def check_status():
     mobile = request.form.get("mobile")
     cert_type = request.form.get("cert_type")
-
-    query = (
-        supabase.table("applications")
-        .select("*")
-        .eq("mobile", mobile)
-        .eq("cert_type", cert_type)
-        .execute()
-    )
-
+    query = supabase.table("applications").select("*").eq("mobile", mobile).eq("cert_type", cert_type).execute()
     if query.data:
         return render_template("status.html", data=query.data[0])
     else:
