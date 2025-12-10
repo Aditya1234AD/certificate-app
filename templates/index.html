@@ -4,64 +4,138 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Apply Certificate</title>
-<style>
-/* ---------- RESET / BOX SIZING ---------- */
-* { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* ---------- BODY BACKGROUND ---------- */
-body {
-  font-family: "Poppins", sans-serif;
-  background: radial-gradient(circle at 10% 10%, #152033 0%, #071018 45%, #020406 100%);
-  color: #eaeef7;
-  min-height: 100vh;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden;
+<style>
+/* ---------- RESET ---------- */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-/* ---------- CENTERED PANE (GLOWING) ---------- */
+/* ---------- BACKGROUND IMAGE ---------- */
+body {
+  font-family: "Poppins", sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background: url("/static/images/bg.jpg") no-repeat center center fixed;
+  background-size: cover;
+  position: relative;
+}
+
+/* Dark overlay for readability */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.35);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* ---------- MAIN CONTAINER ---------- */
 .container {
   max-width: 820px;
   margin: 36px auto;
   padding: 28px;
   border-radius: 18px;
-  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
-  border: 1px solid rgba(255,255,255,0.06);
+  background: rgba(0,0,0,0.45);
+  border: 1px solid rgba(255,255,255,0.1);
+  backdrop-filter: blur(8px);
   position: relative;
   overflow: hidden;
-  box-shadow: 0 8px 40px rgba(11,18,30,0.7);
-  animation: containerGlow 3.6s ease-in-out infinite;
+
+  /* Slide from left */
+  opacity: 0;
+  transform: translateX(-60px);
+  animation: containerSlide 1.3s ease-out forwards,
+             containerGlow 3.6s ease-in-out infinite 1s;
 }
 
+/* Container slide animation */
+@keyframes containerSlide {
+  0% { transform: translateX(-60px); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+
+/* Container glow animation */
 @keyframes containerGlow {
-  0%   { box-shadow: 0 8px 40px rgba(11,18,30,0.6), 0 0 0 rgba(75,123,236,0); }
-  50%  { box-shadow: 0 12px 60px rgba(11,18,30,0.75), 0 0 36px rgba(75,123,236,0.06); }
-  100% { box-shadow: 0 8px 40px rgba(11,18,30,0.6), 0 0 0 rgba(75,123,236,0); }
+  0%   { box-shadow: 0 8px 40px rgba(255,255,255,0.06); }
+  50%  { box-shadow: 0 12px 60px rgba(255,255,255,0.12); }
+  100% { box-shadow: 0 8px 40px rgba(255,255,255,0.06); }
 }
 
-/* ---------- FORM LAYOUT ---------- */
+/* ---------- HEADER ---------- */
 .header {
   text-align: center;
   margin-bottom: 18px;
-}
-h2 { color: #ffffff; font-size: 30px; letter-spacing: 0.6px; text-shadow: 0 0 8px rgba(255,255,255,0.06);}
-.subtitle { color: rgba(255,255,255,0.75); font-size: 13px; margin-top: 6px; }
 
-/* ---------- CARD (BOX) ---------- */
+  opacity: 0;
+  transform: translateY(-20px);
+  animation: headerFade 1s ease-out forwards 0.4s;
+}
+
+@keyframes headerFade {
+  0% { opacity: 0; transform: translateY(-20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+h2 {
+  color: #ffffff;
+  font-size: 30px;
+  text-shadow: 0 0 8px rgba(255,255,255,0.15);
+}
+
+.subtitle {
+  color: #dce3ff;
+  font-size: 13px;
+  margin-top: 6px;
+}
+
+/* ---------- CARD / BOX ---------- */
 .box {
   width: 100%;
-  background: rgba(255,255,255,0.03);
+  background: rgba(255,255,255,0.05);
   backdrop-filter: blur(6px);
   border-radius: 14px;
   padding: 18px;
   margin: 18px 0;
-  border: 1px solid rgba(255,255,255,0.04);
-  box-shadow: 0 6px 18px rgba(2,6,12,0.6), inset 0 1px 0 rgba(255,255,255,0.01);
+  border: 1px solid rgba(255,255,255,0.1);
+
+  opacity: 0;
+  transform: translateX(-40px);
+  animation: slideBox 1s ease-out forwards;
 }
-.box h3 { text-align: left; color: #e9f0ff; font-size: 18px; margin-bottom: 8px; }
+
+/* Sequential delay for each box */
+.box:nth-of-type(1) { animation-delay: 0.9s; }
+.box:nth-of-type(2) { animation-delay: 1.2s; }
+.box:nth-of-type(3) { animation-delay: 1.5s; }
+.box:nth-of-type(4) { animation-delay: 1.8s; }
+
+@keyframes slideBox {
+  0% { opacity: 0; transform: translateX(-40px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+.box h3 {
+  color: #ffffff;
+  font-size: 18px;
+  margin-bottom: 8px;
+}
 
 /* ---------- FORM FIELDS ---------- */
-label { display: block; margin-top: 10px; color: rgba(230,235,255,0.9); font-size: 14px; font-weight: 600; }
+label {
+  display: block;
+  margin-top: 10px;
+  color: #e6ebff;
+  font-size: 14px;
+  font-weight: 600;
+}
+
 input[type="text"],
 select,
 input[type="file"] {
@@ -70,26 +144,34 @@ input[type="file"] {
   margin-top: 6px;
   border-radius: 10px;
   border: none;
-  background: rgba(255,255,255,0.04);
-  color: #eef4ff;
+  background: rgba(255,255,255,0.08);
+  color: white;
   font-size: 15px;
   outline: none;
   transition: box-shadow .22s ease, transform .18s ease;
 }
-input[type="file"] { padding: 9px 8px; }
-input:focus, select:focus { box-shadow: 0 6px 22px rgba(75,123,236,0.14); transform: translateY(-1px); }
 
-/* small two-column grid */
+input[type="file"] { padding: 9px 8px; }
+
+input:focus,
+select:focus {
+  box-shadow: 0 6px 22px rgba(0,0,0,0.4);
+  transform: translateY(-1px);
+}
+
+/* 2-column grid */
 .grid-2 {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 12px;
 }
-@media (max-width:720px) { .grid-2 { grid-template-columns: 1fr; } }
+
+@media (max-width:720px) {
+  .grid-2 { grid-template-columns: 1fr; }
+}
 
 /* ---------- SUBMIT BUTTON ---------- */
 button[type="submit"] {
-  display: block;
   width: 100%;
   padding: 13px 16px;
   margin-top: 14px;
@@ -97,41 +179,43 @@ button[type="submit"] {
   border: none;
   font-size: 18px;
   font-weight: 700;
-  letter-spacing: .4px;
   cursor: pointer;
-  background: linear-gradient(135deg, #4b7bec 0%, #2b4aa4 100%);
+  background: linear-gradient(135deg, #4b7bec, #2b4aa4);
   color: white;
   transition: transform .18s ease, box-shadow .18s ease;
 }
-button[type="submit"]:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(75,123,236,0.14); }
-button[disabled] { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
 
-/* ---------- LINKS ---------- */
+button[type="submit"]:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(75,123,236,0.25);
+}
+
+/* ---------- LINK ---------- */
 .link-container {
   text-align: center;
   margin-top: 12px;
-  color: rgba(200,215,255,0.85);
 }
-.link-container a {
-  color: #92b7ff;
-  text-decoration: none;
-  font-weight: 700;
-  margin: 0 8px;
-}
-.link-container a:hover { text-shadow: 0 0 8px rgba(255,255,255,0.06); }
 
+.link-container a {
+  color: #9ac1ff;
+  text-decoration: none;
+  font-weight: bold;
+}
 </style>
 </head>
+
 <body>
 
 <div class="container" role="main" aria-labelledby="formHeading">
+
   <div class="header">
     <h2 id="formHeading">Certificate Application Form</h2>
     <div class="subtitle">Fill required details and upload documents</div>
   </div>
 
   <!-- ---------- APPLICATION FORM ---------- -->
-  <form id="certForm" action="/submit" method="POST" enctype="multipart/form-data" novalidate>
+  <form id="certForm" action="/submit" method="POST" enctype="multipart/form-data">
+
     <div class="box">
       <h3>Select Certificate Type</h3>
       <label for="cert_type">Certificate Type:</label>
@@ -145,10 +229,12 @@ button[disabled] { opacity: 0.6; cursor: not-allowed; transform: none; box-shado
 
     <div class="box">
       <h3>Applicant Details</h3>
+
       <label for="name">Enter Your Name:</label>
-      <input id="name" name="name" type="text" required autocomplete="name" />
+      <input id="name" name="name" type="text" required />
+
       <label for="mobile">Enter Your Mobile:</label>
-      <input id="mobile" name="mobile" type="text" inputmode="tel" required autocomplete="tel" />
+      <input id="mobile" name="mobile" type="text" required />
 
       <div class="grid-2">
         <div>
@@ -168,7 +254,7 @@ button[disabled] { opacity: 0.6; cursor: not-allowed; transform: none; box-shado
         </div>
         <div>
           <label for="pin">Pin Code:</label>
-          <input id="pin" name="pin" type="text" inputmode="numeric" required />
+          <input id="pin" name="pin" type="text" required />
         </div>
       </div>
 
@@ -186,38 +272,42 @@ button[disabled] { opacity: 0.6; cursor: not-allowed; transform: none; box-shado
 
     <div class="box">
       <h3>Upload Required Documents</h3>
+
       <label for="photo">Applicant Photo:</label>
       <input id="photo" name="photo" type="file" accept="image/*" required />
+
       <label for="aadhaar">Applicant Aadhaar:</label>
       <input id="aadhaar" name="aadhaar" type="file" accept="image/*,application/pdf" required />
+
       <label for="father_aadhaar">Father's Aadhaar:</label>
       <input id="father_aadhaar" name="father_aadhaar" type="file" accept="image/*,application/pdf" required />
+
       <label for="ror">ROR Document (optional):</label>
       <input id="ror" name="ror" type="file" accept="image/*,application/pdf" />
     </div>
 
-    <button id="submitBtn" type="submit">Submit Application</button>
+    <button type="submit">Submit Application</button>
   </form>
 
-  <!-- ---------- CHECK STATUS FORM ---------- -->
+  <!-- ---------- STATUS CHECK ---------- -->
   <div class="box">
     <h3>Check Your Application Status</h3>
     <form method="POST" action="/check-status">
-        <input type="text" name="mobile" placeholder="Enter your mobile number" required>
-        <select name="cert_type" required>
-            <option value="">Select Certificate Type</option>
-            <option value="Caste Certificate">Caste Certificate</option>
-            <option value="Income Certificate">Income Certificate</option>
-            <option value="Resident Certificate">Resident Certificate</option>
-        </select>
-        <button type="submit">Track Application</button>
+      <input type="text" name="mobile" placeholder="Enter your mobile number" required>
+      <select name="cert_type" required>
+        <option value="">Select Certificate Type</option>
+        <option value="Caste Certificate">Caste Certificate</option>
+        <option value="Income Certificate">Income Certificate</option>
+        <option value="Resident Certificate">Resident Certificate</option>
+      </select>
+      <button type="submit">Track Application</button>
     </form>
   </div>
 
   <div class="link-container">
     <a href="/admin-login">Admin Login</a>
   </div>
-</div>
 
+</div>
 </body>
-            </html>
+          </html>
