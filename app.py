@@ -36,9 +36,11 @@ def send_sms(client_name, cert_type, mobile):
     )
 
     payload = {
-        "route": "q",          # transactional
+        "route": "v3",          # transactional
         "message": message,
-        "numbers": ADMIN_MOBILE
+        "numbers": ADMIN_MOBILE,
+        "language": "english",
+        "flash": 0
     }
 
     headers = {
