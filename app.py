@@ -42,7 +42,7 @@ def send_sms(client_name, cert_type, mobile):
     }
 
     headers = {
-        "authorization": FAST2SMS_API_KEY,
+        "Authorization": FAST2SMS_API_KEY,
         "Content-Type": "application/json"
     }
 
