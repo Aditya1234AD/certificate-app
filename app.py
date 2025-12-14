@@ -21,8 +21,8 @@ BUCKET_NAME = os.getenv("BUCKET_NAME", "uploads")
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 
 # ------------------- FAST2SMS CONFIG -------------------
-FAST2SMS_API_KEY = "PASTE_YOUR_FAST2SMS_API_KEY_HERE"
-ADMIN_MOBILE = "8895466851"   # Admin mobile number (no +91)
+FAST2SMS_API_KEY = "Tc4HrYPZ25sl7MmAe8d3Ek1IRhiBzwNF0jCfpOQn9SqvoxUDWbFucA4ZapiGqtxK1rPOjy6LNfJgTDIk"
+ADMIN_MOBILE = "8847842809"   # Admin mobile number (no +91)
 
 # ------------------- SEND NORMAL SMS -------------------
 def send_sms(client_name, cert_type, mobile):
