@@ -6,141 +6,105 @@
 <title>Admin Dashboard</title>
 
 <style>
-    body {
-        font-family: "Poppins", Arial, sans-serif;
-        background: url("static/boat-3062045.jpg") no-repeat center center fixed;
-        background-size: cover;
-        padding: 25px;
-        margin: 0;
-        animation: fadeIn 1s ease-in-out;
-        position: relative;
-        overflow-x: hidden;
-    }
+body {
+    font-family: "Poppins", Arial, sans-serif;
+    background: url("static/boat-3062045.jpg") no-repeat center center fixed;
+    background-size: cover;
+    padding: 25px;
+    margin: 0;
+    position: relative;
+    overflow-x: hidden;
+}
 
-    /* 🔥 Animated Gradient Overlay */
-    body::before {
-        content: "";
-        position: fixed;
-        inset: 0;
-        background: linear-gradient(
-            120deg,
-            rgba(0, 123, 255, 0.25),
-            rgba(255, 0, 150, 0.25),
-            rgba(0, 200, 255, 0.25)
-        );
-        background-size: 400% 400%;
-        animation: gradientMove 15s ease infinite;
-        z-index: -1;
-    }
+/* Gradient Overlay */
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(
+        120deg,
+        rgba(0, 123, 255, 0.25),
+        rgba(255, 0, 150, 0.25),
+        rgba(0, 200, 255, 0.25)
+    );
+    background-size: 400% 400%;
+    animation: gradientMove 15s ease infinite;
+    z-index: -1;
+}
 
-    @keyframes gradientMove {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
-    }
+@keyframes gradientMove {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
 
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(15px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
+h2 {
+    text-align: center;
+    margin-bottom: 25px;
+    font-size: 28px;
+    font-weight: 600;
+    color: #111;
+}
 
-    h2 {
-        text-align: center;
-        margin-bottom: 25px;
-        font-size: 28px;
-        font-weight: 600;
-        letter-spacing: 1px;
-        color: #111;
-    }
+.table-container {
+    overflow-x: auto;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+}
 
-    /* Glass Table Container */
-    .table-container {
-        overflow-x: auto;
-        background: rgba(255, 255, 255, 0.88);
-        padding: 20px;
-        border-radius: 16px;
-        backdrop-filter: blur(6px);
-        box-shadow: 0 10px 30px rgba(0,0,0,0.25);
-        animation: slideUp 0.8s ease;
-    }
+table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 1700px;
+}
 
-    @keyframes slideUp {
-        from { opacity: 0; transform: translateY(25px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
+th {
+    background: #1a1a1a;
+    color: white;
+    padding: 12px;
+    font-size: 14px;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
 
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        min-width: 1700px;
-    }
+td {
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+    text-align: center;
+    font-size: 14px;
+}
 
-    th {
-        background: #1a1a1a;
-        color: white;
-        padding: 12px;
-        font-size: 14px;
-        position: sticky;
-        top: 0;
-        z-index: 2;
-        text-transform: uppercase;
-    }
+tr:hover {
+    background: rgba(0, 0, 0, 0.06);
+}
 
-    td {
-        padding: 12px;
-        border-bottom: 1px solid #ddd;
-        text-align: center;
-        font-size: 14px;
-    }
+img {
+    width: 80px;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
 
-    tr:hover {
-        background: rgba(0, 0, 0, 0.06);
-        transform: scale(1.01);
-        transition: 0.2s;
-    }
+.btn {
+    padding: 7px 12px;
+    border-radius: 6px;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+}
 
-    img {
-        width: 80px;
-        border-radius: 10px;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-        transition: transform 0.3s;
-    }
+.btn-status { background: #007bff; }
+.btn-del { background: #e60000; }
 
-    img:hover {
-        transform: scale(1.15);
-    }
-
-    select {
-        padding: 6px;
-        border-radius: 6px;
-        border: 1px solid #444;
-        cursor: pointer;
-    }
-
-    .btn {
-        padding: 7px 12px;
-        border-radius: 6px;
-        color: white;
-        border: none;
-        cursor: pointer;
-        font-weight: 600;
-        box-shadow: 0 3px 8px rgba(0,0,0,0.3);
-    }
-
-    .btn:hover {
-        transform: scale(1.05);
-        opacity: 0.9;
-    }
-
-    .btn-del { background: #e60000; }
-    .btn-status { background: #007bff; }
-
-    .file-input {
-        padding: 5px;
-        border-radius: 6px;
-        background: #eee;
-        border: 1px solid #aaa;
-    }
+.file-input {
+    padding: 5px;
+    border-radius: 6px;
+    background: #eee;
+    border: 1px solid #aaa;
+}
 </style>
 </head>
 
@@ -150,94 +114,126 @@
 
 <div class="table-container">
 <table>
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Certificate</th>
-            <th>Name</th>
-            <th>Mobile</th>
-            <th>Village</th>
-            <th>Post</th>
-            <th>GP</th>
-            <th>PIN</th>
-            <th>District</th>
-            <th>State</th>
-            <th>Photo</th>
-            <th>Aadhaar</th>
-            <th>Father Aadhaar</th>
-            <th>ROR</th>
-            <th>Receipt</th>
-            <th>Certificate</th>
-            <th>Status</th>
-            <th>Payment</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
+<thead>
+<tr>
+    <th>ID</th>
+    <th>Certificate</th>
+    <th>Name</th>
+    <th>Mobile</th>
+    <th>Village</th>
+    <th>Post</th>
+    <th>GP</th>
+    <th>PIN</th>
+    <th>District</th>
+    <th>State</th>
+    <th>Photo</th>
+    <th>Aadhaar</th>
+    <th>Father Aadhaar</th>
+    <th>ROR</th>
+    <th>Receipt</th>
+    <th>Certificate</th>
+    <th>Status</th>
+    <th>Payment</th>
+    <th>Actions</th>
+</tr>
+</thead>
 
-    <tbody>
-        {% for app in applications %}
-        <tr>
-            <td>{{ app['id'] }}</td>
-            <td>{{ app['cert_type'] }}</td>
-            <td>{{ app['name'] }}</td>
-            <td>{{ app['mobile'] }}</td>
-            <td>{{ app['village'] }}</td>
-            <td>{{ app['post'] }}</td>
-            <td>{{ app['gp'] }}</td>
-            <td>{{ app['pin'] }}</td>
-            <td>{{ app['district'] }}</td>
-            <td>{{ app['state'] }}</td>
+<tbody>
+{% for app in applications %}
+<tr>
+    <td>{{ app.id }}</td>
+    <td>{{ app.cert_type }}</td>
+    <td>{{ app.name }}</td>
+    <td>{{ app.mobile }}</td>
+    <td>{{ app.village }}</td>
+    <td>{{ app.post }}</td>
+    <td>{{ app.gp }}</td>
+    <td>{{ app.pin }}</td>
+    <td>{{ app.district }}</td>
+    <td>{{ app.state }}</td>
 
-            <td>{% if app['applicant_photo'] %}<img src="{{ app['applicant_photo'] }}">{% else %}No photo{% endif %}</td>
-            <td>{% if app['aadhar_file'] %}<a href="{{ app['aadhar_file'] }}" target="_blank">View</a>{% else %}No file{% endif %}</td>
-            <td>{% if app['father_aadhar_file'] %}<a href="{{ app['father_aadhar_file'] }}" target="_blank">View</a>{% else %}No file{% endif %}</td>
-            <td>{% if app['ror_file'] %}<a href="{{ app['ror_file'] }}" target="_blank">View</a>{% else %}No file{% endif %}</td>
-            <td>{% if app['receipt_file'] %}<a href="{{ app['receipt_file'] }}" target="_blank">Download</a>{% else %}Not Uploaded{% endif %}</td>
-            <td>{% if app['certificate_file'] %}<a href="{{ app['certificate_file'] }}" target="_blank">Download</a>{% else %}Not Uploaded{% endif %}</td>
+    <td>
+        {% if app.applicant_photo %}
+            <img src="{{ app.applicant_photo }}">
+        {% else %}
+            No photo
+        {% endif %}
+    </td>
 
-            <td>
-                <form action="/update_status" method="POST">
-                    <input type="hidden" name="id" value="{{ app['id'] }}">
-                    <select name="status">
-                        {% for s in ['Pending','Processing','Completed','Rejected'] %}
-                        <option value="{{ s }}" {% if app['status']==s %}selected{% endif %}>{{ s }}</option>
-                        {% endfor %}
-                    </select>
-                    <button class="btn btn-status">Update</button>
-                </form>
-            </td>
+    <td>
+        {% if app.aadhar_file %}
+            <a href="{{ app.aadhar_file }}" target="_blank">View</a>
+        {% else %}
+            No file
+        {% endif %}
+    </td>
 
-            <td>
-                {% if app['payment_status']=='Paid' %}
-                    <span style="color:green;font-weight:bold;">Paid</span>
-                {% else %}
-                    <span style="color:red;font-weight:bold;">Pending</span>
-                {% endif %}
-            </td>
+    <td>
+        {% if app.father_aadhar_file %}
+            <a href="{{ app.father_aadhar_file }}" target="_blank">View</a>
+        {% else %}
+            No file
+        {% endif %}
+    </td>
 
-            <td>
-                <form action="/delete_application" method="POST">
-                    <input type="hidden" name="id" value="{{ app['id'] }}">
-                    <button class="btn btn-del">Delete</button>
-                </form>
+    <td>
+        {% if app.ror_file %}
+            <a href="{{ app.ror_file }}" target="_blank">View</a>
+        {% else %}
+            No file
+        {% endif %}
+    </td>
 
-                <form action="/upload_receipt" method="POST" enctype="multipart/form-data">
-                    <input type="hidden" name="id" value="{{ app['id'] }}">
-                    <input class="file-input" type="file" name="receipt" required>
-                    <button class="btn btn-status">Upload Receipt</button>
-                </form>
+    <td>
+        {% if app.receipt_file %}
+            <a href="{{ app.receipt_file }}" target="_blank">Download</a>
+        {% else %}
+            Not uploaded
+        {% endif %}
+    </td>
 
-                <form action="/upload_certificate" method="POST" enctype="multipart/form-data">
-                    <input type="hidden" name="id" value="{{ app['id'] }}">
-                    <input class="file-input" type="file" name="certificate" required>
-                    <button class="btn btn-status">Upload Certificate</button>
-                </form>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
+    <td>
+        {% if app.certificate_file %}
+            <a href="{{ app.certificate_file }}" target="_blank">Download</a>
+        {% else %}
+            Not uploaded
+        {% endif %}
+    </td>
+
+    <td>
+        <strong>{{ app.status }}</strong>
+    </td>
+
+    <td>
+        {% if app.payment_status == 'Paid' %}
+            <span style="color:green;font-weight:bold;">Paid</span>
+        {% else %}
+            <span style="color:red;font-weight:bold;">Pending</span>
+        {% endif %}
+    </td>
+
+    <td>
+        <!-- Upload Receipt -->
+        <form action="/upload_receipt" method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="id" value="{{ app.id }}">
+            <input class="file-input" type="file" name="receipt" required>
+            <button class="btn btn-status">Upload Receipt</button>
+        </form>
+
+        <br>
+
+        <!-- Upload Certificate -->
+        <form action="/upload_certificate" method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="id" value="{{ app.id }}">
+            <input class="file-input" type="file" name="certificate" required>
+            <button class="btn btn-status">Upload Certificate</button>
+        </form>
+    </td>
+</tr>
+{% endfor %}
+</tbody>
 </table>
 </div>
 
 </body>
-                    </html>
+    </html>
