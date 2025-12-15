@@ -8,20 +8,35 @@
 <style>
     body {
         font-family: "Poppins", Arial, sans-serif;
-        background: url("static/boat-3062045.jpg") no-repeat center center fixed;
+        background: url("/static/admin-bg.jpg") no-repeat center center fixed;
         background-size: cover;
         padding: 25px;
+        margin: 0;
         animation: fadeIn 1s ease-in-out;
         position: relative;
+        overflow-x: hidden;
     }
 
-    /* Overlay for readability */
+    /* 🔥 Animated Gradient Overlay */
     body::before {
         content: "";
         position: fixed;
         inset: 0;
-        background: rgba(255, 255, 255, 0.6);
+        background: linear-gradient(
+            120deg,
+            rgba(0, 123, 255, 0.25),
+            rgba(255, 0, 150, 0.25),
+            rgba(0, 200, 255, 0.25)
+        );
+        background-size: 400% 400%;
+        animation: gradientMove 15s ease infinite;
         z-index: -1;
+    }
+
+    @keyframes gradientMove {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
     }
 
     @keyframes fadeIn {
@@ -35,21 +50,22 @@
         font-size: 28px;
         font-weight: 600;
         letter-spacing: 1px;
-        color: #222;
+        color: #111;
     }
 
+    /* Glass Table Container */
     .table-container {
         overflow-x: auto;
-        background: rgba(255, 255, 255, 0.65);
+        background: rgba(255, 255, 255, 0.88);
         padding: 20px;
-        border-radius: 15px;
-        backdrop-filter: blur(10px);
-        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        border-radius: 16px;
+        backdrop-filter: blur(6px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.25);
         animation: slideUp 0.8s ease;
     }
 
     @keyframes slideUp {
-        from { opacity: 0; transform: translateY(20px); }
+        from { opacity: 0; transform: translateY(25px); }
         to { opacity: 1; transform: translateY(0); }
     }
 
@@ -60,7 +76,7 @@
     }
 
     th {
-        background: #1e1e1e;
+        background: #1a1a1a;
         color: white;
         padding: 12px;
         font-size: 14px;
@@ -74,10 +90,11 @@
         padding: 12px;
         border-bottom: 1px solid #ddd;
         text-align: center;
+        font-size: 14px;
     }
 
     tr:hover {
-        background: rgba(0, 0, 0, 0.05);
+        background: rgba(0, 0, 0, 0.06);
         transform: scale(1.01);
         transition: 0.2s;
     }
@@ -85,12 +102,12 @@
     img {
         width: 80px;
         border-radius: 10px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.3);
         transition: transform 0.3s;
     }
 
     img:hover {
-        transform: scale(1.1);
+        transform: scale(1.15);
     }
 
     select {
@@ -107,7 +124,7 @@
         border: none;
         cursor: pointer;
         font-weight: 600;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        box-shadow: 0 3px 8px rgba(0,0,0,0.3);
     }
 
     .btn:hover {
@@ -171,16 +188,10 @@
             <td>{{ app['district'] }}</td>
             <td>{{ app['state'] }}</td>
 
-            <td>
-                {% if app['applicant_photo'] %}
-                    <img src="{{ app['applicant_photo'] }}">
-                {% else %} No photo {% endif %}
-            </td>
-
+            <td>{% if app['applicant_photo'] %}<img src="{{ app['applicant_photo'] }}">{% else %}No photo{% endif %}</td>
             <td>{% if app['aadhar_file'] %}<a href="{{ app['aadhar_file'] }}" target="_blank">View</a>{% else %}No file{% endif %}</td>
             <td>{% if app['father_aadhar_file'] %}<a href="{{ app['father_aadhar_file'] }}" target="_blank">View</a>{% else %}No file{% endif %}</td>
             <td>{% if app['ror_file'] %}<a href="{{ app['ror_file'] }}" target="_blank">View</a>{% else %}No file{% endif %}</td>
-
             <td>{% if app['receipt_file'] %}<a href="{{ app['receipt_file'] }}" target="_blank">Download</a>{% else %}Not Uploaded{% endif %}</td>
             <td>{% if app['certificate_file'] %}<a href="{{ app['certificate_file'] }}" target="_blank">Download</a>{% else %}Not Uploaded{% endif %}</td>
 
