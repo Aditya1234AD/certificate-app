@@ -1,3 +1,5 @@
+
+
 from flask import Flask, render_template, request, redirect, flash, session, jsonify
 from supabase import create_client, Client
 from werkzeug.utils import secure_filename
@@ -156,7 +158,7 @@ def update_status():
             update_data["payment_required"] = True
         supabase.table("applications").update(update_data).eq("id", app_id).execute()
 
-    return redirect("/admin
+    return redirect("/admin")
 
 
 # ------------------- DOWNLOADS -------------------
