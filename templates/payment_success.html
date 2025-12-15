@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Payment Successful</title>
+    <style>
+        body {
+            background: #000;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        .box {
+            width: 400px;
+            margin: auto;
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        a.btn {
+            display: block;
+            padding: 12px;
+            margin-top: 10px;
+            background: #4b7bec;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+        }
+        a.btn:hover {
+            background: #3867d6;
+        }
+        p {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="box">
+    <h2>Payment Successful</h2>
+    <p>Your application has been submitted and payment verified.</p>
+
+    {% if data.payment_status == "Paid" %}
+        {% if data.receipt_file %}
+            <a class="btn" href="/download/receipt/{{ data.id }}">Download Receipt</a>
+        {% endif %}
+        {% if data.certificate_file %}
+            <a class="btn" href="/download/certificate/{{ data.id }}">Download Certificate</a>
+        {% else %}
+            <p>Certificate will be available once uploaded by admin.</p>
+        {% endif %}
+    {% else %}
+        <p>Payment verification pending. Please wait.</p>
+    {% endif %}
+</div>
+
+</body>
+  </html>
