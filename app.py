@@ -1,3 +1,4 @@
+
 from flask import Flask, render_template, request, redirect, flash, session, jsonify
 from supabase import create_client, Client
 from werkzeug.utils import secure_filename
@@ -140,6 +141,21 @@ def check_status():
         return render_template("status.html", message="No application found")
 
     return render_template("check_status.html")
+    # ------------------- UPDATE STATUS -------------------
+@app.route("/update_status", methods=["POST"])
+def update_status():
+    if not session.get("admin_logged_in"):
+        return redirect("/admin-login")
+
+    app_id = request.form.get("id")
+    status = request.form.get("status")
+
+    if app_id and status:
+        supabase.table("applications").update({
+            "status": status
+        }).eq("id", app_id).execute()
+
+    return redirect("/admin")
 
 # ------------------- DOWNLOADS -------------------
 @app.route("/download/receipt/<int:app_id>")
