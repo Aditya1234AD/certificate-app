@@ -188,10 +188,13 @@ def update_status():
     app_id = request.form.get("id")
     status = request.form.get("status")
 
-    if status in ["Processed", "Approved"]:
+    if app_id and status:
+        status = status.strip().capitalize()  # Normalize
+        payment_required = status in ["Processed", "Approved"]  # Only these enable payment
+
         supabase.table("applications").update({
             "status": status,
-            "payment_required": True
+            "payment_required": payment_required
         }).eq("id", app_id).execute()
 
     return redirect("/admin")
