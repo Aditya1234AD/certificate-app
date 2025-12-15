@@ -86,12 +86,12 @@ a.download-btn:hover { background-color: #2b4aa4; }
             {{ data.status }}
         </h4>
 
-        <!-- 🔒 PAY NOW (ONLY WHEN ADMIN ENABLES & NOT PAID) -->
-        {% if data.payment_required and data.payment_status != 'Paid' %}
-            <div style="text-align:center; margin-top:20px;">
-                <a class="download-btn" href="/pay/{{ data.id }}">Pay Now</a>
-            </div>
-        {% endif %}
+        <!-- 🔒 PAY NOW (ONLY WHEN STATUS IS PROCESSED OR APPROVED & NOT PAID) -->
+{% if data.status in ['Processed', 'Approved'] and data.payment_status != 'Paid' %}
+    <div style="text-align:center; margin-top:20px;">
+        <a class="download-btn" href="/pay/{{ data.id }}">Pay Now</a>
+    </div>
+{% endif %}
 
         <!-- ✅ DOWNLOAD AFTER PAYMENT -->
         {% if data.payment_status == 'Paid' %}
