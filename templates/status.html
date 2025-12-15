@@ -1,100 +1,133 @@
-<!DOCTYPE html>  
-<html lang="en">  
-<head>  
-<meta charset="UTF-8">  
-<meta name="viewport" content="width=device-width, initial-scale=1.0">  
-<title>Application Status</title>  
-<style>  
-body {  
-    font-family: "Poppins", sans-serif;  
-    background: radial-gradient(circle at 10% 10%, #152033 0%, #071018 45%, #020406 100%);  
-    color: #eaeef7;  
-    min-height: 100vh;  
-    margin: 0;  
-    padding: 20px;  
-}  
-.container {  
-    max-width: 800px;  
-    margin: auto;  
-    background: rgba(255,255,255,0.03);  
-    padding: 24px;  
-    border-radius: 16px;  
-    border: 1px solid rgba(255,255,255,0.06);  
-    box-shadow: 0 8px 40px rgba(11,18,30,0.7);  
-}  
-h2 { text-align: center; margin-bottom: 20px; }  
-h4 { margin: 8px 0; }  
-.status {  
-    font-weight: 700;  
-    padding: 6px 12px;  
-    border-radius: 8px;  
-    display: inline-block;  
-    margin-bottom: 12px;  
-}  
-.pending { background-color: #ffa500; color: #fff; }  
-.rejected { background-color: #ff4c4c; color: #fff; }  
-.processed { background-color: #4b7bec; color: #fff; }  
-.approved { background-color: #2bc48a; color: #fff; }  
-a.download-btn {  
-    display: inline-block;  
-    padding: 10px 16px;  
-    background-color: #4b7bec;  
-    color: white;  
-    text-decoration: none;  
-    border-radius: 8px;  
-    font-weight: 600;  
-    margin-top: 12px;  
-}  
-a.download-btn:hover { background-color: #2b4aa4; }  
-.message { text-align: center; margin-top: 40px; font-size: 18px; color: #ffcc00; }  
-</style>  
-</head>  
-<body>  
-  
-<div class="container">  
-    <h2>Application Status</h2>  
-  
-    {% if data %}  
-        <h4><strong>Name:</strong> {{ data.name }}</h4>  
-        <h4><strong>Certificate Type:</strong> {{ data.cert_type }}</h4>  
-        <h4><strong>Mobile:</strong> {{ data.mobile }}</h4>  
-        <h4><strong>Village:</strong> {{ data.village }}</h4>  
-        <h4><strong>Post:</strong> {{ data.post }}</h4>  
-        <h4><strong>Gram Panchayat:</strong> {{ data.gp }}</h4>  
-        <h4><strong>Pin Code:</strong> {{ data.pin }}</h4>  
-        <h4><strong>District:</strong> {{ data.district }}</h4>  
-        <h4><strong>State:</strong> {{ data.state }}</h4>  
-        <h4><strong>Payment Status:</strong> {{ data.payment_status }}</h4>  
-        <h4 class="status {% if data.status == 'Pending' %}pending{% elif data.status == 'Rejected' %}rejected{% elif data.status == 'Processed' %}processed{% elif data.status == 'Approved' %}approved{% endif %}">  
-            {{ data.status }}  
-        </h4>  
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Application Status</title>
 
-        {% if data.payment_status != 'Paid' %}  
-            <!-- Show Pay button if payment pending -->
+<style>
+body {
+    font-family: "Poppins", sans-serif;
+    background: radial-gradient(circle at 10% 10%, #152033 0%, #071018 45%, #020406 100%);
+    color: #eaeef7;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+}
+.container {
+    max-width: 800px;
+    margin: auto;
+    background: rgba(255,255,255,0.03);
+    padding: 24px;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.06);
+    box-shadow: 0 8px 40px rgba(11,18,30,0.7);
+}
+h2 { text-align: center; margin-bottom: 20px; }
+h4 { margin: 8px 0; }
+
+.status {
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 8px;
+    display: inline-block;
+    margin-bottom: 12px;
+}
+.pending { background-color: #ffa500; color: #fff; }
+.rejected { background-color: #ff4c4c; color: #fff; }
+.processed { background-color: #4b7bec; color: #fff; }
+.approved { background-color: #2bc48a; color: #fff; }
+
+a.download-btn {
+    display: inline-block;
+    padding: 10px 16px;
+    background-color: #4b7bec;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    margin-top: 12px;
+}
+a.download-btn:hover { background-color: #2b4aa4; }
+
+.message {
+    text-align: center;
+    margin-top: 40px;
+    font-size: 18px;
+    color: #ffcc00;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <h2>Application Status</h2>
+
+    {% if data %}
+        <h4><strong>Name:</strong> {{ data.name }}</h4>
+        <h4><strong>Certificate Type:</strong> {{ data.cert_type }}</h4>
+        <h4><strong>Mobile:</strong> {{ data.mobile }}</h4>
+        <h4><strong>Village:</strong> {{ data.village }}</h4>
+        <h4><strong>Post:</strong> {{ data.post }}</h4>
+        <h4><strong>Gram Panchayat:</strong> {{ data.gp }}</h4>
+        <h4><strong>Pin Code:</strong> {{ data.pin }}</h4>
+        <h4><strong>District:</strong> {{ data.district }}</h4>
+        <h4><strong>State:</strong> {{ data.state }}</h4>
+
+        <h4><strong>Payment Status:</strong> {{ data.payment_status }}</h4>
+
+        <h4 class="status
+            {% if data.status == 'Pending' %}pending
+            {% elif data.status == 'Rejected' %}rejected
+            {% elif data.status == 'Processed' %}processed
+            {% elif data.status == 'Approved' %}approved
+            {% endif %}">
+            {{ data.status }}
+        </h4>
+
+        <!-- 🔒 PAY NOW (ONLY WHEN ADMIN ENABLES & NOT PAID) -->
+        {% if data.payment_required and data.payment_status != 'Paid' %}
             <div style="text-align:center; margin-top:20px;">
                 <a class="download-btn" href="/pay/{{ data.id }}">Pay Now</a>
             </div>
-        {% elif (data.status == 'Processed' or data.status == 'Approved') %}  
-            {% if data.certificate_file %}  
-                <a class="download-btn" href="/download/certificate/{{ data.id }}" target="_blank">Download Your Certificate</a>  
-            {% endif %}  
-            {% if data.receipt_file %}  
-                <a class="download-btn" href="/download/receipt/{{ data.id }}" target="_blank">Download Payment Receipt</a>  
-            {% endif %}  
-        {% else %}  
-            <p>Your certificate will appear here once it is processed and payment is complete.</p>  
-        {% endif %}  
+        {% endif %}
 
-    {% elif message %}  
-        <div class="message">{{ message }}</div>  
-    {% else %}  
-        <div class="message">No application found.</div>  
-    {% endif %}  
-  
-    <div style="text-align:center; margin-top:20px;">  
-        <a href="/" class="download-btn">Back to Home</a>  
-    </div>  
-</div>  
-  
-</body>  
+        <!-- ✅ DOWNLOAD AFTER PAYMENT -->
+        {% if data.payment_status == 'Paid' %}
+
+            {% if data.status == 'Processed' and data.receipt_file %}
+                <div style="text-align:center;">
+                    <a class="download-btn" href="/download/receipt/{{ data.id }}" target="_blank">
+                        Download Payment Receipt
+                    </a>
+                </div>
+            {% endif %}
+
+            {% if data.status == 'Approved' and data.certificate_file %}
+                <div style="text-align:center;">
+                    <a class="download-btn" href="/download/certificate/{{ data.id }}" target="_blank">
+                        Download Certificate
+                    </a>
+                </div>
+            {% endif %}
+
+        {% endif %}
+
+        {% if data.status == 'Pending' %}
+            <p>Your application is under review. Payment will be enabled after processing.</p>
+        {% endif %}
+
+    {% elif message %}
+        <div class="message">{{ message }}</div>
+    {% else %}
+        <div class="message">No application found.</div>
+    {% endif %}
+
+    <div style="text-align:center; margin-top:20px;">
+        <a href="/" class="download-btn">Back to Home</a>
+    </div>
+</div>
+
+</body>
     </html>
