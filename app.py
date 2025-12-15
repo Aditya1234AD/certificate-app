@@ -15,8 +15,8 @@ BUCKET_NAME = "uploads"
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 
 # ------------------- RAZORPAY CONFIG -------------------
-RAZORPAY_KEY_ID = "rzp_test_Rrku9cNMfmMaVJ"
-RAZORPAY_KEY_SECRET = "7QKknj28ryZjcAP3ezkerqbI"
+RAZORPAY_KEY_ID = "rzp_test_RrrOHzYED2QJ5t"
+RAZORPAY_KEY_SECRET = "YROs5aXdVe0vMdRPrMPRxyNU"
 
 razorpay_client = razorpay.Client(
     auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET)
