@@ -140,7 +140,7 @@ def check_status():
         return render_template("status.html", message="No application found")
 
     return render_template("check_status.html")
-    # ------------UPDATE STATUS----------------
+    # ------------------- UPDATE STATUS -------------------
 @app.route("/update_status", methods=["POST"])
 def update_status():
     if not session.get("admin_logged_in"):
@@ -156,7 +156,8 @@ def update_status():
             update_data["payment_required"] = True
         supabase.table("applications").update(update_data).eq("id", app_id).execute()
 
-    return redirect("/admin")
+    return redirect("/admin
+
 
 # ------------------- DOWNLOADS -------------------
 @app.route("/download/receipt/<int:app_id>")
