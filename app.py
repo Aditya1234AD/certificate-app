@@ -193,6 +193,19 @@ def check_status():
         return render_template("status.html", data=query.data[0])
     return render_template("status.html", message="No application found!")
 
+# ------------------- LEGAL & PAYMENT PAGES -------------------
+@app.route("/terms")
+def terms():
+    return render_template("terms.html")
+
+@app.route("/privacy")
+def privacy():
+    return render_template("privacy.html")
+
+@app.route("/razorpay")
+def razorpay_policy():
+    return render_template("razorpay.html")
+
 # ------------------- RUN APP -------------------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=True)
