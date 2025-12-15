@@ -8,9 +8,20 @@
 <style>
     body {
         font-family: "Poppins", Arial, sans-serif;
-        background: linear-gradient(135deg, #dfe9f3, #ffffff);
+        background: url("/static/admin-bg.jpg") no-repeat center center fixed;
+        background-size: cover;
         padding: 25px;
         animation: fadeIn 1s ease-in-out;
+        position: relative;
+    }
+
+    /* Overlay for readability */
+    body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background: rgba(255, 255, 255, 0.6);
+        z-index: -1;
     }
 
     @keyframes fadeIn {
@@ -29,11 +40,11 @@
 
     .table-container {
         overflow-x: auto;
-        background: rgba(255, 255, 255, 0.6);
+        background: rgba(255, 255, 255, 0.65);
         padding: 20px;
         border-radius: 15px;
-        backdrop-filter: blur(8px);
-        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
         animation: slideUp 0.8s ease;
     }
 
@@ -56,7 +67,6 @@
         position: sticky;
         top: 0;
         z-index: 2;
-        letter-spacing: 0.5px;
         text-transform: uppercase;
     }
 
@@ -64,10 +74,6 @@
         padding: 12px;
         border-bottom: 1px solid #ddd;
         text-align: center;
-    }
-
-    tr {
-        transition: background 0.3s ease;
     }
 
     tr:hover {
@@ -91,13 +97,7 @@
         padding: 6px;
         border-radius: 6px;
         border: 1px solid #444;
-        outline: none;
         cursor: pointer;
-        transition: 0.3s;
-    }
-
-    select:hover {
-        transform: scale(1.02);
     }
 
     .btn {
@@ -107,7 +107,6 @@
         border: none;
         cursor: pointer;
         font-weight: 600;
-        transition: 0.2s;
         box-shadow: 0 2px 6px rgba(0,0,0,0.2);
     }
 
@@ -124,11 +123,6 @@
         border-radius: 6px;
         background: #eee;
         border: 1px solid #aaa;
-        transition: 0.2s;
-    }
-
-    .file-input:hover {
-        background: #ddd;
     }
 </style>
 </head>
@@ -151,14 +145,12 @@
             <th>PIN</th>
             <th>District</th>
             <th>State</th>
-
             <th>Photo</th>
             <th>Aadhaar</th>
             <th>Father Aadhaar</th>
             <th>ROR</th>
             <th>Receipt</th>
             <th>Certificate</th>
-
             <th>Status</th>
             <th>Payment</th>
             <th>Actions</th>
@@ -168,7 +160,6 @@
     <tbody>
         {% for app in applications %}
         <tr>
-
             <td>{{ app['id'] }}</td>
             <td>{{ app['cert_type'] }}</td>
             <td>{{ app['name'] }}</td>
@@ -180,77 +171,33 @@
             <td>{{ app['district'] }}</td>
             <td>{{ app['state'] }}</td>
 
-            <!-- Photo -->
             <td>
                 {% if app['applicant_photo'] %}
-                    <img src="{{ app['applicant_photo'] }}" alt="Photo">
-                {% else %}
-                    No photo
-                {% endif %}
+                    <img src="{{ app['applicant_photo'] }}">
+                {% else %} No photo {% endif %}
             </td>
 
-            <!-- Aadhaar -->
-            <td>
-                {% if app['aadhar_file'] %}
-                    <a href="{{ app['aadhar_file'] }}" target="_blank">View</a>
-                {% else %}
-                    No file
-                {% endif %}
-            </td>
+            <td>{% if app['aadhar_file'] %}<a href="{{ app['aadhar_file'] }}" target="_blank">View</a>{% else %}No file{% endif %}</td>
+            <td>{% if app['father_aadhar_file'] %}<a href="{{ app['father_aadhar_file'] }}" target="_blank">View</a>{% else %}No file{% endif %}</td>
+            <td>{% if app['ror_file'] %}<a href="{{ app['ror_file'] }}" target="_blank">View</a>{% else %}No file{% endif %}</td>
 
-            <!-- Father Aadhaar -->
-            <td>
-                {% if app['father_aadhar_file'] %}
-                    <a href="{{ app['father_aadhar_file'] }}" target="_blank">View</a>
-                {% else %}
-                    No file
-                {% endif %}
-            </td>
+            <td>{% if app['receipt_file'] %}<a href="{{ app['receipt_file'] }}" target="_blank">Download</a>{% else %}Not Uploaded{% endif %}</td>
+            <td>{% if app['certificate_file'] %}<a href="{{ app['certificate_file'] }}" target="_blank">Download</a>{% else %}Not Uploaded{% endif %}</td>
 
-            <!-- ROR -->
-            <td>
-                {% if app['ror_file'] %}
-                    <a href="{{ app['ror_file'] }}" target="_blank">View</a>
-                {% else %}
-                    No file
-                {% endif %}
-            </td>
-
-            <!-- Receipt -->
-            <td>
-                {% if app['receipt_file'] %}
-                    <a href="{{ app['receipt_file'] }}" target="_blank">Download</a>
-                {% else %}
-                    Not Uploaded
-                {% endif %}
-            </td>
-
-            <!-- Certificate -->
-            <td>
-                {% if app['certificate_file'] %}
-                    <a href="{{ app['certificate_file'] }}" target="_blank">Download</a>
-                {% else %}
-                    Not Uploaded
-                {% endif %}
-            </td>
-
-            <!-- Status -->
             <td>
                 <form action="/update_status" method="POST">
                     <input type="hidden" name="id" value="{{ app['id'] }}">
                     <select name="status">
-                        <option value="Pending" {% if app['status'] == 'Pending' %}selected{% endif %}>Pending</option>
-                        <option value="Processing" {% if app['status'] == 'Processing' %}selected{% endif %}>Processing</option>
-                        <option value="Completed" {% if app['status'] == 'Completed' %}selected{% endif %}>Completed</option>
-                        <option value="Rejected" {% if app['status'] == 'Rejected' %}selected{% endif %}>Rejected</option>
+                        {% for s in ['Pending','Processing','Completed','Rejected'] %}
+                        <option value="{{ s }}" {% if app['status']==s %}selected{% endif %}>{{ s }}</option>
+                        {% endfor %}
                     </select>
                     <button class="btn btn-status">Update</button>
                 </form>
             </td>
 
-            <!-- Payment -->
             <td>
-                {% if app['payment_status'] == 'Paid' %}
+                {% if app['payment_status']=='Paid' %}
                     <span style="color:green;font-weight:bold;">Paid</span>
                 {% else %}
                     <span style="color:red;font-weight:bold;">Pending</span>
@@ -258,29 +205,23 @@
             </td>
 
             <td>
-
-                <!-- Delete -->
-                <form action="/delete_application" method="POST" style="margin-bottom:8px;">
+                <form action="/delete_application" method="POST">
                     <input type="hidden" name="id" value="{{ app['id'] }}">
-                    <button class="btn btn-del" onclick="return confirm('Delete this application?')">Delete</button>
+                    <button class="btn btn-del">Delete</button>
                 </form>
 
-                <!-- Upload Receipt -->
-                <form action="/upload_receipt" method="POST" enctype="multipart/form-data" style="margin-bottom:8px;">
+                <form action="/upload_receipt" method="POST" enctype="multipart/form-data">
                     <input type="hidden" name="id" value="{{ app['id'] }}">
-                    <input class="file-input" type="file" name="receipt" accept="application/pdf,image/*" required>
+                    <input class="file-input" type="file" name="receipt" required>
                     <button class="btn btn-status">Upload Receipt</button>
                 </form>
 
-                <!-- Upload Certificate -->
                 <form action="/upload_certificate" method="POST" enctype="multipart/form-data">
                     <input type="hidden" name="id" value="{{ app['id'] }}">
-                    <input class="file-input" type="file" name="certificate" accept="application/pdf,image/*" required>
+                    <input class="file-input" type="file" name="certificate" required>
                     <button class="btn btn-status">Upload Certificate</button>
                 </form>
-
             </td>
-
         </tr>
         {% endfor %}
     </tbody>
@@ -288,4 +229,4 @@
 </div>
 
 </body>
-    </html>
+                    </html>
