@@ -1,10 +1,8 @@
-from flask import Flask, render_template, request, redirect, flash, session
+from flask import Flask, render_template, request, redirect, flash, session, jsonify
 from supabase import create_client, Client
 from werkzeug.utils import secure_filename
-import os
-import time
-import uuid
-import requests
+import os, time, uuid, requests
+import razorpay
 
 # ------------------- FLASK APP -------------------
 app = Flask(__name__)
@@ -20,61 +18,57 @@ BUCKET_NAME = os.getenv("BUCKET_NAME", "uploads")
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 
+# ------------------- RAZORPAY CONFIG -------------------
+RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID", "rzp_test_Rrku9cNMfmMaVJ")
+RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET", "7QKknj28ryZjcAP3ezkerqbI")
+
+razorpay_client = razorpay.Client(
+    auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET)
+)
+
 # ------------------- FAST2SMS CONFIG -------------------
-FAST2SMS_API_KEY = "Tc4HrYPZ25sl7MmAe8d3Ek1IRhiBzwNF0jCfpOQn9SqvoxUDWbFucA4ZapiGqtxK1rPOjy6LNfJgTDIk"
+FAST2SMS_API_KEY = "YOUR_FAST2SMS_API_KEY"
 ADMIN_MOBILE = "8847842809"
 
-# ------------------- SEND NORMAL SMS -------------------
 def send_sms(client_name, cert_type, mobile):
     url = "https://www.fast2sms.com/dev/bulkV2"
-    message = (
-        f"New Application Received\n"
-        f"Name: {client_name}\n"
-        f"Certificate: {cert_type}\n"
-        f"Client Mobile: {mobile}"
-    )
-
+    message = f"New Application\nName: {client_name}\nCertificate: {cert_type}\nMobile: {mobile}"
     payload = {
         "route": "v3",
         "message": message,
         "numbers": ADMIN_MOBILE,
-        "language": "english",
-        "flash": 0
+        "language": "english"
     }
-
     headers = {
         "Authorization": FAST2SMS_API_KEY,
         "Content-Type": "application/json"
     }
-
     try:
         requests.post(url, json=payload, headers=headers)
-    except Exception as e:
-        print("SMS Error:", e)
+    except:
+        pass
 
-# ------------------- FILE UPLOAD FUNCTION -------------------
-def upload_to_supabase(file, folder_name):
+# ------------------- FILE UPLOAD -------------------
+def upload_to_supabase(file, folder):
     if not file or file.filename == "":
         return None
 
-    original = secure_filename(file.filename)
+    filename = secure_filename(file.filename)
     unique = f"{int(time.time())}-{uuid.uuid4().hex[:8]}"
-    filename = f"{unique}-{original}"
-    path = f"{folder_name}/{filename}"
+    path = f"{folder}/{unique}-{filename}"
 
     try:
         supabase.storage.from_(BUCKET_NAME).upload(
             path,
             file.read(),
-            {"content-type": file.content_type or "application/octet-stream"}
+            {"content-type": file.content_type}
         )
-    except Exception as e:
-        print("Upload failed:", e)
+    except:
         return None
 
     return f"{SUPABASE_URL}/storage/v1/object/public/{BUCKET_NAME}/{path}"
 
-# ------------------- ADMIN LOGIN -------------------
+# ------------------- ADMIN CREDENTIALS -------------------
 ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD = "12345"
 
@@ -101,18 +95,84 @@ def submit():
         "applicant_photo": upload_to_supabase(request.files.get("photo"), "photos"),
         "ror_file": upload_to_supabase(request.files.get("ror"), "ror"),
         "payment_status": "Pending",
-        "status": "Pending",
+        "status": "Pending"
     }
 
-    supabase.table("applications").insert(data).execute()
+    res = supabase.table("applications").insert(data).execute()
+    app_id = res.data[0]["id"]
+
     send_sms(data["name"], data["cert_type"], data["mobile"])
 
-    flash("Application submitted successfully!", "client")
-    return redirect("/thanks")
+    return redirect(f"/pay/{app_id}")
+
+# ------------------- CREATE PAYMENT -------------------
+@app.route("/pay/<int:app_id>")
+def pay(app_id):
+    order = razorpay_client.order.create({
+        "amount": 200,  # ₹2
+        "currency": "INR",
+        "payment_capture": 1
+    })
+
+    supabase.table("applications").update({
+        "razorpay_order_id": order["id"]
+    }).eq("id", app_id).execute()
+
+    return render_template(
+        "payment.html",
+        order=order,
+        razorpay_key=RAZORPAY_KEY_ID,
+        app_id=app_id
+    )
+
+# ------------------- VERIFY PAYMENT -------------------
+@app.route("/verify-payment", methods=["POST"])
+def verify_payment():
+    data = request.json
+    try:
+        razorpay_client.utility.verify_payment_signature({
+            "razorpay_order_id": data["razorpay_order_id"],
+            "razorpay_payment_id": data["razorpay_payment_id"],
+            "razorpay_signature": data["razorpay_signature"]
+        })
+
+        supabase.table("applications").update({
+            "payment_status": "Paid",
+            "razorpay_payment_id": data["razorpay_payment_id"]
+        }).eq("id", data["app_id"]).execute()
+
+        return jsonify({"status": "success"})
+
+    except:
+        return jsonify({"status": "failed"}), 400
 
 @app.route("/thanks")
 def thanks():
     return render_template("thanks.html")
+
+# ------------------- DOWNLOADS -------------------
+@app.route("/download/certificate/<int:app_id>")
+def download_certificate(app_id):
+    data = supabase.table("applications").select("*").eq("id", app_id).execute().data
+    if not data:
+        return "Invalid Request"
+
+    app_data = data[0]
+
+    if app_data["payment_status"] != "Paid":
+        return "Payment required"
+
+    if not app_data.get("certificate_file"):
+        return "Certificate not uploaded"
+
+    return redirect(app_data["certificate_file"])
+
+@app.route("/download/receipt/<int:app_id>")
+def download_receipt(app_id):
+    data = supabase.table("applications").select("*").eq("id", app_id).execute().data
+    if not data or data[0]["payment_status"] != "Paid":
+        return "Payment required"
+    return redirect(data[0]["receipt_file"])
 
 # ------------------- ADMIN LOGIN -------------------
 @app.route("/admin-login", methods=["GET", "POST"])
@@ -121,16 +181,15 @@ def admin_login():
         if request.form.get("username") == ADMIN_USERNAME and request.form.get("password") == ADMIN_PASSWORD:
             session["admin_logged_in"] = True
             return redirect("/admin")
-        flash("Invalid credentials!", "login")
-        return redirect("/admin-login")
+        flash("Invalid credentials", "login")
     return render_template("admin_login.html")
 
 @app.route("/admin")
-def admin_dashboard():
+def admin():
     if not session.get("admin_logged_in"):
         return redirect("/admin-login")
-    response = supabase.table("applications").select("*").order("id", desc=True).execute()
-    return render_template("admin.html", applications=response.data)
+    data = supabase.table("applications").select("*").order("id", desc=True).execute()
+    return render_template("admin.html", applications=data.data)
 
 @app.route("/admin-logout")
 def admin_logout():
@@ -138,24 +197,6 @@ def admin_logout():
     return redirect("/")
 
 # ------------------- ADMIN ACTIONS -------------------
-@app.route("/update_status", methods=["POST"])
-def update_status():
-    supabase.table("applications").update(
-        {"status": request.form.get("status")}
-    ).eq("id", request.form.get("id")).execute()
-
-    flash("Status updated successfully!", "admin")
-    return redirect("/admin")
-
-@app.route("/delete_application", methods=["POST"])
-def delete_application():
-    supabase.table("applications").delete().eq(
-        "id", request.form.get("id")
-    ).execute()
-
-    flash("Application deleted!", "admin")
-    return redirect("/admin")
-
 @app.route("/upload_certificate", methods=["POST"])
 def upload_certificate():
     file = request.files.get("certificate")
@@ -164,9 +205,6 @@ def upload_certificate():
         supabase.table("applications").update(
             {"certificate_file": url}
         ).eq("id", request.form.get("id")).execute()
-        flash("Certificate uploaded successfully!", "admin")
-    else:
-        flash("No file selected!", "admin")
     return redirect("/admin")
 
 @app.route("/upload_receipt", methods=["POST"])
@@ -175,36 +213,9 @@ def upload_receipt():
     if file:
         url = upload_to_supabase(file, "receipt")
         supabase.table("applications").update(
-            {"receipt_file": url, "payment_status": "Paid"}
+            {"receipt_file": url}
         ).eq("id", request.form.get("id")).execute()
-        flash("Receipt uploaded & payment marked Paid!", "admin")
-    else:
-        flash("No file selected!", "admin")
     return redirect("/admin")
-
-# ------------------- CHECK STATUS -------------------
-@app.route("/check-status", methods=["POST"])
-def check_status():
-    query = supabase.table("applications").select("*") \
-        .eq("mobile", request.form.get("mobile")) \
-        .eq("cert_type", request.form.get("cert_type")).execute()
-
-    if query.data:
-        return render_template("status.html", data=query.data[0])
-    return render_template("status.html", message="No application found!")
-
-# ------------------- LEGAL & PAYMENT PAGES -------------------
-@app.route("/terms")
-def terms():
-    return render_template("terms.html")
-
-@app.route("/privacy")
-def privacy():
-    return render_template("privacy.html")
-
-@app.route("/razorpay")
-def razorpay_policy():
-    return render_template("razorpay.html")
 
 # ------------------- RUN APP -------------------
 if __name__ == "__main__":
