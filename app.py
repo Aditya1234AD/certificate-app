@@ -218,6 +218,18 @@ def upload_certificate():
         }).eq("id", app_id).execute()
 
     return redirect("/admin")
+    # ------------------- STATIC PAGES -------------------
+@app.route("/terms")
+def terms():
+    return render_template("terms.html")
+
+@app.route("/privacy")
+def privacy():
+    return render_template("privacy.html")
+
+@app.route("/payment-policy")
+def payment_policy():
+    return render_template("payment_policy.html")
 
 # ------------------- LOGOUT -------------------
 @app.route("/admin-logout")
