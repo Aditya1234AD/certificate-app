@@ -1,4 +1,3 @@
-
 from flask import Flask, render_template, request, redirect, flash, session, jsonify
 from supabase import create_client, Client
 from werkzeug.utils import secure_filename
@@ -244,8 +243,8 @@ def terms():
 @app.route("/privacy")
 def privacy():
     return render_template("privacy.html")
-
-@app.route("/payment-policy")
+    
+    @app.route("/payment-policy")
 def payment_policy():
     return render_template("payment_policy.html")
 
