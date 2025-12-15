@@ -243,8 +243,8 @@ def terms():
 @app.route("/privacy")
 def privacy():
     return render_template("privacy.html")
-    
-    @app.route("/payment-policy")
+
+@app.route("/payment-policy")
 def payment_policy():
     return render_template("payment_policy.html")
 
