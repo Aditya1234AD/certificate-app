@@ -77,14 +77,23 @@ def submit():
 @app.route("/pay/<int:app_id>")
 def pay(app_id):
     try:
-        app_data = supabase.table("applications").select("*").eq("id", app_id).execute().data[0]
+        result = supabase.table("applications").select("*").eq("id", app_id).execute()
 
-        if not app_data["payment_required"] or app_data["payment_status"] == "Paid":
-            return "Payment not allowed"
+        if not result.data:
+            return "Application not found"
+
+        app_data = result.data[0]
+
+        if app_data.get("payment_status") == "Paid":
+            return "Payment already completed"
+
+        if not app_data.get("payment_required"):
+            return "Payment not enabled by admin"
 
         order = razorpay_client.order.create({
-            "amount": 20000,  # ₹200
+            "amount": 20000,  # ₹200 (paise)
             "currency": "INR",
+            "receipt": f"app_{app_id}",
             "payment_capture": 1
         })
 
@@ -100,8 +109,8 @@ def pay(app_id):
         )
 
     except Exception as e:
-        print("PAY ERROR:", e)
-        return "Payment server error"
+        print("PAY ERROR 👉", str(e))
+        return f"Payment server error: {str(e)}"
 
 # ------------------- VERIFY PAYMENT -------------------
 @app.route("/verify-payment", methods=["POST"])
@@ -124,8 +133,8 @@ def verify_payment():
         return jsonify({"status": "success"})
 
     except Exception as e:
-        print("VERIFY ERROR:", e)
-        return jsonify({"status": "failed"}), 400
+        print("VERIFY ERROR 👉", str(e))
+        return jsonify({"status": "failed", "error": str(e)}), 400
 
 # ------------------- CHECK STATUS -------------------
 @app.route("/check-status", methods=["GET", "POST"])
