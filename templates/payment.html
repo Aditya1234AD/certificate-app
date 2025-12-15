@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Pay Now</title>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</head>
+<body>
+
+<h2>Complete Payment</h2>
+<button id="payBtn">Pay ₹200</button>
+
+<script>
+var options = {
+    "key": "{{ razorpay_key }}",
+    "amount": "{{ order.amount }}",
+    "currency": "INR",
+    "name": "Certificate Application",
+    "order_id": "{{ order.id }}",
+    "handler": function (response){
+        fetch("/verify-payment", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: new URLSearchParams({
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_signature: response.razorpay_signature,
+                app_id: "{{ app_id }}"
+            })
+        }).then(res => res.json())
+          .then(data => {
+              if(data.status === "success"){
+                  alert("Payment Successful");
+                  window.location.href = "/check-status";
+              } else {
+                  alert("Payment Failed");
+              }
+          });
+    }
+};
+
+document.getElementById("payBtn").onclick = function(){
+    var rzp = new Razorpay(options);
+    rzp.open();
+};
+</script>
+
+</body>
+</html>
