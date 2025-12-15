@@ -35,12 +35,6 @@ body::before {
   border-radius: 18px;
   background: rgba(0,0,0,0.45);
   backdrop-filter: blur(8px);
-  animation: slideIn 1.2s ease forwards;
-}
-
-@keyframes slideIn {
-  from { opacity: 0; transform: translateX(-50px); }
-  to { opacity: 1; transform: translateX(0); }
 }
 
 .header {
@@ -89,11 +83,6 @@ input, select {
   font-size: 15px;
 }
 
-input:focus, select:focus {
-  outline: none;
-  box-shadow: 0 0 10px rgba(0,0,0,0.4);
-}
-
 .grid-2 {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -117,19 +106,22 @@ button {
   margin-top: 14px;
 }
 
-button:hover {
-  box-shadow: 0 10px 30px rgba(75,123,236,0.3);
-}
-
 .link-container {
   text-align: center;
-  margin-top: 12px;
+  margin-top: 15px;
 }
 
 .link-container a {
   color: #9ac1ff;
   font-weight: bold;
   text-decoration: none;
+  margin: 0 8px;
+}
+
+.consent {
+  margin-top: 12px;
+  font-size: 13px;
+  color: #e6ebff;
 }
 </style>
 </head>
@@ -160,15 +152,10 @@ button:hover {
       <h3>Applicant Details</h3>
 
       <label>Name</label>
-      <input type="text" name="name" placeholder="Enter full name" required>
+      <input type="text" name="name" required>
 
       <label>Mobile Number</label>
-      <input type="tel"
-             name="mobile"
-             placeholder="10-digit mobile number"
-             pattern="[6-9]{1}[0-9]{9}"
-             title="Enter valid 10 digit Indian mobile number"
-             required>
+      <input type="tel" name="mobile" pattern="[6-9]{1}[0-9]{9}" required>
 
       <div class="grid-2">
         <input type="text" name="village" placeholder="Village" required>
@@ -177,8 +164,7 @@ button:hover {
 
       <div class="grid-2">
         <input type="text" name="gp" placeholder="Gram Panchayat" required>
-        <input type="text" name="pin" placeholder="PIN Code"
-               pattern="[0-9]{6}" required>
+        <input type="text" name="pin" placeholder="PIN Code" pattern="[0-9]{6}" required>
       </div>
 
       <div class="grid-2">
@@ -191,16 +177,25 @@ button:hover {
       <h3>Upload Documents</h3>
 
       <label>Applicant Photo</label>
-      <input type="file" name="photo" accept="image/*" required>
+      <input type="file" name="photo" required>
 
       <label>Applicant Aadhaar</label>
-      <input type="file" name="aadhaar" accept="image/*,application/pdf" required>
+      <input type="file" name="aadhaar" required>
 
       <label>Father's Aadhaar</label>
-      <input type="file" name="father_aadhaar" accept="image/*,application/pdf" required>
+      <input type="file" name="father_aadhaar" required>
 
       <label>ROR (Optional)</label>
-      <input type="file" name="ror" accept="image/*,application/pdf">
+      <input type="file" name="ror">
+    </div>
+
+    <!-- Razorpay Consent -->
+    <div class="consent">
+      <input type="checkbox" required>
+      I agree to the
+      <a href="/terms" target="_blank">Terms & Conditions</a>,
+      <a href="/privacy" target="_blank">Privacy Policy</a> and
+      <a href="/razorpay" target="_blank">Payment Policy</a>.
     </div>
 
     <button type="submit">Submit Application</button>
@@ -212,7 +207,6 @@ button:hover {
     <form method="POST" action="/check-status">
       <input type="tel" name="mobile" placeholder="Mobile number" required>
       <select name="cert_type" required>
-        <option value="">Select Certificate</option>
         <option>Caste Certificate</option>
         <option>Income Certificate</option>
         <option>Resident Certificate</option>
@@ -222,9 +216,13 @@ button:hover {
   </div>
 
   <div class="link-container">
+    <a href="/terms">Terms</a> |
+    <a href="/privacy">Privacy</a> |
+    <a href="/razorpay">Payment Policy</a> |
     <a href="/admin-login">Admin Login</a>
   </div>
 
 </div>
+
 </body>
-    </html>
+          </html>
