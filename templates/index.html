@@ -3,123 +3,163 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Online Certificate Application</title>
+<title>Online Certificate Application Portal</title>
+
+<!-- Google Fonts for Official Look -->
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 
 <style>
+/* GENERAL */
 body {
-  font-family: "Segoe UI", Arial, sans-serif;
-  background: #f2f6fb;
-  margin: 0;
-  color: #222;
+    font-family: "Roboto", Arial, sans-serif;
+    background-color: #f5f7fa;
+    margin: 0;
+    color: #1b1b1b;
+}
+
+a {
+    color: #0b5ed7;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
 }
 
 /* HEADER */
 .header-bar {
-  background: #0b5ed7;
-  color: white;
-  padding: 16px;
-  text-align: center;
+    background-color: #0b5ed7;
+    color: #fff;
+    padding: 20px 15px;
+    text-align: center;
 }
 
 .header-bar h1 {
-  margin: 0;
-  font-size: 24px;
+    margin: 0;
+    font-size: 26px;
+    font-weight: 700;
 }
 
 .header-bar p {
-  margin: 4px 0 0;
-  font-size: 13px;
+    margin: 4px 0 0;
+    font-size: 14px;
 }
 
 /* CONTAINER */
 .container {
-  max-width: 900px;
-  margin: 25px auto;
-  background: #fff;
-  padding: 24px;
-  border-radius: 6px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    max-width: 1000px;
+    margin: 30px auto;
+    padding: 0 15px;
 }
 
 /* SECTION BOX */
 .box {
-  border: 1px solid #dfe6f1;
-  border-radius: 6px;
-  padding: 18px;
-  margin-bottom: 20px;
+    background: #fff;
+    border: 1px solid #d9e2ec;
+    border-radius: 6px;
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.05);
 }
 
 .box h3 {
-  margin-top: 0;
-  color: #0b5ed7;
-  border-bottom: 1px solid #e6ecf5;
-  padding-bottom: 8px;
+    margin-top: 0;
+    font-size: 20px;
+    color: #0b5ed7;
+    border-bottom: 2px solid #e2e6ef;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
 }
 
-/* FORM */
+/* FORM ELEMENTS */
 label {
-  font-weight: 600;
-  margin-top: 10px;
-  display: block;
+    font-weight: 500;
+    margin-top: 10px;
+    display: block;
 }
 
 input, select {
-  width: 100%;
-  padding: 10px;
-  margin-top: 5px;
-  border-radius: 4px;
-  border: 1px solid #cfd8e3;
-  font-size: 14px;
+    width: 100%;
+    padding: 10px 12px;
+    margin-top: 6px;
+    border-radius: 4px;
+    border: 1px solid #cfd8e3;
+    font-size: 14px;
+    transition: border-color 0.3s;
 }
 
 input:focus, select:focus {
-  outline: none;
-  border-color: #0b5ed7;
+    outline: none;
+    border-color: #0b5ed7;
 }
 
+/* GRID TWO COLUMNS */
 .grid-2 {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
 }
 
 @media(max-width:700px) {
-  .grid-2 { grid-template-columns: 1fr; }
+    .grid-2 { grid-template-columns: 1fr; }
 }
 
-/* BUTTON */
+/* BUTTONS */
 button {
-  background: #0b5ed7;
-  color: white;
-  border: none;
-  padding: 12px;
-  font-size: 16px;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-top: 15px;
+    background-color: #0b5ed7;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    font-size: 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    margin-top: 15px;
+    transition: background-color 0.3s;
 }
 
 button:hover {
-  background: #094db5;
+    background-color: #094db5;
 }
 
-/* CONSENT */
+/* CONSENT / CHECKBOX */
 .consent {
-  margin-top: 12px;
-  font-size: 13px;
+    margin-top: 12px;
+    font-size: 13px;
 }
 
 /* FOOTER */
 .footer {
-  text-align: center;
-  margin-top: 20px;
-  font-size: 13px;
+    text-align: center;
+    margin: 30px 0 15px;
+    font-size: 13px;
+    color: #555;
 }
 
 .footer a {
-  color: #0b5ed7;
-  text-decoration: none;
-  margin: 0 6px;
+    margin: 0 6px;
+}
+
+/* STATUS FORM */
+.status-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.status-form input, .status-form select {
+    flex: 1 1 200px;
+}
+
+.status-form button {
+    flex: 0 0 auto;
+}
+
+/* RESPONSIVE */
+@media(max-width:500px) {
+    .status-form {
+        flex-direction: column;
+    }
 }
 </style>
 </head>
@@ -128,8 +168,8 @@ button:hover {
 
 <!-- HEADER -->
 <div class="header-bar">
-  <h1>Online Certificate Application Portal</h1>
-  <p>Government of Odisha – Digital Services</p>
+    <h1>Online Certificate Application Portal</h1>
+    <p>Government of Odisha – Digital Services</p>
 </div>
 
 <div class="container">
@@ -138,63 +178,62 @@ button:hover {
 <form action="/submit" method="POST" enctype="multipart/form-data">
 
 <div class="box">
-  <h3>Certificate Selection</h3>
-  <select name="cert_type" required>
-    <option value="">-- Select Certificate --</option>
-    <option>Caste Certificate</option>
-    <option>Income Certificate</option>
-    <option>Resident Certificate</option>
-  </select>
+    <h3>Certificate Selection</h3>
+    <select name="cert_type" required>
+        <option value="">-- Select Certificate --</option>
+        <option>Caste Certificate</option>
+        <option>Income Certificate</option>
+        <option>Resident Certificate</option>
+    </select>
 </div>
 
 <div class="box">
-  <h3>Applicant Details</h3>
+    <h3>Applicant Details</h3>
 
-  <label>Applicant Name</label>
-  <input type="text" name="name" required>
+    <label>Applicant Name</label>
+    <input type="text" name="name" required>
 
-  <label>Mobile Number</label>
-  <input type="tel" name="mobile" pattern="[6-9]{1}[0-9]{9}" required>
+    <label>Mobile Number</label>
+    <input type="tel" name="mobile" pattern="[6-9]{1}[0-9]{9}" required>
 
-  <div class="grid-2">
-    <input type="text" name="village" placeholder="Village" required>
-    <input type="text" name="post" placeholder="Post Office" required>
-  </div>
+    <div class="grid-2">
+        <input type="text" name="village" placeholder="Village" required>
+        <input type="text" name="post" placeholder="Post Office" required>
+    </div>
 
-  <div class="grid-2">
-    <input type="text" name="gp" placeholder="Gram Panchayat" required>
-    <input type="text" name="pin" placeholder="PIN Code" pattern="[0-9]{6}" required>
-  </div>
+    <div class="grid-2">
+        <input type="text" name="gp" placeholder="Gram Panchayat" required>
+        <input type="text" name="pin" placeholder="PIN Code" pattern="[0-9]{6}" required>
+    </div>
 
-  <div class="grid-2">
-    <input type="text" name="district" placeholder="District" required>
-    <input type="text" name="state" placeholder="State" required>
-  </div>
+    <div class="grid-2">
+        <input type="text" name="district" placeholder="District" required>
+        <input type="text" name="state" placeholder="State" required>
+    </div>
 </div>
 
 <div class="box">
-  <h3>Upload Required Documents</h3>
+    <h3>Upload Required Documents</h3>
 
-  <label>Applicant Photograph</label>
-  <input type="file" name="photo" required>
+    <label>Applicant Photograph</label>
+    <input type="file" name="photo" required>
 
-  <label>Applicant Aadhaar Card</label>
-  <input type="file" name="aadhaar" required>
+    <label>Applicant Aadhaar Card</label>
+    <input type="file" name="aadhaar" required>
 
-  <label>Father’s Aadhaar Card</label>
-  <input type="file" name="father_aadhaar" required>
+    <label>Father’s Aadhaar Card</label>
+    <input type="file" name="father_aadhaar" required>
 
-  <label>ROR (Optional)</label>
-  <input type="file" name="ror">
+    <label>ROR (Optional)</label>
+    <input type="file" name="ror">
 </div>
 
 <div class="consent">
-  <input type="checkbox" required>
-  I agree to the
-  <a href="/terms" target="_blank">Terms & Conditions</a>,
-  <a href="/payment-policy">Payment Policy</a>
-  <a href="/privacy" target="_blank">Privacy Policy</a> and
-  <a href="/razorpay" target="_blank">Payment Policy</a>.
+    <input type="checkbox" required>
+    I agree to the
+    <a href="/terms" target="_blank">Terms & Conditions</a>,
+    <a href="/payment-policy">Payment Policy</a>,
+    <a href="/privacy" target="_blank">Privacy Policy</a>.
 </div>
 
 <button type="submit">Submit Application</button>
@@ -203,24 +242,24 @@ button:hover {
 
 <!-- STATUS CHECK -->
 <div class="box">
-  <h3>Check Application Status</h3>
-  <form action="/check-status" method="POST">
-    <input type="tel" name="mobile" placeholder="Registered Mobile Number" required>
-    <select name="cert_type" required>
-      <option>Caste Certificate</option>
-      <option>Income Certificate</option>
-      <option>Resident Certificate</option>
-    </select>
-    <button type="submit">Check Status</button>
-  </form>
+    <h3>Check Application Status</h3>
+    <form class="status-form" action="/check-status" method="POST">
+        <input type="tel" name="mobile" placeholder="Registered Mobile Number" required>
+        <select name="cert_type" required>
+            <option>Caste Certificate</option>
+            <option>Income Certificate</option>
+            <option>Resident Certificate</option>
+        </select>
+        <button type="submit">Check Status</button>
+    </form>
 </div>
 
 <!-- FOOTER -->
 <div class="footer">
-  <a href="/terms">Terms</a> |
-  <a href="/privacy">Privacy</a> |
-  <a href="/payment-policy">Payment Policy</a> |
-  <a href="/admin-login">Admin Login</a>
+    <a href="/terms">Terms</a> |
+    <a href="/privacy">Privacy</a> |
+    <a href="/payment-policy">Payment Policy</a> |
+    <a href="/admin-login">Admin Login</a>
 </div>
 
 </div>
