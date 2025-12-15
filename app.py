@@ -22,12 +22,11 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 
 # ------------------- FAST2SMS CONFIG -------------------
 FAST2SMS_API_KEY = "Tc4HrYPZ25sl7MmAe8d3Ek1IRhiBzwNF0jCfpOQn9SqvoxUDWbFucA4ZapiGqtxK1rPOjy6LNfJgTDIk"
-ADMIN_MOBILE = "8847842809"   # Admin mobile number (no +91)
+ADMIN_MOBILE = "8847842809"
 
 # ------------------- SEND NORMAL SMS -------------------
 def send_sms(client_name, cert_type, mobile):
     url = "https://www.fast2sms.com/dev/bulkV2"
-
     message = (
         f"New Application Received\n"
         f"Name: {client_name}\n"
@@ -36,7 +35,7 @@ def send_sms(client_name, cert_type, mobile):
     )
 
     payload = {
-        "route": "v3",          # transactional
+        "route": "v3",
         "message": message,
         "numbers": ADMIN_MOBILE,
         "language": "english",
@@ -49,8 +48,7 @@ def send_sms(client_name, cert_type, mobile):
     }
 
     try:
-        response = requests.post(url, json=payload, headers=headers)
-        print("SMS Response:", response.text)
+        requests.post(url, json=payload, headers=headers)
     except Exception as e:
         print("SMS Error:", e)
 
@@ -60,16 +58,15 @@ def upload_to_supabase(file, folder_name):
         return None
 
     original = secure_filename(file.filename)
-    unique_suffix = f"{int(time.time())}-{uuid.uuid4().hex[:8]}"
-    filename = f"{unique_suffix}-{original}"
+    unique = f"{int(time.time())}-{uuid.uuid4().hex[:8]}"
+    filename = f"{unique}-{original}"
     path = f"{folder_name}/{filename}"
 
     try:
-        file_bytes = file.read()
         supabase.storage.from_(BUCKET_NAME).upload(
             path,
-            file_bytes,
-            {"content-type": file.content_type or "application/octet-stream"},
+            file.read(),
+            {"content-type": file.content_type or "application/octet-stream"}
         )
     except Exception as e:
         print("Upload failed:", e)
@@ -107,30 +104,24 @@ def submit():
         "status": "Pending",
     }
 
-    # Save to Supabase
     supabase.table("applications").insert(data).execute()
-
-    # SEND NORMAL SMS TO ADMIN
     send_sms(data["name"], data["cert_type"], data["mobile"])
 
-    flash("Application submitted successfully!")
+    flash("Application submitted successfully!", "client")
     return redirect("/thanks")
 
 @app.route("/thanks")
 def thanks():
     return render_template("thanks.html")
 
-# ------------------- ADMIN LOGIN ROUTES -------------------
+# ------------------- ADMIN LOGIN -------------------
 @app.route("/admin-login", methods=["GET", "POST"])
 def admin_login():
     if request.method == "POST":
-        if (
-            request.form.get("username") == ADMIN_USERNAME
-            and request.form.get("password") == ADMIN_PASSWORD
-        ):
+        if request.form.get("username") == ADMIN_USERNAME and request.form.get("password") == ADMIN_PASSWORD:
             session["admin_logged_in"] = True
             return redirect("/admin")
-        flash("Invalid credentials!")
+        flash("Invalid credentials!", "login")
         return redirect("/admin-login")
     return render_template("admin_login.html")
 
@@ -143,73 +134,65 @@ def admin_dashboard():
 
 @app.route("/admin-logout")
 def admin_logout():
-    session.pop("admin_logged_in", None)
+    session.clear()
     return redirect("/")
 
-# ------------------- UPDATE STATUS -------------------
+# ------------------- ADMIN ACTIONS -------------------
 @app.route("/update_status", methods=["POST"])
 def update_status():
-    app_id = request.form.get("id")
-    status = request.form.get("status")
-    supabase.table("applications").update({"status": status}).eq("id", app_id).execute()
-    flash("Status updated successfully!")
+    supabase.table("applications").update(
+        {"status": request.form.get("status")}
+    ).eq("id", request.form.get("id")).execute()
+
+    flash("Status updated successfully!", "admin")
     return redirect("/admin")
 
-# ------------------- DELETE APPLICATION -------------------
 @app.route("/delete_application", methods=["POST"])
 def delete_application():
-    app_id = request.form.get("id")
-    supabase.table("applications").delete().eq("id", app_id).execute()
-    flash("Application deleted!")
+    supabase.table("applications").delete().eq(
+        "id", request.form.get("id")
+    ).execute()
+
+    flash("Application deleted!", "admin")
     return redirect("/admin")
 
-# ------------------- UPLOAD CERTIFICATE -------------------
 @app.route("/upload_certificate", methods=["POST"])
 def upload_certificate():
-    app_id = request.form.get("id")
     file = request.files.get("certificate")
     if file:
         url = upload_to_supabase(file, "certificate")
         supabase.table("applications").update(
             {"certificate_file": url}
-        ).eq("id", app_id).execute()
-        flash("Certificate uploaded successfully!")
+        ).eq("id", request.form.get("id")).execute()
+        flash("Certificate uploaded successfully!", "admin")
     else:
-        flash("No file selected!")
+        flash("No file selected!", "admin")
     return redirect("/admin")
 
-# ------------------- UPLOAD RECEIPT -------------------
 @app.route("/upload_receipt", methods=["POST"])
 def upload_receipt():
-    app_id = request.form.get("id")
     file = request.files.get("receipt")
     if file:
         url = upload_to_supabase(file, "receipt")
         supabase.table("applications").update(
             {"receipt_file": url, "payment_status": "Paid"}
-        ).eq("id", app_id).execute()
-        flash("Receipt uploaded and payment marked as Paid!")
+        ).eq("id", request.form.get("id")).execute()
+        flash("Receipt uploaded & payment marked Paid!", "admin")
     else:
-        flash("No file selected!")
+        flash("No file selected!", "admin")
     return redirect("/admin")
 
 # ------------------- CHECK STATUS -------------------
 @app.route("/check-status", methods=["POST"])
 def check_status():
-    mobile = request.form.get("mobile")
-    cert_type = request.form.get("cert_type")
-    query = (
-        supabase.table("applications")
-        .select("*")
-        .eq("mobile", mobile)
-        .eq("cert_type", cert_type)
-        .execute()
-    )
+    query = supabase.table("applications").select("*") \
+        .eq("mobile", request.form.get("mobile")) \
+        .eq("cert_type", request.form.get("cert_type")).execute()
+
     if query.data:
         return render_template("status.html", data=query.data[0])
     return render_template("status.html", message="No application found!")
 
 # ------------------- RUN APP -------------------
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=True)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=True)
