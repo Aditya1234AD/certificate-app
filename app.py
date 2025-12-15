@@ -115,9 +115,16 @@ def pay(app_id):
 # ------------------- VERIFY PAYMENT -------------------
 @app.route("/verify-payment", methods=["POST"])
 def verify_payment():
-    data = request.form
+    data = request.json  # <- Use JSON if frontend sends JSON
 
     try:
+        # Debug print to check what data is received
+        print("VERIFY PAYMENT DATA:", data)
+
+        app_id = data.get("app_id")
+        if not app_id:
+            return jsonify({"status": "failed", "message": "app_id missing"}), 400
+
         razorpay_client.utility.verify_payment_signature({
             "razorpay_order_id": data["razorpay_order_id"],
             "razorpay_payment_id": data["razorpay_payment_id"],
@@ -128,13 +135,13 @@ def verify_payment():
             "payment_status": "Paid",
             "payment_required": False,
             "razorpay_payment_id": data["razorpay_payment_id"]
-        }).eq("id", data["app_id"]).execute()
+        }).eq("id", int(app_id)).execute()
 
         return jsonify({"status": "success"})
 
     except Exception as e:
-        print("VERIFY ERROR 👉", str(e))
-        return jsonify({"status": "failed", "error": str(e)}), 400
+        print("VERIFY ERROR:", e)
+        return jsonify({"status": "failed", "message": str(e)}), 400
 
 # ------------------- CHECK STATUS -------------------
 @app.route("/check-status", methods=["GET", "POST"])
