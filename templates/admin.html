@@ -12,11 +12,8 @@ body {
     background-size: cover;
     padding: 25px;
     margin: 0;
-    position: relative;
-    overflow-x: hidden;
 }
 
-/* Gradient Overlay */
 body::before {
     content: "";
     position: fixed;
@@ -27,15 +24,7 @@ body::before {
         rgba(255, 0, 150, 0.25),
         rgba(0, 200, 255, 0.25)
     );
-    background-size: 400% 400%;
-    animation: gradientMove 15s ease infinite;
     z-index: -1;
-}
-
-@keyframes gradientMove {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
 }
 
 h2 {
@@ -48,16 +37,15 @@ h2 {
 
 .table-container {
     overflow-x: auto;
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(255,255,255,0.9);
     padding: 20px;
     border-radius: 16px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 1700px;
+    min-width: 1800px;
 }
 
 th {
@@ -65,26 +53,22 @@ th {
     color: white;
     padding: 12px;
     font-size: 14px;
-    position: sticky;
-    top: 0;
-    z-index: 2;
 }
 
 td {
     padding: 12px;
     border-bottom: 1px solid #ddd;
     text-align: center;
-    font-size: 14px;
-}
-
-tr:hover {
-    background: rgba(0, 0, 0, 0.06);
 }
 
 img {
     width: 80px;
     border-radius: 10px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+select {
+    padding: 6px;
+    border-radius: 6px;
 }
 
 .btn {
@@ -103,7 +87,6 @@ img {
     padding: 5px;
     border-radius: 6px;
     background: #eee;
-    border: 1px solid #aaa;
 }
 </style>
 </head>
@@ -152,60 +135,31 @@ img {
     <td>{{ app.district }}</td>
     <td>{{ app.state }}</td>
 
+    <td>{% if app.applicant_photo %}<img src="{{ app.applicant_photo }}">{% else %}No photo{% endif %}</td>
+    <td>{% if app.aadhar_file %}<a href="{{ app.aadhar_file }}" target="_blank">View</a>{% else %}No file{% endif %}</td>
+    <td>{% if app.father_aadhar_file %}<a href="{{ app.father_aadhar_file }}" target="_blank">View</a>{% else %}No file{% endif %}</td>
+    <td>{% if app.ror_file %}<a href="{{ app.ror_file }}" target="_blank">View</a>{% else %}No file{% endif %}</td>
+
+    <td>{% if app.receipt_file %}<a href="{{ app.receipt_file }}" target="_blank">Download{% else %}Not uploaded{% endif %}</td>
+    <td>{% if app.certificate_file %}<a href="{{ app.certificate_file }}" target="_blank">Download{% else %}Not uploaded{% endif %}</td>
+
+    <!-- ✅ STATUS UPDATE FORM -->
     <td>
-        {% if app.applicant_photo %}
-            <img src="{{ app.applicant_photo }}">
-        {% else %}
-            No photo
-        {% endif %}
+        <form action="/update_status" method="POST">
+            <input type="hidden" name="id" value="{{ app.id }}">
+            <select name="status">
+                <option value="Pending" {% if app.status=='Pending' %}selected{% endif %}>Pending</option>
+                <option value="Processed" {% if app.status=='Processed' %}selected{% endif %}>Processed</option>
+                <option value="Approved" {% if app.status=='Approved' %}selected{% endif %}>Approved</option>
+                <option value="Rejected" {% if app.status=='Rejected' %}selected{% endif %}>Rejected</option>
+            </select>
+            <br><br>
+            <button class="btn btn-status">Update</button>
+        </form>
     </td>
 
     <td>
-        {% if app.aadhar_file %}
-            <a href="{{ app.aadhar_file }}" target="_blank">View</a>
-        {% else %}
-            No file
-        {% endif %}
-    </td>
-
-    <td>
-        {% if app.father_aadhar_file %}
-            <a href="{{ app.father_aadhar_file }}" target="_blank">View</a>
-        {% else %}
-            No file
-        {% endif %}
-    </td>
-
-    <td>
-        {% if app.ror_file %}
-            <a href="{{ app.ror_file }}" target="_blank">View</a>
-        {% else %}
-            No file
-        {% endif %}
-    </td>
-
-    <td>
-        {% if app.receipt_file %}
-            <a href="{{ app.receipt_file }}" target="_blank">Download</a>
-        {% else %}
-            Not uploaded
-        {% endif %}
-    </td>
-
-    <td>
-        {% if app.certificate_file %}
-            <a href="{{ app.certificate_file }}" target="_blank">Download</a>
-        {% else %}
-            Not uploaded
-        {% endif %}
-    </td>
-
-    <td>
-        <strong>{{ app.status }}</strong>
-    </td>
-
-    <td>
-        {% if app.payment_status == 'Paid' %}
+        {% if app.payment_status=='Paid' %}
             <span style="color:green;font-weight:bold;">Paid</span>
         {% else %}
             <span style="color:red;font-weight:bold;">Pending</span>
@@ -236,4 +190,4 @@ img {
 </div>
 
 </body>
-    </html>
+                </html>
