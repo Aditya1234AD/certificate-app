@@ -120,6 +120,22 @@ def payment_success(app_id):
         return "Invalid Application"
     return render_template("payment_success.html", data=data[0])
 
+# ------------------- CHECK STATUS -------------------
+@app.route("/check-status", methods=["GET", "POST"])
+def check_status():
+    if request.method == "POST":
+        mobile = request.form.get("mobile")
+        cert_type = request.form.get("cert_type")
+        query = supabase.table("applications").select("*") \
+            .eq("mobile", mobile) \
+            .eq("cert_type", cert_type) \
+            .execute()
+        if query.data:
+            return render_template("status.html", data=query.data[0])
+        else:
+            return render_template("status.html", message="No application found!")
+    return render_template("check_status.html")
+
 # ------------------- DOWNLOADS -------------------
 @app.route("/download/certificate/<int:app_id>")
 def download_certificate(app_id):
