@@ -205,21 +205,24 @@ def check_status():
                 message="Please enter Application ID"
             )
 
+        # SAFE QUERY (NO .single())
         result = supabase.table("applications") \
             .select("*") \
             .eq("application_no", application_no) \
-            .single() \
             .execute()
 
-        if result.data:
+        # APPLICATION DELETED / NOT FOUND
+        if not result.data:
             return render_template(
                 "status.html",
-                data=result.data
+                deleted=True
             )
 
+        # APPLICATION FOUND
         return render_template(
             "status.html",
-            message="Invalid Application ID"
+            data=result.data[0],
+            deleted=False
         )
 
     return render_template("check_status.html")
