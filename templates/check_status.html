@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Check Application Status</title>
-
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 
 <style>
@@ -121,7 +120,6 @@ button:hover {
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* Error message for invalid / empty input */
 .message {
     text-align: center;
     color: red;
@@ -130,16 +128,15 @@ button:hover {
 }
 </style>
 </head>
-
 <body>
 
 <div class="status-container">
     <h2>Check Application Status</h2>
     <p>Enter your Application ID to know current status</p>
 
-    <!-- Display error message -->
+    <!-- Display message -->
     {% if message %}
-        <div class="message">{{ message }}</div>
+    <div class="message">{{ message }}</div>
     {% endif %}
 
     <form action="/check-status" method="POST">
@@ -151,7 +148,7 @@ button:hover {
         <button type="submit">Check Status</button>
     </form>
 
-    <!-- Display deleted / expired card -->
+    <!-- Deleted / Expired -->
     {% if deleted %}
     <div class="status-card">
         <div class="status-icon">⚠️</div>
@@ -164,7 +161,7 @@ button:hover {
     </div>
     {% endif %}
 
-    <!-- Display valid application data if available -->
+    <!-- Valid Application -->
     {% if data %}
     <div class="status-card">
         <div class="status-icon">✅</div>
@@ -176,6 +173,14 @@ button:hover {
             <b>Status:</b> {{ data.status }}<br>
             <b>Payment:</b> {{ data.payment_status }}
         </div>
+
+        {% if data.payment_status|lower != "paid" %}
+        <!-- Pay Now Button -->
+        <form action="/pay-now" method="POST" style="margin-top:15px;">
+            <input type="hidden" name="application_no" value="{{ data.application_no }}">
+            <button type="submit" style="background:#198754;">Pay Now</button>
+        </form>
+        {% endif %}
     </div>
     {% endif %}
 
