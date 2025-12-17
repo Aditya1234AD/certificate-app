@@ -243,13 +243,13 @@ button:hover {
 <!-- STATUS CHECK -->
 <div class="box">
     <h3>Check Application Status</h3>
+
     <form class="status-form" action="/check-status" method="POST">
-        <input type="tel" name="mobile" placeholder="Registered Mobile Number" required>
-        <select name="cert_type" required>
-            <option>Caste Certificate</option>
-            <option>Income Certificate</option>
-            <option>Resident Certificate</option>
-        </select>
+        <input type="text"
+               name="application_no"
+               placeholder="Enter Application ID (e.g. OD-CT-2025-123456)"
+               required>
+
         <button type="submit">Check Status</button>
     </form>
 </div>
