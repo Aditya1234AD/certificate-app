@@ -71,7 +71,7 @@ def submit():
     result = supabase.table("applications").insert(data).execute()
     app_id = result.data[0]["id"]
 
-    return redirect(f"/check-status?app_id={app_id}")
+    return render_template("success.html", app_id=app_id)
 
 # ------------------- CREATE PAYMENT -------------------
 @app.route("/pay/<int:app_id>")
