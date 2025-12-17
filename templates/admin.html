@@ -88,6 +88,52 @@ select {
     border-radius: 6px;
     background: #eee;
 }
+
+/* ================= MODAL ================= */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+    backdrop-filter: blur(4px);
+}
+
+.modal-card {
+    background: white;
+    padding: 25px 30px;
+    border-radius: 16px;
+    width: 320px;
+    text-align: center;
+    animation: scaleIn 0.3s ease;
+}
+
+.modal-card h3 {
+    margin-bottom: 10px;
+    font-size: 20px;
+    color: #222;
+}
+
+.modal-card p {
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 20px;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: space-between;
+}
+
+.btn-yes { background: #e60000; }
+.btn-no { background: #777; }
+
+@keyframes scaleIn {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
 </style>
 </head>
 
@@ -147,8 +193,8 @@ select {
     <td>{% if app.father_aadhar_file %}<a href="{{ app.father_aadhar_file }}" target="_blank">View</a>{% else %}No file{% endif %}</td>
     <td>{% if app.ror_file %}<a href="{{ app.ror_file }}" target="_blank">View</a>{% else %}No file{% endif %}</td>
 
-    <td>{% if app.receipt_file %}<a href="{{ app.receipt_file }}" target="_blank">Download{% else %}Not uploaded{% endif %}</td>
-    <td>{% if app.certificate_file %}<a href="{{ app.certificate_file }}" target="_blank">Download{% else %}Not uploaded{% endif %}</td>
+    <td>{% if app.receipt_file %}<a href="{{ app.receipt_file }}" target="_blank">Download{% else %}Not uploaded{% endif %}</a></td>
+    <td>{% if app.certificate_file %}<a href="{{ app.certificate_file }}" target="_blank">Download{% else %}Not uploaded{% endif %}</a></td>
 
     <!-- STATUS -->
     <td>
@@ -178,12 +224,13 @@ select {
     <td>
 
         <!-- DELETE -->
-        <form action="/delete_application/{{ app.id }}"
-              method="POST"
-              onsubmit="return confirm('Are you sure you want to delete this application?');"
-              style="margin-bottom:8px;">
-            <button class="btn btn-del">Delete</button>
+        <form action="/delete_application/{{ app.id }}" method="POST" class="delete-form">
+            <button type="button" class="btn btn-del" onclick="openModal(this.form)">
+                Delete
+            </button>
         </form>
+
+        <br>
 
         <!-- UPLOAD RECEIPT -->
         <form action="/upload_receipt" method="POST" enctype="multipart/form-data">
@@ -196,15 +243,11 @@ select {
         <br>
 
         <!-- UPLOAD CERTIFICATE -->
-        <form action="/upload_certificate"
-      method="post"
-      enctype="multipart/form-data">
-
-    <input type="hidden" name="id" value="{{ app.id }}">
-
-    <input type="file" name="certificate" required>
-
-    <button  class="btn btn-status">Upload Certificate</button>
+        <form action="/upload_certificate" method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="id" value="{{ app.id }}">
+            <input type="file" name="certificate" required>
+            <br>
+            <button class="btn btn-status">Upload Certificate</button>
         </form>
 
     </td>
@@ -214,5 +257,38 @@ select {
 </table>
 </div>
 
+<!-- ================= DELETE MODAL ================= -->
+<div id="deleteModal" class="modal-overlay">
+    <div class="modal-card">
+        <h3>Confirm Deletion</h3>
+        <p>Are you sure you want to delete this application?</p>
+
+        <div class="modal-actions">
+            <button class="btn btn-no" onclick="closeModal()">No</button>
+            <button class="btn btn-yes" id="confirmDeleteBtn">Yes</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let deleteForm = null;
+
+function openModal(form) {
+    deleteForm = form;
+    document.getElementById("deleteModal").style.display = "flex";
+}
+
+function closeModal() {
+    document.getElementById("deleteModal").style.display = "none";
+    deleteForm = null;
+}
+
+document.getElementById("confirmDeleteBtn").addEventListener("click", function () {
+    if (deleteForm) {
+        deleteForm.submit();
+    }
+});
+</script>
+
 </body>
-                    </html>
+                </html>
