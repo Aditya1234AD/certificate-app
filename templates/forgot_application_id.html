@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Find Application ID</title>
+    <style>
+        body {
+            font-family: Arial;
+            background: #f4f6f9;
+        }
+        .box {
+            width: 90%;
+            max-width: 420px;
+            margin: 60px auto;
+            background: #fff;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #1e5eff;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 12px;
+        }
+        button {
+            background: #1e5eff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+        }
+        .result {
+            margin-top: 20px;
+            background: #eef4ff;
+            padding: 15px;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="box">
+    <h2>Find Application ID</h2>
+
+    <form method="POST">
+        <input type="tel" name="mobile" placeholder="Registered Mobile Number" required>
+
+        <select name="certificate_type" required>
+            <option value="">Select Certificate</option>
+            <option value="Caste Certificate">Caste Certificate</option>
+            <option value="Income Certificate">Income Certificate</option>
+            <option value="Residence Certificate">Residence Certificate</option>
+        </select>
+
+        <button type="submit">Get Application ID</button>
+    </form>
+
+    {% if applications %}
+        <div class="result">
+            <h4>Application Details</h4>
+            {% for app in applications %}
+                <p>
+                    <strong>ID:</strong> {{ app.application_no }}<br>
+                    <strong>Name:</strong> {{ app.applicant_name }}<br>
+                    <strong>Status:</strong> {{ app.status }}
+                </p>
+                <hr>
+            {% endfor %}
+        </div>
+    {% elif searched %}
+        <div class="result">
+            ❌ No application found with given details.
+        </div>
+    {% endif %}
+</div>
+
+</body>
+  </html>
