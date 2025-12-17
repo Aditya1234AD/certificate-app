@@ -163,26 +163,26 @@ button:hover {
 
     <!-- Valid Application -->
     {% if data %}
-    <div class="status-card">
-        <div class="status-icon">✅</div>
-        <div class="status-title">Application Status</div>
-        <div class="status-text">
-            <b>Application ID:</b> {{ data.application_no }}<br>
-            <b>Certificate:</b> {{ data.cert_type }}<br>
-            <b>Name:</b> {{ data.name }}<br>
-            <b>Status:</b> {{ data.status }}<br>
-            <b>Payment:</b> {{ data.payment_status }}
-        </div>
-
-        {% if data.payment_status|lower != "paid" %}
-        <!-- Pay Now Button -->
-        <form action="/pay-now" method="POST" style="margin-top:15px;">
-            <input type="hidden" name="application_no" value="{{ data.application_no }}">
-            <button type="submit" style="background:#198754;">Pay Now</button>
-        </form>
-        {% endif %}
+<div class="status-card">
+    <div class="status-icon">✅</div>
+    <div class="status-title">Application Status</div>
+    <div class="status-text">
+        <b>Application ID:</b> {{ data.application_no }}<br>
+        <b>Certificate:</b> {{ data.cert_type }}<br>
+        <b>Name:</b> {{ data.name }}<br>
+        <b>Status:</b> {{ data.status }}<br>
+        <b>Payment:</b> {{ data.payment_status }}
     </div>
+
+    {% if data.payment_status|lower != "paid" and data.status in ["Processed", "Approved"] %}
+    <!-- Pay Now Button -->
+    <form action="/pay-now" method="POST" style="margin-top:15px;">
+        <input type="hidden" name="application_no" value="{{ data.application_no }}">
+        <button type="submit" style="background:#198754;">Pay Now</button>
+    </form>
     {% endif %}
+</div>
+{% endif %}
 
     <a href="/" class="back-link">← Back to Home</a>
 </div>
