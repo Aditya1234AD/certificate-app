@@ -232,14 +232,14 @@ def forgot_application_id():
 
     try:
         if request.method == "POST":
-            mobile = request.form.get("mobile")
-            certificate_type = request.form.get("certificate_type")
+            mobile = request.form.get("mobile").strip()
+            certificate_type = request.form.get("certificate_type").strip()
             searched = True
 
             response = supabase.table("applications") \
-                .select("application_no, applicant_name, status") \
+                .select("application_no, name, status") \
                 .eq("mobile", mobile) \
-                .eq("certificate_type", certificate_type) \
+                .eq("cert_type", certificate_type) \
                 .execute()
 
             if response.data:
@@ -253,7 +253,7 @@ def forgot_application_id():
         "forgot_application_id.html",
         applications=applications,
         searched=searched
-            )
+    )
 # ------------------- ADMIN LOGIN -------------------
 ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD = "12345"
