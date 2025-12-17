@@ -62,7 +62,7 @@ def upload_to_supabase(file, folder):
 # ------------------- HOME -------------------
 @app.route("/")
 def index():
-    return render_template("index.html")
+    return render_template("dashboard.html")
 
 # ------------------- SUBMIT APPLICATION -------------------
 @app.route("/submit", methods=["POST"])
