@@ -18,9 +18,22 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 RAZORPAY_KEY_ID = "rzp_test_RrrOHzYED2QJ5t"
 RAZORPAY_KEY_SECRET = "YROs5aXdVe0vMdRPrMPRxyNU"
 
-razorpay_client = razorpay.Client(
-    auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET)
-)
+razorpay_client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
+
+# ------------------- UNIQUE APPLICATION NUMBER -------------------
+def generate_application_no(cert_type):
+    year = time.strftime("%Y")
+
+    prefix_map = {
+        "Caste Certificate": "CT",
+        "Income Certificate": "IN",
+        "Resident Certificate": "RS"
+    }
+
+    prefix = prefix_map.get(cert_type, "GEN")
+    unique_part = str(int(time.time()))[-6:]  # time-based unique
+
+    return f"OD-{prefix}-{year}-{unique_part}"
 
 # ------------------- FILE UPLOAD -------------------
 def upload_to_supabase(file, folder):
@@ -47,8 +60,12 @@ def index():
 # ------------------- SUBMIT APPLICATION -------------------
 @app.route("/submit", methods=["POST"])
 def submit():
+    cert_type = request.form.get("cert_type")
+    application_no = generate_application_no(cert_type)
+
     data = {
-        "cert_type": request.form.get("cert_type"),
+        "application_no": application_no,  # 👈 UNIQUE PUBLIC ID
+        "cert_type": cert_type,
         "name": request.form.get("name"),
         "mobile": request.form.get("mobile"),
         "village": request.form.get("village"),
@@ -68,17 +85,15 @@ def submit():
         "payment_required": False
     }
 
-    result = supabase.table("applications").insert(data).execute()
-    app_id = result.data[0]["id"]
+    supabase.table("applications").insert(data).execute()
 
-    return render_template("success.html", app_id=app_id)
+    return render_template("success.html", app_id=application_no)
 
 # ------------------- CREATE PAYMENT -------------------
 @app.route("/pay/<int:app_id>")
 def pay(app_id):
     try:
         result = supabase.table("applications").select("*").eq("id", app_id).execute()
-
         if not result.data:
             return "Application not found"
 
@@ -91,7 +106,7 @@ def pay(app_id):
             return "Payment not enabled by admin"
 
         order = razorpay_client.order.create({
-            "amount": 20000,  # ₹200 (paise)
+            "amount": 20000,
             "currency": "INR",
             "receipt": f"app_{app_id}",
             "payment_capture": 1
@@ -101,30 +116,20 @@ def pay(app_id):
             "razorpay_order_id": order["id"]
         }).eq("id", app_id).execute()
 
-        return render_template(
-            "payment.html",
-            order=order,
-            razorpay_key=RAZORPAY_KEY_ID,
-            app_id=app_id
-        )
+        return render_template("payment.html",
+                               order=order,
+                               razorpay_key=RAZORPAY_KEY_ID,
+                               app_id=app_id)
 
     except Exception as e:
-        print("PAY ERROR 👉", str(e))
         return f"Payment server error: {str(e)}"
 
 # ------------------- VERIFY PAYMENT -------------------
 @app.route("/verify-payment", methods=["POST"])
 def verify_payment():
-    data = request.json  # <- Use JSON if frontend sends JSON
+    data = request.json
 
     try:
-        # Debug print to check what data is received
-        print("VERIFY PAYMENT DATA:", data)
-
-        app_id = data.get("app_id")
-        if not app_id:
-            return jsonify({"status": "failed", "message": "app_id missing"}), 400
-
         razorpay_client.utility.verify_payment_signature({
             "razorpay_order_id": data["razorpay_order_id"],
             "razorpay_payment_id": data["razorpay_payment_id"],
@@ -135,12 +140,11 @@ def verify_payment():
             "payment_status": "Paid",
             "payment_required": False,
             "razorpay_payment_id": data["razorpay_payment_id"]
-        }).eq("id", int(app_id)).execute()
+        }).eq("id", int(data["app_id"])).execute()
 
         return jsonify({"status": "success"})
 
     except Exception as e:
-        print("VERIFY ERROR:", e)
         return jsonify({"status": "failed", "message": str(e)}), 400
 
 # ------------------- CHECK STATUS -------------------
@@ -195,29 +199,25 @@ def update_status():
     app_id = request.form.get("id")
     status = request.form.get("status")
 
-    if app_id and status:
-        status = status.strip().capitalize()  # Normalize
-        payment_required = status in ["Processed", "Approved"]  # Only these enable payment
+    payment_required = status in ["Processed", "Approved"]
 
-        supabase.table("applications").update({
-            "status": status,
-            "payment_required": payment_required
-        }).eq("id", app_id).execute()
+    supabase.table("applications").update({
+        "status": status,
+        "payment_required": payment_required
+    }).eq("id", app_id).execute()
 
     return redirect("/admin")
-    
-    # ------------------- DELETE APPLICATION -------------------
+
+# ------------------- DELETE APPLICATION -------------------
 @app.route("/delete_application/<int:app_id>", methods=["POST"])
 def delete_application(app_id):
     if not session.get("admin_logged_in"):
         return redirect("/admin-login")
 
-    # Delete record from database
     supabase.table("applications").delete().eq("id", app_id).execute()
-
     return redirect("/admin")
-    # ------------------- STATIC PAGES -------------------
 
+# ------------------- STATIC PAGES -------------------
 @app.route("/terms")
 def terms():
     return render_template("terms.html")
@@ -238,9 +238,7 @@ def upload_receipt():
 
     if file:
         url = upload_to_supabase(file, "receipt")
-        supabase.table("applications").update({
-            "receipt_file": url
-        }).eq("id", app_id).execute()
+        supabase.table("applications").update({"receipt_file": url}).eq("id", app_id).execute()
 
     return redirect("/admin")
 
@@ -251,9 +249,7 @@ def upload_certificate():
 
     if file:
         url = upload_to_supabase(file, "certificate")
-        supabase.table("applications").update({
-            "certificate_file": url
-        }).eq("id", app_id).execute()
+        supabase.table("applications").update({"certificate_file": url}).eq("id", app_id).execute()
 
     return redirect("/admin")
 
