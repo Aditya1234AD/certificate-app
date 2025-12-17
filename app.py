@@ -304,28 +304,23 @@ def delete_application(app_id):
     return redirect("/admin")
 
 # ------------------ RECEIPT DOWNLOAD -----------------
+
 @app.route("/download/receipt/<application_no>")
 def download_receipt(application_no):
     try:
         result = supabase.table("applications") \
-            .select("receipt_file,payment_status") \
+            .select("receipt_file") \
             .eq("application_no", application_no) \
             .single() \
             .execute()
 
-        data = result.data
+        if not result.data or not result.data.get("receipt_file"):
+            return "Receipt not available", 404
 
-        if not data:
-            return "Receipt not found", 404
-
-        if data.get("payment_status") != "Paid":
-            return "Payment not completed. Access denied.", 403
-
-        # Redirect to Supabase public file URL
-        return redirect(data.get("receipt_file"))
+        return redirect(result.data["receipt_file"])
 
     except Exception as e:
-        print("Error in download_receipt:", e)
+        print("❌ DOWNLOAD RECEIPT ERROR:", e)
         return "Server error while downloading receipt", 500
 
 # ----------------CERTIFICATE DOWNLOAD ----------------
@@ -333,23 +328,18 @@ def download_receipt(application_no):
 def download_certificate(application_no):
     try:
         result = supabase.table("applications") \
-            .select("certificate_file,payment_status,status") \
+            .select("certificate_file") \
             .eq("application_no", application_no) \
             .single() \
             .execute()
 
-        data = result.data
+        if not result.data or not result.data.get("certificate_file"):
+            return "Certificate not available", 404
 
-        if not data:
-            return "Certificate not found", 404
-
-        if data.get("payment_status") != "Paid" or data.get("status") != "Approved":
-            return "Certificate not available. Access denied.", 403
-
-        return redirect(data.get("certificate_file"))
+        return redirect(result.data["certificate_file"])
 
     except Exception as e:
-        print("Error in download_certificate:", e)
+        print("❌ DOWNLOAD CERTIFICATE ERROR:", e)
         return "Server error while downloading certificate", 500
 
 # ------------------- ADMIN UPLOADS -------------------
