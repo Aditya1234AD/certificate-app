@@ -12,32 +12,35 @@
 <script>
 var options = {
     "key": "{{ razorpay_key }}",
-    "amount": "{{ order.amount }}",
+    "amount": {{ order.amount }},  // amount in paise, integer
     "currency": "INR",
     "name": "Certificate Application",
     "order_id": "{{ order.id }}",
     "handler": function (response){
         fetch("/verify-payment", {
-    method: "POST",
-    headers: {
-        "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-        razorpay_payment_id: response.razorpay_payment_id,
-        razorpay_order_id: response.razorpay_order_id,
-        razorpay_signature: response.razorpay_signature,
-        application_no: "{{ application_no }}"
-    })
-})
-        }).then(res => res.json())
-          .then(data => {
-              if(data.status === "success"){
-                  alert("Payment Successful");
-                  window.location.href = data.redirect;
-              } else {
-                  alert("Payment Failed");
-              }
-          });
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_signature: response.razorpay_signature,
+                application_no: "{{ application_no }}"
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if(data.status === "success"){
+                location.href = data.redirect; // redirect to status page
+            } else {
+                alert("Payment Failed");
+            }
+        })
+        .catch(err => {
+            console.error("Error verifying payment:", err);
+            alert("Payment verification failed.");
+        });
     }
 };
 
@@ -48,4 +51,4 @@ document.getElementById("payBtn").onclick = function(){
 </script>
 
 </body>
-</html>
+  </html>
