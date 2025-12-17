@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Application Submitted Successfully</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+    margin: 0;
+    height: 100vh;
+    font-family: "Poppins", Arial, sans-serif;
+    background: linear-gradient(135deg, #0b5ed7, #00c6ff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card {
+    background: white;
+    width: 90%;
+    max-width: 480px;
+    padding: 40px 30px;
+    border-radius: 18px;
+    text-align: center;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+    animation: slideUp 0.8s ease;
+}
+
+/* CHECK ICON */
+.check-wrapper {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: #28a745;
+    margin: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: pop 0.6s ease forwards;
+}
+
+.check {
+    width: 30px;
+    height: 55px;
+    border-right: 6px solid white;
+    border-bottom: 6px solid white;
+    transform: rotate(45deg);
+    animation: draw 0.5s ease forwards;
+}
+
+/* TEXT */
+h2 {
+    margin-top: 25px;
+    color: #28a745;
+    font-size: 26px;
+}
+
+p {
+    font-size: 15px;
+    color: #444;
+}
+
+.app-id {
+    background: #f1f5ff;
+    border: 1px dashed #0b5ed7;
+    padding: 12px;
+    margin: 18px 0;
+    font-size: 22px;
+    font-weight: 600;
+    color: #0b5ed7;
+    border-radius: 8px;
+}
+
+/* BUTTONS */
+.btn {
+    display: inline-block;
+    margin: 10px 6px;
+    padding: 12px 22px;
+    border-radius: 30px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.btn-home {
+    background: #0b5ed7;
+    color: white;
+}
+
+.btn-status {
+    background: #28a745;
+    color: white;
+}
+
+.btn:hover {
+    opacity: 0.9;
+}
+
+/* ANIMATIONS */
+@keyframes slideUp {
+    from { transform: translateY(60px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes pop {
+    from { transform: scale(0); }
+    to { transform: scale(1); }
+}
+
+@keyframes draw {
+    from { height: 0; width: 0; }
+    to { height: 55px; width: 30px; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+    <div class="check-wrapper">
+        <div class="check"></div>
+    </div>
+
+    <h2>Application Submitted</h2>
+
+    <p>Your application has been submitted successfully.</p>
+
+    <div class="app-id">
+        Application ID: {{ app_id }}
+    </div>
+
+    <p>
+        Please save this Application ID for future reference.
+        You can check the status anytime using your registered mobile number.
+    </p>
+
+    <a href="/" class="btn btn-home">Back to Home</a>
+    <a href="/check-status" class="btn btn-status">Check Status</a>
+
+</div>
+
+</body>
+  </html>
