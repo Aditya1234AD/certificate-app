@@ -189,7 +189,7 @@ button:hover {
 {% if data.payment_status|lower == "paid" and data.receipt_file %}
 <form action="{{ data.receipt_file }}" method="GET" target="_blank" style="margin-top:15px;">
     <button style="background:#0b5ed7;">
-        ⬇️ Download Payment Receipt
+        ⬇️ Download Receipt
     </button>
 </form>
 {% endif %}
