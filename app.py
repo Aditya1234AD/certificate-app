@@ -210,28 +210,33 @@ def check_status():
 # -------------- FORGOT APPLICATION ID ----------------
 @app.route("/forgot-application-id", methods=["GET", "POST"])
 def forgot_application_id():
-    applications = None
+    applications = []
     searched = False
 
-    if request.method == "POST":
-        mobile = request.form["mobile"]
-        certificate_type = request.form["certificate_type"]
-        searched = True
+    try:
+        if request.method == "POST":
+            mobile = request.form.get("mobile")
+            certificate_type = request.form.get("certificate_type")
+            searched = True
 
-        response = supabase.table("applications") \
-            .select("application_no, applicant_name, status") \
-            .eq("mobile", mobile) \
-            .eq("certificate_type", certificate_type) \
-            .execute()
+            response = supabase.table("applications") \
+                .select("application_no, applicant_name, status") \
+                .eq("mobile", mobile) \
+                .eq("certificate_type", certificate_type) \
+                .execute()
 
-        applications = response.data
+            if response.data:
+                applications = response.data
+
+    except Exception as e:
+        print("ERROR in forgot_application_id:", e)
+        applications = []
 
     return render_template(
         "forgot_application_id.html",
         applications=applications,
         searched=searched
-    )
-
+            )
 # ------------------- ADMIN LOGIN -------------------
 ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD = "12345"
