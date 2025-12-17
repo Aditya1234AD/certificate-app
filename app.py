@@ -176,21 +176,34 @@ def verify_payment():
         print("❌ VERIFY ERROR:", e)
         return jsonify({"status": "failed"}), 400
 
-# ------------------- CHECK STATUS -------------------
+# ------------------- CHECK STATUS BY APPLICATION ID -------------------
 @app.route("/check-status", methods=["GET", "POST"])
 def check_status():
     if request.method == "POST":
         application_no = request.form.get("application_no")
 
-        data = supabase.table("applications") \
+        if not application_no:
+            return render_template(
+                "status.html",
+                message="Please enter Application ID"
+            )
+
+        result = supabase.table("applications") \
             .select("*") \
             .eq("application_no", application_no) \
+            .single() \
             .execute()
 
-        if data.data:
-            return render_template("status.html", data=data.data[0])
+        if result.data:
+            return render_template(
+                "status.html",
+                data=result.data
+            )
 
-        return render_template("status.html", message="No application found")
+        return render_template(
+            "status.html",
+            message="Invalid Application ID"
+        )
 
     return render_template("check_status.html")
 
