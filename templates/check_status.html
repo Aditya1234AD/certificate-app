@@ -33,7 +33,46 @@ body {
     margin-bottom: 10px;
 }
 
-.status-container p {
+.status-card {
+    max-width: 420px;
+    margin: 60px auto;
+    padding: 35px 30px;
+    background: white;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    animation: slideFade 0.6s ease;
+}
+
+.status-icon {
+    font-size: 55px;
+    margin-bottom: 15px;
+}
+
+.status-title {
+    font-size: 22px;
+    font-weight: 600;
+    color: #222;
+    margin-bottom: 10px;
+}
+
+.status-text {
+    font-size: 15px;
+    color: #555;
+    line-height: 1.6;
+}
+
+@keyframes slideFade {
+    from {
+        opacity: 0;
+        transform: translateY(25px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    }
+    .status-container p {
     text-align: center;
     font-size: 14px;
     color: #555;
@@ -105,6 +144,17 @@ button:hover {
 
     <a href="/" class="back-link">← Back to Home</a>
 </div>
+    {% if deleted %}
+<div class="status-card">
+    <div class="status-icon">⚠️</div>
+    <div class="status-title">Application Not Available</div>
+    <div class="status-text">
+        This application has been <b>deleted or expired</b> by the administrator.
+        <br><br>
+        Please contact the admin office for further information.
+    </div>
+</div>
+{% endif %}
 
 </body>
   </html>
