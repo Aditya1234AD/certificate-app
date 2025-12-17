@@ -98,16 +98,20 @@ a.download-btn:hover { background-color: #2b4aa4; }
 
             {% if data.status == 'Processed' and data.receipt_file %}
                 <div style="text-align:center;">
-                    <a class="download-btn" href="/download/receipt/{{ data.id }}" target="_blank">
-                        Download Receipt
+                    <a class="download-btn"
+   href="/download/receipt/{{ data.application_no }}"
+   target="_blank">
+   Download Receipt
                     </a>
                 </div>
             {% endif %}
 
             {% if data.status == 'Approved' and data.certificate_file %}
                 <div style="text-align:center;">
-                    <a class="download-btn" href="/download/certificate/{{ data.id }}" target="_blank">
-                        Download Certificate
+                    <a class="download-btn"
+   href="/download/certificate/{{ data.application_no }}"
+   target="_blank">
+   Download Certificate
                     </a>
                 </div>
             {% endif %}
