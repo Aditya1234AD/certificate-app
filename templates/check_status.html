@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Check Application Status</title>
+
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 
 <style>
@@ -22,7 +23,7 @@ body {
     width: 100%;
     max-width: 420px;
     padding: 30px;
-    border-radius: 10px;
+    border-radius: 14px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.15);
 }
 
@@ -66,8 +67,8 @@ button {
     background: #0b5ed7;
     color: white;
     font-size: 16px;
-    font-weight: 500;
-    border-radius: 6px;
+    font-weight: 600;
+    border-radius: 8px;
     cursor: pointer;
     transition: background 0.3s;
 }
@@ -79,15 +80,14 @@ button:hover {
 .back-link {
     display: block;
     text-align: center;
-    margin-top: 15px;
+    margin-top: 18px;
     font-size: 14px;
     color: #0b5ed7;
 }
 
-/* ============ Status Card ============ */
+/* ---------- STATUS CARD ---------- */
 .status-card {
-    max-width: 420px;
-    margin: 20px auto;
+    margin-top: 25px;
     padding: 30px 25px;
     background: white;
     border-radius: 18px;
@@ -97,44 +97,43 @@ button:hover {
 }
 
 .status-icon {
-    font-size: 55px;
-    margin-bottom: 15px;
+    font-size: 52px;
+    margin-bottom: 12px;
 }
 
 .status-title {
     font-size: 22px;
     font-weight: 600;
     color: #222;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
 }
 
 .status-text {
     font-size: 15px;
     color: #555;
     line-height: 1.6;
-    margin-bottom: 10px;
-}
-
-@keyframes slideFade {
-    from { opacity: 0; transform: translateY(25px); }
-    to { opacity: 1; transform: translateY(0); }
 }
 
 .message {
     text-align: center;
     color: red;
     font-weight: 500;
-    margin-bottom: 18px;
+    margin-bottom: 15px;
+}
+
+@keyframes slideFade {
+    from { opacity: 0; transform: translateY(25px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 </style>
 </head>
+
 <body>
 
 <div class="status-container">
     <h2>Check Application Status</h2>
     <p>Enter your Application ID to know current status</p>
 
-    <!-- Display message -->
     {% if message %}
     <div class="message">{{ message }}</div>
     {% endif %}
@@ -148,7 +147,7 @@ button:hover {
         <button type="submit">Check Status</button>
     </form>
 
-    <!-- Deleted / Expired -->
+    <!-- DELETED / EXPIRED -->
     {% if deleted %}
     <div class="status-card">
         <div class="status-icon">⚠️</div>
@@ -156,36 +155,41 @@ button:hover {
         <div class="status-text">
             This application has been <b>deleted or expired</b> by the administrator.
             <br><br>
-            Please contact the admin office for further information.
+            Please contact the admin office for further assistance.
         </div>
     </div>
     {% endif %}
 
-    <!-- Valid Application -->
+    <!-- VALID APPLICATION -->
     {% if data %}
-<div class="status-card">
-    <div class="status-icon">✅</div>
-    <div class="status-title">Application Status</div>
-    <div class="status-text">
-        <b>Application ID:</b> {{ data.application_no }}<br>
-        <b>Certificate:</b> {{ data.cert_type }}<br>
-        <b>Name:</b> {{ data.name }}<br>
-        <b>Status:</b> {{ data.status }}<br>
-        <b>Payment:</b> {{ data.payment_status }}
-    </div>
+    <div class="status-card">
+        <div class="status-icon">📄</div>
+        <div class="status-title">Application Details</div>
+        <div class="status-text">
+            <b>Application ID:</b> {{ data.application_no }}<br>
+            <b>Certificate:</b> {{ data.cert_type }}<br>
+            <b>Name:</b> {{ data.name }}<br>
+            <b>Status:</b> {{ data.status }}<br>
+            <b>Payment:</b> {{ data.payment_status }}
+        </div>
 
-    {% if data.payment_status|lower != "paid" and data.status in ["Processed", "Approved"] %}
-    <!-- Pay Now Button -->
-    <form action="/pay-now" method="POST" style="margin-top:15px;">
-        <input type="hidden" name="application_no" value="{{ data.application_no }}">
-        <button type="submit" style="background:#198754;">Pay Now</button>
-    </form>
+        <!-- PAY NOW BUTTON -->
+        {% if data.status in ["Processed", "Approved"]
+              and data.payment_status|lower != "paid"
+              and data.payment_required %}
+
+        <form action="/pay/{{ data.application_no }}" method="GET" style="margin-top:18px;">
+            <button style="background:#198754;">
+                💳 Pay Now
+            </button>
+        </form>
+
+        {% endif %}
+    </div>
     {% endif %}
-</div>
-{% endif %}
 
     <a href="/" class="back-link">← Back to Home</a>
 </div>
 
 </body>
-</html>
+    </html>
