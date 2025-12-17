@@ -199,32 +199,41 @@ def check_status():
     if request.method == "POST":
         application_no = request.form.get("application_no")
 
+        # Check if input is empty
         if not application_no:
             return render_template(
-                "status.html",
+                "check_status.html",
                 message="Please enter Application ID"
             )
 
-        # SAFE QUERY (NO .single())
-        result = supabase.table("applications") \
-            .select("*") \
-            .eq("application_no", application_no) \
-            .execute()
+        try:
+            # Safe query without .single()
+            result = supabase.table("applications") \
+                .select("*") \
+                .eq("application_no", application_no) \
+                .execute()
 
-        # APPLICATION DELETED / NOT FOUND
-        if not result.data:
+            # If no record found → deleted / expired
+            if not result.data:
+                return render_template(
+                    "check_status.html",
+                    deleted=True
+                )
+
+            # If record found
             return render_template(
-                "status.html",
-                deleted=True
+                "check_status.html",
+                data=result.data[0]
             )
 
-        # APPLICATION FOUND
-        return render_template(
-            "status.html",
-            data=result.data[0],
-            deleted=False
-        )
+        except Exception as e:
+            # Any other unexpected error
+            return render_template(
+                "check_status.html",
+                message="Something went wrong. Please try again."
+            )
 
+    # GET request → show empty form
     return render_template("check_status.html")
 
 # -------------- FORGOT APPLICATION ID ----------------
