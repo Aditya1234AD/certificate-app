@@ -89,7 +89,7 @@ a.download-btn:hover { background-color: #2b4aa4; }
         <!-- 🔒 PAY NOW (ONLY WHEN STATUS IS PROCESSED OR APPROVED & NOT PAID) -->
 {% if data.status in ['Processed', 'Approved'] and data.payment_status != 'Paid' %}
     <div style="text-align:center; margin-top:20px;">
-        <a class="download-btn" href="/pay/{{ data.id }}">Pay Now</a>
+        <a href="/pay/{{ data.application_no }}">Pay Now</a>
     </div>
 {% endif %}
 
