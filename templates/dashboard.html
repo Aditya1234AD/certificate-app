@@ -20,111 +20,113 @@
 
 body{
     margin:0;
-    font-family:Roboto,Arial,sans-serif;
+    font-family:Roboto,Arial;
     background:var(--bg);
 }
 
 /* HEADER */
 .header{
-    background:linear-gradient(90deg,#0b5ed7,#084298);
+    background:#0b5ed7;
     color:#fff;
-    padding:18px 30px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
+    padding:16px 20px;
 }
-.header h2{margin:0}
-.header a{
-    color:#fff;
-    text-decoration:none;
+.header h2{
+    margin:0;
+    font-size:20px;
 }
-
-/* USER INFO */
-.user-info{
-    text-align:right;
-    font-size:14px;
+.header small{
+    opacity:.9;
 }
 
 /* CONTAINER */
 .container{
-    max-width:1200px;
-    margin:25px auto;
+    max-width:1100px;
+    margin:20px auto;
     padding:0 15px;
 }
 
 /* CARDS */
 .cards{
     display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-    gap:20px;
+    grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+    gap:14px;
 }
 .card{
-    background:var(--card);
-    padding:22px;
+    background:#fff;
+    padding:18px;
     border-radius:12px;
-    box-shadow:0 8px 20px rgba(0,0,0,0.08);
+    box-shadow:0 6px 15px rgba(0,0,0,.08);
 }
 .card h4{
     margin:0;
-    font-size:15px;
-    color:#555;
+    font-size:13px;
+    color:#666;
 }
 .card .value{
-    font-size:30px;
+    font-size:22px;
     font-weight:700;
-    margin-top:10px;
+    margin-top:8px;
 }
 
-/* STATUS BOX */
+/* STATUS */
 .status-box{
     background:#fff;
-    margin-top:25px;
-    padding:25px;
+    margin-top:20px;
+    padding:20px;
     border-radius:12px;
-    box-shadow:0 8px 20px rgba(0,0,0,0.08);
-}
-.status-row{
-    margin:10px 0;
-    font-size:15px;
+    box-shadow:0 6px 15px rgba(0,0,0,.08);
 }
 .status{
-    padding:6px 14px;
-    border-radius:20px;
+    display:inline-block;
+    padding:4px 12px;
+    border-radius:14px;
     background:var(--warning);
     color:#fff;
-    display:inline-block;
+    font-size:13px;
 }
 
 /* BUTTONS */
 .actions{
-    margin-top:20px;
+    margin-top:15px;
     display:flex;
-    gap:15px;
+    gap:10px;
     flex-wrap:wrap;
 }
 .actions a{
-    padding:12px 22px;
-    border-radius:25px;
-    text-decoration:none;
-    color:#fff;
+    padding:10px 18px;
+    border-radius:20px;
     background:var(--primary);
-    font-weight:500;
+    color:#fff;
+    text-decoration:none;
+    font-size:14px;
 }
-.actions a.disabled{
-    background:#aaa;
+.actions .disabled{
+    background:#bbb;
     pointer-events:none;
+}
+
+/* TRACK */
+.track-box{
+    background:#fff;
+    margin-top:20px;
+    padding:20px;
+    border-radius:12px;
+    box-shadow:0 6px 15px rgba(0,0,0,.08);
+}
+.track-box input{
+    width:100%;
+    padding:10px;
+    border-radius:6px;
+    border:1px solid #ccc;
+    margin-top:8px;
 }
 
 /* FOOTER */
 .footer{
     text-align:center;
-    margin:30px 0 15px;
-    font-size:13px;
-    color:#666;
-}
-
-@media(max-width:600px){
-    .user-info{text-align:left}
+    font-size:12px;
+    color:#777;
+    margin:20px 0;
 }
 </style>
 </head>
@@ -134,15 +136,12 @@ body{
 <!-- HEADER -->
 <div class="header">
     <h2>e-Services Dashboard</h2>
-    <div class="user-info">
-        <strong>{{ applicant_name }}</strong><br>
-        Application ID: {{ application_id }}
-    </div>
+    <small>Application ID: {{ application_id }}</small>
 </div>
 
 <div class="container">
 
-<!-- SUMMARY CARDS -->
+<!-- SUMMARY -->
 <div class="cards">
     <div class="card">
         <h4>Applications Submitted</h4>
@@ -168,26 +167,24 @@ body{
         <h4>Total Paid</h4>
         <div class="value">₹ {{ total_paid }}</div>
     </div>
+
+    <!-- ✅ COMMISSION -->
+    <div class="card">
+        <h4>Your Commission (7%)</h4>
+        <div class="value">₹ {{ commission }}</div>
+    </div>
 </div>
 
-<!-- APPLICATION STATUS -->
+<!-- STATUS -->
 <div class="status-box">
     <h3>Application Status</h3>
 
-    <div class="status-row">
-        <strong>Certificate Type:</strong> {{ certificate_type }}
-    </div>
-
-    <div class="status-row">
-        <strong>Current Status:</strong>
+    <p><strong>Certificate Type:</strong> {{ certificate_type }}</p>
+    <p><strong>Current Status:</strong>
         <span class="status">{{ status }}</span>
-    </div>
+    </p>
+    <p><strong>Last Updated:</strong> {{ last_updated }}</p>
 
-    <div class="status-row">
-        <strong>Last Updated:</strong> {{ last_updated }}
-    </div>
-
-    <!-- ACTION BUTTONS (CONTROLLED FROM BACKEND) -->
     <div class="actions">
         <a href="/index">Apply New Certificate</a>
 
@@ -205,12 +202,23 @@ body{
     </div>
 </div>
 
+<!-- ✅ TRACK APPLICATION -->
+<div class="track-box">
+    <h3>Track Application Status</h3>
+    <form method="POST" action="/check-status">
+        <input type="text" name="application_no"
+               placeholder="Enter Application ID" required>
+        <div class="actions">
+            <a onclick="this.closest('form').submit()">Track Application</a>
+        </div>
+    </form>
 </div>
 
-<!-- FOOTER -->
+</div>
+
 <div class="footer">
     © Government of Odisha | Digital Certificate Services
 </div>
 
 </body>
-    </html>
+            </html>
