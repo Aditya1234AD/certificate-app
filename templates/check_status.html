@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Check Application Status</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+body {
+    font-family: "Roboto", Arial, sans-serif;
+    background: linear-gradient(120deg, #0b5ed7, #198754);
+    min-height: 100vh;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.status-container {
+    background: #ffffff;
+    width: 100%;
+    max-width: 420px;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+.status-container h2 {
+    text-align: center;
+    color: #0b5ed7;
+    margin-bottom: 10px;
+}
+
+.status-container p {
+    text-align: center;
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 25px;
+}
+
+label {
+    font-weight: 500;
+    display: block;
+    margin-bottom: 6px;
+}
+
+input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid #cfd8e3;
+    font-size: 15px;
+    margin-bottom: 18px;
+}
+
+input:focus {
+    outline: none;
+    border-color: #0b5ed7;
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    background: #0b5ed7;
+    color: white;
+    font-size: 16px;
+    font-weight: 500;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+button:hover {
+    background: #094db5;
+}
+
+.back-link {
+    display: block;
+    text-align: center;
+    margin-top: 15px;
+    font-size: 14px;
+    color: #0b5ed7;
+}
+</style>
+</head>
+
+<body>
+
+<div class="status-container">
+    <h2>Check Application Status</h2>
+    <p>Enter your Application ID to know current status</p>
+
+    <form action="/check-status" method="POST">
+        <label>Application ID</label>
+        <input type="text"
+               name="application_no"
+               placeholder="OD-CT-2025-123456"
+               required>
+
+        <button type="submit">Check Status</button>
+    </form>
+
+    <a href="/" class="back-link">← Back to Home</a>
+</div>
+
+</body>
+  </html>
