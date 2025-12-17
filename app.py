@@ -207,6 +207,31 @@ def check_status():
 
     return render_template("check_status.html")
 
+# -------------- FORGOT APPLICATION ID ----------------
+@app.route("/forgot-application-id", methods=["GET", "POST"])
+def forgot_application_id():
+    applications = None
+    searched = False
+
+    if request.method == "POST":
+        mobile = request.form["mobile"]
+        certificate_type = request.form["certificate_type"]
+        searched = True
+
+        response = supabase.table("applications") \
+            .select("application_no, applicant_name, status") \
+            .eq("mobile", mobile) \
+            .eq("certificate_type", certificate_type) \
+            .execute()
+
+        applications = response.data
+
+    return render_template(
+        "forgot_application_id.html",
+        applications=applications,
+        searched=searched
+    )
+
 # ------------------- ADMIN LOGIN -------------------
 ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD = "12345"
