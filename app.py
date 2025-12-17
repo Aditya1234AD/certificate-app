@@ -311,13 +311,17 @@ def download_receipt(application_no):
         result = supabase.table("applications") \
             .select("receipt_file") \
             .eq("application_no", application_no) \
-            .single() \
             .execute()
 
-        if not result.data or not result.data.get("receipt_file"):
-            return "Receipt not available", 404
+        if not result.data:
+            return "Receipt not found", 404
 
-        return redirect(result.data["receipt_file"])
+        receipt_url = result.data[0].get("receipt_file")
+
+        if not receipt_url:
+            return "Receipt not uploaded yet", 404
+
+        return redirect(receipt_url)
 
     except Exception as e:
         print("❌ DOWNLOAD RECEIPT ERROR:", e)
@@ -330,13 +334,17 @@ def download_certificate(application_no):
         result = supabase.table("applications") \
             .select("certificate_file") \
             .eq("application_no", application_no) \
-            .single() \
             .execute()
 
-        if not result.data or not result.data.get("certificate_file"):
-            return "Certificate not available", 404
+        if not result.data:
+            return "Certificate not found", 404
 
-        return redirect(result.data["certificate_file"])
+        cert_url = result.data[0].get("certificate_file")
+
+        if not cert_url:
+            return "Certificate not uploaded yet", 404
+
+        return redirect(cert_url)
 
     except Exception as e:
         print("❌ DOWNLOAD CERTIFICATE ERROR:", e)
