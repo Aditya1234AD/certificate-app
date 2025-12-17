@@ -205,6 +205,17 @@ def update_status():
         }).eq("id", app_id).execute()
 
     return redirect("/admin")
+    
+    # ------------------- DELETE APPLICATION -------------------
+@app.route("/delete_application/<int:app_id>", methods=["POST"])
+def delete_application(app_id):
+    if not session.get("admin_logged_in"):
+        return redirect("/admin-login")
+
+    # Delete record from database
+    supabase.table("applications").delete().eq("id", app_id).execute()
+
+    return redirect("/admin")
     # ------------------- STATIC PAGES -------------------
 
 @app.route("/terms")
