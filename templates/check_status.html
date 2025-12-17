@@ -185,6 +185,23 @@ button:hover {
         </form>
 
         {% endif %}
+        <!-- DOWNLOAD RECEIPT -->
+{% if data.payment_status|lower == "paid" and data.receipt_file %}
+<form action="{{ data.receipt_file }}" method="GET" target="_blank" style="margin-top:15px;">
+    <button style="background:#0b5ed7;">
+        ⬇️ Download Payment Receipt
+    </button>
+</form>
+{% endif %}
+
+<!-- DOWNLOAD CERTIFICATE -->
+{% if data.certificate_file %}
+<form action="{{ data.certificate_file }}" method="GET" target="_blank" style="margin-top:15px;">
+    <button style="background:#6f42c1;">
+        ⬇️ Download Certificate
+    </button>
+</form>
+{% endif %}
     </div>
     {% endif %}
 
