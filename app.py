@@ -120,23 +120,46 @@ def pay(application_no):
             .execute()
 
         if not result.data:
-            return "Application not found"
+            return render_template(
+                "check_status.html",
+                deleted=True
+            )
 
         app_data = result.data[0]
 
+        # ❌ Payment already done
         if app_data["payment_status"] == "Paid":
-            return "Payment already completed"
+            return render_template(
+                "status.html",
+                data=app_data,
+                message="Payment already completed"
+            )
 
-        if not app_data["payment_required"]:
-            return "Payment not enabled by admin"
+        # ❌ Status not allowed
+        if app_data["status"] not in ["Processed", "Approved"]:
+            return render_template(
+                "status.html",
+                data=app_data,
+                message="Payment not allowed at this stage"
+            )
 
+        # ❌ Admin not enabled payment
+        if not app_data.get("payment_required", False):
+            return render_template(
+                "status.html",
+                data=app_data,
+                message="Payment not enabled by admin"
+            )
+
+        # ✅ CREATE RAZORPAY ORDER
         order = razorpay_client.order.create({
-            "amount": 20000,
+            "amount": 20000,  # ₹200
             "currency": "INR",
             "receipt": application_no,
             "payment_capture": 1
         })
 
+        # Save order ID
         supabase.table("applications").update({
             "razorpay_order_id": order["id"]
         }).eq("application_no", application_no).execute()
@@ -151,11 +174,10 @@ def pay(application_no):
     except Exception as e:
         print("❌ PAYMENT ERROR:", e)
         return "Payment server error"
-
 # ------------------- VERIFY PAYMENT -------------------
 @app.route("/verify-payment", methods=["POST"])
 def verify_payment():
-    data = request.json
+    data = request.get_json()
 
     try:
         razorpay_client.utility.verify_payment_signature({
@@ -171,9 +193,9 @@ def verify_payment():
         }).eq("application_no", data["application_no"]).execute()
 
         return jsonify({
-    "status": "success",
-    "redirect": f"/status/{data['application_no']}"
-})
+            "status": "success",
+            "redirect": f"/status/{data['application_no']}"
+        })
 
     except Exception as e:
         print("❌ VERIFY ERROR:", e)
@@ -189,9 +211,12 @@ def status_page(application_no):
         .execute()
 
     if not result.data:
-        return render_template("status.html", message="Application not found")
+        return render_template(
+            "check_status.html",
+            deleted=True
+        )
 
-    return render_template("status.html", data=result.data)
+    return render_template("check_status.html", data=result.data)
 
 # ------------------- CHECK STATUS BY APPLICATION ID -------------------
 @app.route("/check-status", methods=["GET", "POST"])
