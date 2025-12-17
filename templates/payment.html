@@ -18,21 +18,22 @@ var options = {
     "order_id": "{{ order.id }}",
     "handler": function (response){
         fetch("/verify-payment", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded"
-            },
-            body: new URLSearchParams({
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_signature: response.razorpay_signature,
-                app_id: "{{ app_id }}"
-            })
+    method: "POST",
+    headers: {
+        "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+        razorpay_payment_id: response.razorpay_payment_id,
+        razorpay_order_id: response.razorpay_order_id,
+        razorpay_signature: response.razorpay_signature,
+        application_no: "{{ application_no }}"
+    })
+})
         }).then(res => res.json())
           .then(data => {
               if(data.status === "success"){
                   alert("Payment Successful");
-                  window.location.href = "/check-status";
+                  window.location.href = data.redirect;
               } else {
                   alert("Payment Failed");
               }
