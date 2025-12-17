@@ -170,11 +170,28 @@ def verify_payment():
             "razorpay_payment_id": data["razorpay_payment_id"]
         }).eq("application_no", data["application_no"]).execute()
 
-        return jsonify({"status": "success"})
+        return jsonify({
+    "status": "success",
+    "redirect": f"/status/{data['application_no']}"
+})
 
     except Exception as e:
         print("❌ VERIFY ERROR:", e)
         return jsonify({"status": "failed"}), 400
+
+# ---------------- STATUS PAGE ROUTE -----------------
+@app.route("/status/<application_no>")
+def status_page(application_no):
+    result = supabase.table("applications") \
+        .select("*") \
+        .eq("application_no", application_no) \
+        .single() \
+        .execute()
+
+    if not result.data:
+        return render_template("status.html", message="Application not found")
+
+    return render_template("status.html", data=result.data)
 
 # ------------------- CHECK STATUS BY APPLICATION ID -------------------
 @app.route("/check-status", methods=["GET", "POST"])
@@ -285,6 +302,34 @@ def delete_application(app_id):
 
     supabase.table("applications").delete().eq("id", app_id).execute()
     return redirect("/admin")
+
+# ------------------ RECEIPT DOWNLOAD -----------------
+@app.route("/download/receipt/<application_no>")
+def download_receipt(application_no):
+    data = supabase.table("applications") \
+        .select("receipt_file,payment_status") \
+        .eq("application_no", application_no) \
+        .single() \
+        .execute().data
+
+    if data and data["payment_status"] == "Paid":
+        return redirect(data["receipt_file"])
+
+    return "Access denied", 403
+
+# ----------------CERTIFICATE DOWNLOAD ----------------
+@app.route("/download/certificate/<application_no>")
+def download_certificate(application_no):
+    data = supabase.table("applications") \
+        .select("certificate_file,payment_status,status") \
+        .eq("application_no", application_no) \
+        .single() \
+        .execute().data
+
+    if data and data["payment_status"] == "Paid" and data["status"] == "Approved":
+        return redirect(data["certificate_file"])
+
+    return "Access denied", 403
 
 # ------------------- ADMIN UPLOADS -------------------
 @app.route("/upload_receipt", methods=["POST"])
