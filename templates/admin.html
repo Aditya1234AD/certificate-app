@@ -196,11 +196,15 @@ select {
         <br>
 
         <!-- UPLOAD CERTIFICATE -->
-        <form action="/upload_certificate" method="POST" enctype="multipart/form-data">
-            <input type="hidden" name="id" value="{{ app.id }}">
-            <input class="file-input" type="file" name="certificate" required>
-            <br>
-            <button class="btn btn-status">Upload Certificate</button>
+        <form action="/upload_certificate"
+      method="post"
+      enctype="multipart/form-data">
+
+    <input type="hidden" name="id" value="{{ app.id }}">
+
+    <input type="file" name="certificate" required>
+
+    <button type="submit">Upload Certificate</button>
         </form>
 
     </td>
