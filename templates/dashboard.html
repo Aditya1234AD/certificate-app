@@ -37,7 +37,7 @@ body{
     padding:0 12px;
 }
 
-/* DASHBOARD CARDS */
+/* SUMMARY CARDS */
 .cards{
     display:grid;
     grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
@@ -50,37 +50,41 @@ body{
     box-shadow:0 4px 12px rgba(0,0,0,.08);
     text-align:center;
 }
-.card h4{margin:0;font-size:13px;color:#555}
-.card .value{margin-top:8px;font-size:20px;font-weight:700}
 
-/* STATUS */
+/* STATUS BOX */
 .status-box{
     background:#fff;
     margin-top:18px;
-    padding:16px;
-    border-radius:12px;
+    padding:18px;
+    border-radius:14px;
     box-shadow:0 4px 12px rgba(0,0,0,.08);
 }
 
-/* BUTTONS */
-.actions{
+/* APPLY OPTIONS CARD */
+.apply-card{
     margin-top:12px;
-    display:flex;
-    gap:8px;
-    flex-wrap:wrap;
+    border:1px solid #e0e6ef;
+    border-radius:12px;
+    padding:14px;
+    display:none;
+    animation: fadeIn .3s ease;
 }
-.actions a{
-    padding:9px 14px;
-    border-radius:18px;
-    background:var(--primary);
-    color:#fff;
-    text-decoration:none;
-    font-size:13px;
+.apply-card h4{
+    margin:0 0 10px;
+    color:#333;
+    font-size:15px;
+}
+.apply-option{
+    padding:10px 12px;
+    border-radius:8px;
+    background:#f4f7fc;
+    margin-bottom:8px;
     cursor:pointer;
+    transition:.2s;
+    font-size:14px;
 }
-.actions .disabled{
-    background:#bbb;
-    pointer-events:none;
+.apply-option:hover{
+    background:#e7effc;
 }
 
 /* INPUT */
@@ -92,12 +96,35 @@ body{
     margin-top:8px;
 }
 
+/* BUTTONS */
+.actions{
+    margin-top:12px;
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+}
+.actions a{
+    padding:9px 16px;
+    border-radius:20px;
+    background:var(--primary);
+    color:#fff;
+    font-size:13px;
+    text-decoration:none;
+    cursor:pointer;
+}
+
 /* FOOTER */
 .footer{
     text-align:center;
     font-size:12px;
     color:#777;
     margin:18px 0;
+}
+
+/* ANIMATION */
+@keyframes fadeIn{
+    from{opacity:0;transform:translateY(10px)}
+    to{opacity:1;transform:translateY(0)}
 }
 </style>
 </head>
@@ -112,35 +139,42 @@ body{
 
 <div class="container">
 
-<!-- DASHBOARD SUMMARY -->
+<!-- SUMMARY -->
 <div class="cards">
-    <div class="card"><h4>Applications Submitted</h4><div class="value">{{ applications }}</div></div>
-    <div class="card"><h4>Certificates Approved</h4><div class="value">{{ approved }}</div></div>
-    <div class="card"><h4>Pending Applications</h4><div class="value">{{ pending }}</div></div>
-    <div class="card"><h4>Pending Payment</h4><div class="value">₹ {{ pending_payment }}</div></div>
-    <div class="card"><h4>Total Paid</h4><div class="value">₹ {{ total_paid }}</div></div>
-    <div class="card"><h4>Your Commission (7%)</h4><div class="value">₹ {{ commission }}</div></div>
+    <div class="card">Applications Submitted<br><strong>{{ applications }}</strong></div>
+    <div class="card">Certificates Approved<br><strong>{{ approved }}</strong></div>
+    <div class="card">Pending Applications<br><strong>{{ pending }}</strong></div>
+    <div class="card">Pending Payment<br><strong>₹ {{ pending_payment }}</strong></div>
+    <div class="card">Total Paid<br><strong>₹ {{ total_paid }}</strong></div>
+    <div class="card">Commission (7%)<br><strong>₹ {{ commission }}</strong></div>
 </div>
 
 <!-- APPLICATION SERVICES -->
 <div class="status-box">
     <h3>Application Services</h3>
 
-    <!-- APPLY NEW CERTIFICATE -->
     <div class="actions">
         <a onclick="toggleApply()">Apply New Certificate</a>
     </div>
 
-    <!-- APPLY OPTIONS -->
-    <div id="applyOptions" style="display:none;margin-top:12px;">
-        <div class="actions">
-            <a href="/index?cert=caste">Apply for Caste Certificate</a>
-            <a href="/index?cert=income">Apply for Income Certificate</a>
-            <a href="/index?cert=resident">Apply for Resident Certificate</a>
+    <!-- ONE CARD WITH THREE OPTIONS -->
+    <div class="apply-card" id="applyCard">
+        <h4>Select Certificate Type</h4>
+
+        <div class="apply-option" onclick="goApply('caste')">
+            Apply for Caste Certificate
+        </div>
+
+        <div class="apply-option" onclick="goApply('income')">
+            Apply for Income Certificate
+        </div>
+
+        <div class="apply-option" onclick="goApply('resident')">
+            Apply for Resident Certificate
         </div>
     </div>
 
-    <hr style="margin:18px 0;">
+    <hr style="margin:20px 0;">
 
     <!-- CHECK STATUS -->
     <h3>Check Application Status</h3>
@@ -153,21 +187,12 @@ body{
     </form>
 
     {% if application_id %}
-    <hr style="margin:18px 0;">
+    <hr style="margin:20px 0;">
 
     <p><strong>Application ID:</strong> {{ application_id }}</p>
     <p><strong>Certificate Type:</strong> {{ certificate_type }}</p>
-    <p><strong>Current Status:</strong> {{ status }}</p>
+    <p><strong>Status:</strong> {{ status }}</p>
     <p><strong>Last Updated:</strong> {{ last_updated }}</p>
-
-    <div class="actions">
-        <a class="disabled">Receipt Not Available</a>
-        <a class="disabled">Certificate Not Issued</a>
-    </div>
-    {% else %}
-    <p style="color:#666;text-align:center;">
-        Enter Application ID to view status details.
-    </p>
     {% endif %}
 </div>
 
@@ -179,10 +204,13 @@ body{
 
 <script>
 function toggleApply(){
-    const box = document.getElementById("applyOptions");
-    box.style.display = box.style.display === "none" ? "block" : "none";
+    const card = document.getElementById("applyCard");
+    card.style.display = card.style.display === "none" ? "block" : "none";
+}
+function goApply(type){
+    window.location.href = "/index?cert=" + type;
 }
 </script>
 
 </body>
-                                                  </html>
+</html>
