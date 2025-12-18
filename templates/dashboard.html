@@ -11,7 +11,6 @@
 :root{
     --primary:#0b5ed7;
     --bg:#f4f6fb;
-    --success:#198754;
     --card:#ffffff;
 }
 
@@ -75,16 +74,28 @@ body{
     cursor:pointer;
     transition:.3s;
 }
-.btn:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(11,94,215,.4)}
-
-/* APPLY OPTIONS CARD */
-.apply-options-card{
-    background:linear-gradient(135deg,#e8f0ff,#f7fbff);
-    border-left:6px solid var(--primary);
-    display:none;
-    animation:slideFade .5s ease;
+.btn:hover{
+    transform:translateY(-2px);
+    box-shadow:0 6px 16px rgba(11,94,215,.4)
 }
 
+/* APPLY OPTIONS CARD (ZOOM OUT) */
+.apply-options-card{
+    background:linear-gradient(135deg,#e8f0ff,#ffffff);
+    border-left:6px solid var(--primary);
+    transform:scale(0.6);
+    opacity:0;
+    pointer-events:none;
+    transition:all .45s cubic-bezier(.4,0,.2,1);
+}
+
+.apply-options-card.active{
+    transform:scale(1);
+    opacity:1;
+    pointer-events:auto;
+}
+
+/* APPLY OPTION */
 .apply-option{
     background:#fff;
     padding:14px;
@@ -93,11 +104,11 @@ body{
     cursor:pointer;
     font-weight:500;
     transition:.3s;
-    box-shadow:0 4px 10px rgba(0,0,0,.08);
+    box-shadow:0 4px 12px rgba(0,0,0,.1);
 }
 .apply-option:hover{
-    background:#e9f1ff;
-    transform:translateX(6px);
+    transform:scale(1.05);
+    background:#eef4ff;
 }
 
 /* STATUS INPUT */
@@ -117,13 +128,9 @@ input{
     margin:24px 0;
 }
 
-/* ANIMATIONS */
+/* ANIMATION */
 @keyframes fadeUp{
     from{opacity:0;transform:translateY(20px)}
-    to{opacity:1;transform:none}
-}
-@keyframes slideFade{
-    from{opacity:0;transform:translateY(30px)}
     to{opacity:1;transform:none}
 }
 </style>
@@ -139,11 +146,13 @@ input{
 
 <div class="container">
 
-<!-- SUMMARY CARDS -->
+<!-- SUMMARY -->
 <div class="cards">
-    <div class="card summary">Applications Submitted<strong>{{ applications }}</strong></div>
-    <div class="card summary">Certificates Approved<strong>{{ approved }}</strong></div>
-    <div class="card summary">Pending Applications<strong>{{ pending }}</strong></div>
+    <div class="card summary">Applications Submitted<strong>{{ application_submitted }}</strong></div>
+    <div class="card summary">Application Pending<strong>{{ application_pending }}</strong></div>
+    <div class="card summary">Application Processed<strong>{{ application_processed }}</strong></div>
+    <div class="card summary">Application Approved<strong>{{ application_approved }}</strong></div>
+    <div class="card summary">Application Rejected<strong>{{ application_rejected }}</strong></div
     <div class="card summary">Pending Payment<strong>₹ {{ pending_payment }}</strong></div>
     <div class="card summary">Total Paid<strong>₹ {{ total_paid }}</strong></div>
     <div class="card summary">Commission (7%)<strong>₹ {{ commission }}</strong></div>
@@ -154,14 +163,14 @@ input{
 <!-- SERVICES -->
 <div class="cards">
 
-    <!-- APPLICATION SERVICE CARD -->
+    <!-- APPLICATION SERVICE -->
     <div class="card">
         <h3>Application Services</h3>
         <p>Apply for new government certificates.</p>
         <a class="btn" onclick="toggleApply()">Apply New Certificate</a>
     </div>
 
-    <!-- CHECK STATUS CARD -->
+    <!-- CHECK STATUS -->
     <div class="card">
         <h3>Check Application Status</h3>
         <form method="POST" action="/check-status">
@@ -178,11 +187,11 @@ input{
 
 </div>
 
-<!-- APPLY OPTIONS (SEPARATE BEAUTIFUL CARD) -->
-<div class="cards" id="applySection">
+<!-- APPLY OPTIONS CARD -->
+<div class="cards">
     <div class="card apply-options-card" id="applyCard">
         <h3>Apply for Certificate</h3>
-        <p>Select the certificate you want to apply for:</p>
+        <p>Select certificate type:</p>
 
         <div class="apply-option" onclick="goApply('caste')">
             🟦 Apply for Caste Certificate
@@ -204,14 +213,15 @@ input{
 
 <script>
 function toggleApply(){
-    const card=document.getElementById("applyCard");
-    card.style.display = card.style.display==="block" ? "none" : "block";
-    card.scrollIntoView({behavior:"smooth"});
+    const card = document.getElementById("applyCard");
+    card.classList.toggle("active");
+    card.scrollIntoView({behavior:"smooth", block:"center"});
 }
+
 function goApply(type){
-    window.location.href="/index?cert="+type;
+    window.location.href = "/index?cert=" + type;
 }
 </script>
 
 </body>
-    </html>
+</html>
