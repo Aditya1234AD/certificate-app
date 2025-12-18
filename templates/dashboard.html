@@ -114,7 +114,7 @@ body{
 .card .value{margin-top:8px;font-size:20px;font-weight:700}
 
 /* STATUS */
-.status-box, .track-box{
+.status-box{
     background:#fff;
     margin-top:18px;
     padding:16px;
@@ -136,10 +136,25 @@ body{
     color:#fff;
     text-decoration:none;
     font-size:13px;
+    cursor:pointer;
 }
 .actions .disabled{
     background:#bbb;
     pointer-events:none;
+}
+
+/* TRACK FORM */
+.track-form{
+    margin-top:18px;
+    padding-top:14px;
+    border-top:1px dashed #ddd;
+}
+.track-form input{
+    width:100%;
+    padding:10px;
+    border-radius:6px;
+    border:1px solid #ccc;
+    margin-top:8px;
 }
 
 /* FOOTER */
@@ -199,9 +214,10 @@ body{
     <div class="card"><h4>Your Commission (7%)</h4><div class="value">₹ {{ commission }}</div></div>
 </div>
 
-<!-- STATUS -->
+<!-- APPLICATION STATUS + TRACK -->
 <div class="status-box">
     <h3>Application Status</h3>
+
     <p><strong>Certificate Type:</strong> {{ certificate_type }}</p>
     <p><strong>Current Status:</strong> {{ status }}</p>
     <p><strong>Last Updated:</strong> {{ last_updated }}</p>
@@ -211,17 +227,17 @@ body{
         <a class="disabled">Receipt Not Available</a>
         <a class="disabled">Certificate Not Issued</a>
     </div>
-</div>
 
-<!-- TRACK -->
-<div class="track-box">
-    <h3>Track Application Status</h3>
-    <form method="POST" action="/check-status">
-        <input type="text" name="application_no" placeholder="Enter Application ID" required>
-        <div class="actions">
-            <a onclick="this.closest('form').submit()">Track Application</a>
-        </div>
-    </form>
+    <!-- TRACK APPLICATION INSIDE STATUS CARD -->
+    <div class="track-form">
+        <h4>Track Another Application</h4>
+        <form method="POST" action="/check-status">
+            <input type="text" name="application_no" placeholder="Enter Application ID" required>
+            <div class="actions">
+                <a onclick="this.closest('form').submit()">Track Application</a>
+            </div>
+        </form>
+    </div>
 </div>
 
 </div>
@@ -241,4 +257,4 @@ function closeModal(){
 </script>
 
 </body>
-                </html>
+</html>
