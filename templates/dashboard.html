@@ -37,66 +37,6 @@ body{
     padding:0 12px;
 }
 
-/* MODAL OVERLAY */
-.overlay{
-    position:fixed;
-    top:0;left:0;
-    width:100%;height:100%;
-    background:rgba(0,0,0,.4);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    z-index:999;
-}
-
-/* MODAL CARD */
-.modal{
-    background:#fff;
-    width:90%;
-    max-width:380px;
-    padding:20px;
-    border-radius:14px;
-    text-align:center;
-    box-shadow:0 10px 30px rgba(0,0,0,.2);
-}
-
-.modal h3{
-    margin-top:0;
-    color:#333;
-}
-
-.modal button{
-    padding:10px 18px;
-    border:none;
-    border-radius:20px;
-    background:var(--primary);
-    color:#fff;
-    font-size:14px;
-    cursor:pointer;
-}
-
-.modal .secondary{
-    background:#6c757d;
-    margin-left:10px;
-}
-
-/* FORM */
-.form-group{
-    margin-top:12px;
-    text-align:left;
-}
-.form-group label{
-    font-size:13px;
-    color:#444;
-}
-.form-group input{
-    width:100%;
-    padding:10px;
-    margin-top:6px;
-    border-radius:6px;
-    border:1px solid #ccc;
-}
-
 /* DASHBOARD CARDS */
 .cards{
     display:grid;
@@ -143,13 +83,8 @@ body{
     pointer-events:none;
 }
 
-/* TRACK FORM */
-.track-form{
-    margin-top:18px;
-    padding-top:14px;
-    border-top:1px dashed #ddd;
-}
-.track-form input{
+/* INPUT */
+.status-box input{
     width:100%;
     padding:10px;
     border-radius:6px;
@@ -169,33 +104,6 @@ body{
 
 <body>
 
-<!-- NEW USER MODAL -->
-<div class="overlay" id="newUserModal">
-    <div class="modal">
-        <h3>Dear User</h3>
-        <p>Are you new to this service?</p>
-
-        <div id="choiceBtns">
-            <button onclick="showCreateForm()">Yes</button>
-            <button class="secondary" onclick="closeModal()">No</button>
-        </div>
-
-        <form id="createForm" method="POST" action="/create-user-id" style="display:none">
-            <div class="form-group">
-                <label>Enter Desired Secret User ID</label>
-                <input type="text" name="secret_id" required>
-            </div>
-
-            <div class="form-group">
-                <label>Enter Your Favourite One</label>
-                <input type="text" name="favourite" required>
-            </div>
-
-            <button style="width:100%;margin-top:14px;">Create ID</button>
-        </form>
-    </div>
-</div>
-
 <!-- HEADER -->
 <div class="header">
     <h2>e-Services Dashboard</h2>
@@ -214,22 +122,31 @@ body{
     <div class="card"><h4>Your Commission (7%)</h4><div class="value">₹ {{ commission }}</div></div>
 </div>
 
-<!-- APPLICATION STATUS -->
+<!-- APPLICATION SERVICES -->
 <div class="status-box">
-    <h3>Check Application Status</h3>
-    
-     <!-- APPLY NEW CERTIFICATE -->
-    <div class="actions" style="margin-bottom:16px;">
-        <a href="/index">Apply New Certificate</a>
+    <h3>Application Services</h3>
+
+    <!-- APPLY NEW CERTIFICATE -->
+    <div class="actions">
+        <a onclick="toggleApply()">Apply New Certificate</a>
     </div>
 
-    <!-- CHECK STATUS FORM -->
-    <form method="POST" action="/check-status" style="margin-bottom:16px;">
-        <input type="text"
-               name="application_no"
-               placeholder="Enter Application ID"
-               required
-               style="width:100%;padding:10px;border-radius:6px;border:1px solid #ccc;">
+    <!-- APPLY OPTIONS -->
+    <div id="applyOptions" style="display:none;margin-top:12px;">
+        <div class="actions">
+            <a href="/index?cert=caste">Apply for Caste Certificate</a>
+            <a href="/index?cert=income">Apply for Income Certificate</a>
+            <a href="/index?cert=resident">Apply for Resident Certificate</a>
+        </div>
+    </div>
+
+    <hr style="margin:18px 0;">
+
+    <!-- CHECK STATUS -->
+    <h3>Check Application Status</h3>
+
+    <form method="POST" action="/check-status">
+        <input type="text" name="application_no" placeholder="Enter Application ID" required>
         <div class="actions">
             <a onclick="this.closest('form').submit()">Check Status</a>
         </div>
@@ -244,18 +161,14 @@ body{
     <p><strong>Last Updated:</strong> {{ last_updated }}</p>
 
     <div class="actions">
-        <a href="/index">Apply New Certificate</a>
         <a class="disabled">Receipt Not Available</a>
         <a class="disabled">Certificate Not Issued</a>
     </div>
     {% else %}
     <p style="color:#666;text-align:center;">
-        Enter your Application ID to check status.
+        Enter Application ID to view status details.
     </p>
     {% endif %}
-</div>
-        </form>
-    </div>
 </div>
 
 </div>
@@ -265,14 +178,11 @@ body{
 </div>
 
 <script>
-function showCreateForm(){
-    document.getElementById("choiceBtns").style.display="none";
-    document.getElementById("createForm").style.display="block";
-}
-function closeModal(){
-    document.getElementById("newUserModal").style.display="none";
+function toggleApply(){
+    const box = document.getElementById("applyOptions");
+    box.style.display = box.style.display === "none" ? "block" : "none";
 }
 </script>
 
 </body>
-</html>
+                                                  </html>
