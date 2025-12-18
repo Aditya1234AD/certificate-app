@@ -214,10 +214,26 @@ body{
     <div class="card"><h4>Your Commission (7%)</h4><div class="value">₹ {{ commission }}</div></div>
 </div>
 
-<!-- APPLICATION STATUS + TRACK -->
+<!-- APPLICATION STATUS -->
 <div class="status-box">
-    <h3>Application Status</h3>
+    <h3>Check Application Status</h3>
 
+    <!-- CHECK STATUS FORM -->
+    <form method="POST" action="/check-status" style="margin-bottom:16px;">
+        <input type="text"
+               name="application_no"
+               placeholder="Enter Application ID"
+               required
+               style="width:100%;padding:10px;border-radius:6px;border:1px solid #ccc;">
+        <div class="actions">
+            <a onclick="this.closest('form').submit()">Check Status</a>
+        </div>
+    </form>
+
+    {% if application_id %}
+    <hr style="margin:18px 0;">
+
+    <p><strong>Application ID:</strong> {{ application_id }}</p>
     <p><strong>Certificate Type:</strong> {{ certificate_type }}</p>
     <p><strong>Current Status:</strong> {{ status }}</p>
     <p><strong>Last Updated:</strong> {{ last_updated }}</p>
@@ -227,15 +243,12 @@ body{
         <a class="disabled">Receipt Not Available</a>
         <a class="disabled">Certificate Not Issued</a>
     </div>
-
-    <!-- TRACK APPLICATION INSIDE STATUS CARD -->
-    <div class="track-form">
-        <h4>Track Another Application</h4>
-        <form method="POST" action="/check-status">
-            <input type="text" name="application_no" placeholder="Enter Application ID" required>
-            <div class="actions">
-                <a onclick="this.closest('form').submit()">Track Application</a>
-            </div>
+    {% else %}
+    <p style="color:#666;text-align:center;">
+        Enter your Application ID to check status.
+    </p>
+    {% endif %}
+</div>
         </form>
     </div>
 </div>
