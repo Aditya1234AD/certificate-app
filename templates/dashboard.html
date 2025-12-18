@@ -37,63 +37,29 @@ body{
     padding:0 12px;
 }
 
-/* SUMMARY CARDS */
+/* GRID */
 .cards{
     display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
-    gap:12px;
-}
-.card{
-    background:#fff;
-    padding:14px;
-    border-radius:12px;
-    box-shadow:0 4px 12px rgba(0,0,0,.08);
-    text-align:center;
+    grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+    gap:14px;
 }
 
-/* STATUS BOX */
-.status-box{
+/* CARD */
+.card{
     background:#fff;
-    margin-top:18px;
-    padding:18px;
+    padding:16px;
     border-radius:14px;
     box-shadow:0 4px 12px rgba(0,0,0,.08);
 }
 
-/* APPLY OPTIONS CARD */
-.apply-card{
-    margin-top:12px;
-    border:1px solid #e0e6ef;
-    border-radius:12px;
-    padding:14px;
-    display:none;
-    animation: fadeIn .3s ease;
+/* SUMMARY CARD */
+.summary{
+    text-align:center;
 }
-.apply-card h4{
-    margin:0 0 10px;
-    color:#333;
-    font-size:15px;
-}
-.apply-option{
-    padding:10px 12px;
-    border-radius:8px;
-    background:#f4f7fc;
-    margin-bottom:8px;
-    cursor:pointer;
-    transition:.2s;
-    font-size:14px;
-}
-.apply-option:hover{
-    background:#e7effc;
-}
-
-/* INPUT */
-.status-box input{
-    width:100%;
-    padding:10px;
-    border-radius:6px;
-    border:1px solid #ccc;
+.summary strong{
+    display:block;
     margin-top:8px;
+    font-size:18px;
 }
 
 /* BUTTONS */
@@ -113,18 +79,40 @@ body{
     cursor:pointer;
 }
 
+/* APPLY OPTIONS */
+.apply-card{
+    margin-top:12px;
+    border:1px solid #e0e6ef;
+    border-radius:10px;
+    padding:12px;
+    display:none;
+}
+.apply-option{
+    padding:10px;
+    border-radius:8px;
+    background:#f4f7fc;
+    margin-bottom:8px;
+    cursor:pointer;
+}
+.apply-option:hover{
+    background:#e7effc;
+}
+
+/* INPUT */
+input{
+    width:100%;
+    padding:10px;
+    border-radius:6px;
+    border:1px solid #ccc;
+    margin-top:10px;
+}
+
 /* FOOTER */
 .footer{
     text-align:center;
     font-size:12px;
     color:#777;
     margin:18px 0;
-}
-
-/* ANIMATION */
-@keyframes fadeIn{
-    from{opacity:0;transform:translateY(10px)}
-    to{opacity:1;transform:translateY(0)}
 }
 </style>
 </head>
@@ -139,61 +127,62 @@ body{
 
 <div class="container">
 
-<!-- SUMMARY -->
+<!-- SUMMARY ROW -->
 <div class="cards">
-    <div class="card">Applications Submitted<br><strong>{{ applications }}</strong></div>
-    <div class="card">Certificates Approved<br><strong>{{ approved }}</strong></div>
-    <div class="card">Pending Applications<br><strong>{{ pending }}</strong></div>
-    <div class="card">Pending Payment<br><strong>₹ {{ pending_payment }}</strong></div>
-    <div class="card">Total Paid<br><strong>₹ {{ total_paid }}</strong></div>
-    <div class="card">Commission (7%)<br><strong>₹ {{ commission }}</strong></div>
+    <div class="card summary">Applications Submitted<strong>{{ applications }}</strong></div>
+    <div class="card summary">Certificates Approved<strong>{{ approved }}</strong></div>
+    <div class="card summary">Pending Applications<strong>{{ pending }}</strong></div>
+    <div class="card summary">Pending Payment<strong>₹ {{ pending_payment }}</strong></div>
+    <div class="card summary">Total Paid<strong>₹ {{ total_paid }}</strong></div>
+    <div class="card summary">Commission (7%)<strong>₹ {{ commission }}</strong></div>
 </div>
 
-<!-- APPLICATION SERVICES -->
-<div class="status-box">
-    <h3>Application Services</h3>
+<br>
 
-    <div class="actions">
-        <a onclick="toggleApply()">Apply New Certificate</a>
-    </div>
+<!-- SERVICE ROW -->
+<div class="cards">
 
-    <!-- ONE CARD WITH THREE OPTIONS -->
-    <div class="apply-card" id="applyCard">
-        <h4>Select Certificate Type</h4>
+    <!-- APPLICATION SERVICES CARD -->
+    <div class="card">
+        <h3>Application Services</h3>
 
-        <div class="apply-option" onclick="goApply('caste')">
-            Apply for Caste Certificate
-        </div>
-
-        <div class="apply-option" onclick="goApply('income')">
-            Apply for Income Certificate
-        </div>
-
-        <div class="apply-option" onclick="goApply('resident')">
-            Apply for Resident Certificate
-        </div>
-    </div>
-
-    <hr style="margin:20px 0;">
-
-    <!-- CHECK STATUS -->
-    <h3>Check Application Status</h3>
-
-    <form method="POST" action="/check-status">
-        <input type="text" name="application_no" placeholder="Enter Application ID" required>
         <div class="actions">
-            <a onclick="this.closest('form').submit()">Check Status</a>
+            <a onclick="toggleApply()">Apply New Certificate</a>
         </div>
-    </form>
 
-    {% if application_id %}
-    <hr style="margin:20px 0;">
+        <div class="apply-card" id="applyCard">
+            <div class="apply-option" onclick="goApply('caste')">
+                Apply for Caste Certificate
+            </div>
+            <div class="apply-option" onclick="goApply('income')">
+                Apply for Income Certificate
+            </div>
+            <div class="apply-option" onclick="goApply('resident')">
+                Apply for Resident Certificate
+            </div>
+        </div>
+    </div>
 
-    <p><strong>Application ID:</strong> {{ application_id }}</p>
-    <p><strong>Certificate Type:</strong> {{ certificate_type }}</p>
-    <p><strong>Status:</strong> {{ status }}</p>
-    <p><strong>Last Updated:</strong> {{ last_updated }}</p>
-    {% endif %}
+    <!-- CHECK STATUS CARD -->
+    <div class="card">
+        <h3>Check Application Status</h3>
+
+        <form method="POST" action="/check-status">
+            <input type="text" name="application_no" placeholder="Enter Application ID" required>
+            <div class="actions">
+                <a onclick="this.closest('form').submit()">Check Status</a>
+            </div>
+        </form>
+
+        {% if application_id %}
+        <hr>
+        <p><strong>Application ID:</strong> {{ application_id }}</p>
+        <p><strong>Certificate Type:</strong> {{ certificate_type }}</p>
+        <p><strong>Status:</strong> {{ status }}</p>
+        <p><strong>Last Updated:</strong> {{ last_updated }}</p>
+        {% endif %}
+    </div>
+
 </div>
 
 </div>
@@ -204,8 +193,8 @@ body{
 
 <script>
 function toggleApply(){
-    const card = document.getElementById("applyCard");
-    card.style.display = card.style.display === "none" ? "block" : "none";
+    const box = document.getElementById("applyCard");
+    box.style.display = box.style.display === "none" ? "block" : "none";
 }
 function goApply(type){
     window.location.href = "/index?cert=" + type;
